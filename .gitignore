@@ -9,6 +9,7 @@ frontend_flutter/.idea
 frontend_flutter/.flutter-plugins
 frontend_flutter/.flutter-plugins-dependencies
 frontend_flutter/.packages
+frontend_flutter/pubspec.lock
 
 # Mac
 .DS_Store

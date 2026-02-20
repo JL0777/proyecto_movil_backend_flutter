@@ -1,18 +1,15 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'mymeal_db'
+const db = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'mymeal_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.error('Error conectando a MySQL:', err);
-        return;
-    }
-    console.log('Conectado a MySQL correctamente');
-});
+console.log('Pool de MySQL configurado correctamente');
 
-module.exports = connection;
+module.exports = db;
