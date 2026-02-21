@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import '../services/auth_service.dart';
-import 'home_screen.dart';
+import 'cliente/home_screen.dart';
+import 'admin/admin_home_screen.dart';
+import 'cocina/cocina_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final rol = result['user']['rol'];
 
       if (rol == 'admin') {
-        /*
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -68,19 +69,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           (route) => false,
         );
-        */
-        _mostrarError('Pantalla Admin aún no creada');
       } else if (rol == 'cocinero') {
-        /*
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => CocineroHomeScreen(user: result['user']),
+            builder: (_) => CocinaHomeScreen(user: result['user']),
           ),
           (route) => false,
         );
-        */
-        _mostrarError('Pantalla Cocinero aún no creada');
       } else {
         Navigator.pushAndRemoveUntil(
           context,

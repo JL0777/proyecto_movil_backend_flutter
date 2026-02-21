@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const db = require('./config/db');
+
+const db = require('./models'); // 👈 IMPORTANTE: db, no sequelize directo
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
@@ -18,6 +19,12 @@ app.get('/', (req, res) => {
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
+db.sequelize.sync().then(() => {
+    console.log('Base de datos sincronizada correctamente');
+
+    app.listen(PORT, () => {
+        console.log(`Servidor corriendo en puerto ${PORT}`);
+    });
+}).catch((error) => {
+    console.error('Error al conectar con la base de datos:', error);
 });
