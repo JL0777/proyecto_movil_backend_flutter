@@ -59,13 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
 
-      final rol = result['user']['rol'];
+      final user = result['user'];
+      final rol = user['rol'];
 
       if (rol == 'admin') {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => AdminHomeScreen(user: result['user']),
+            builder: (_) => AdminHomeScreen(user: user),
           ),
           (route) => false,
         );
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => CocinaHomeScreen(user: result['user']),
+            builder: (_) => CocinaHomeScreen(user: user),
           ),
           (route) => false,
         );
@@ -82,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(
             builder: (_) => HomeScreen(
-              email: result['user']['email'],
+              email: user['email'],
             ),
           ),
           (route) => false,
@@ -142,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Tabs Login / Register
                           Container(
                             decoration: BoxDecoration(
                               color: const Color(0xFFEEEEEE),
@@ -196,6 +198,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          // Título de bienvenida
+                          const Text(
+                            'BIENVENIDO A MyMeal!',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           _buildTextField(
                             label: 'Correo Electronico',
                             controller: _emailController,
@@ -212,20 +224,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _passwordVisible = !_passwordVisible);
                             },
                           ),
+                          const SizedBox(height: 8),
+                          // Olvidaste tu contraseña
+                          GestureDetector(
+                            onTap: () {
+                              // TODO: navegar a recuperar contraseña
+                            },
+                            child: const Text(
+                              '¿Olvidaste tu contraseña?',
+                              style: TextStyle(
+                                color: Color(0xFFE8651A),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 28),
                           SizedBox(
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton(
-                              onPressed:
-                                  _isLoading ? null : _iniciarSesion,
+                              onPressed: _isLoading ? null : _iniciarSesion,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFFE8651A),
+                                backgroundColor: const Color(0xFFE8651A),
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(30),
+                                  borderRadius: BorderRadius.circular(30),
                                 ),
                               ),
                               child: _isLoading
@@ -266,6 +289,14 @@ class _LoginScreenState extends State<LoginScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
+        // Solo línea inferior, sin borde completo (igual a la imagen)
+        border: const UnderlineInputBorder(),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFE8651A)),
+        ),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(

@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/session/session_manager.dart';
 
 class AuthService {
-  // IMPORTANTE: Para emulador Android usar 10.0.2.2 en vez de localhost
   static const String baseUrl = 'http://10.0.2.2:3000/api/auth';
 
+  // ======================
+  // REGISTER
+  // ======================
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,
@@ -21,20 +24,19 @@ class AuthService {
         }),
       );
 
-      print("REGISTER STATUS: ${response.statusCode}");
-      print("REGISTER BODY: ${response.body}");
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'],
-        };
-      } else {
-        return {
-          'success': false,
-          'error': jsonDecode(response.body)['error'] ?? 'Error desconocido',
+          'message': data['message'],
         };
       }
+
+      return {
+        'success': false,
+        'error': data['error'] ?? 'Error desconocido',
+      };
     } catch (e) {
       return {
         'success': false,
@@ -43,6 +45,9 @@ class AuthService {
     }
   }
 
+  // ======================
+  // LOGIN
+  // ======================
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -57,28 +62,53 @@ class AuthService {
         }),
       );
 
-      print("LOGIN STATUS: ${response.statusCode}");
-      print("LOGIN BODY: ${response.body}");
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+
+        // 🔥 Guardamos sesión automáticamente aquí
+        await SessionManager.saveSession(
+          token: data['token'],
+          user: data['user'],
+        );
+
         return {
           'success': true,
-          'token': data['token'],
           'user': data['user'],
           'message': data['message'],
         };
-      } else {
-        return {
-          'success': false,
-          'error': jsonDecode(response.body)['error'] ?? 'Error desconocido',
-        };
       }
+
+      return {
+        'success': false,
+        'error': data['error'] ?? 'Error desconocido',
+      };
     } catch (e) {
       return {
         'success': false,
         'error': 'Error de conexión: $e',
       };
     }
+  }
+
+  // ======================
+  // LOGOUT
+  // ======================
+  Future<void> logout() async {
+    await SessionManager.clearSession();
+  }
+
+  // ======================
+  // GET TOKEN
+  // ======================
+  Future<String?> getToken() async {
+    return await SessionManager.getToken();
+  }
+
+  // ======================
+  // CHECK SESSION
+  // ======================
+  Future<bool> isLoggedIn() async {
+    return await SessionManager.isLoggedIn();
   }
 }

@@ -1,8 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Usuario } = require('../models');
+require('dotenv').config();
 
-const JWT_SECRET = 'tu_secreto_super_seguro_cambialo_123';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // ======================
 // REGISTRO
@@ -68,6 +69,7 @@ exports.login = async (req, res) => {
     );
 
     res.json({
+      success: true,
       message: '¡Bienvenido de nuevo a MyMeal!',
       token,
       user: {
