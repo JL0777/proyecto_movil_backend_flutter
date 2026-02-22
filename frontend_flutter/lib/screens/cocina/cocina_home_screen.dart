@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
+import '../../core/session/session_manager.dart';
+import '../login_screen.dart';
 
 class CocinaHomeScreen extends StatelessWidget {
   final Map<String, dynamic> user;
 
-  const CocinaHomeScreen({super.key, required this.user});
+  const CocinaHomeScreen({
+    super.key,
+    required this.user,
+  });
+
+  Future<void> _logout(BuildContext context) async {
+    await SessionManager.clearSession();
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,6 +28,12 @@ class CocinaHomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Panel Cocina"),
         backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: Center(
         child: Text(
