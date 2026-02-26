@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/session/session_manager.dart';
 import 'screens/preview/preview_home_screen.dart';
-import 'screens/welcome_screen.dart';
 import 'screens/cliente/home_screen.dart';
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/cocina/cocina_home_screen.dart';
