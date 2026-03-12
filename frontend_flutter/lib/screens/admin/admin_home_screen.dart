@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/session/session_manager.dart';
-import '../login_screen.dart';
+import '../welcome_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final Map<String, dynamic> user;
@@ -15,9 +15,7 @@ class AdminHomeScreen extends StatelessWidget {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }

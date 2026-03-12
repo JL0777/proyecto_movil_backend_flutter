@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/session/session_manager.dart';
-import '../../login_screen.dart';
+import '../../welcome_screen.dart';
 import 'edit_profile_screen.dart';
 import 'my_addresses_screen.dart';
 import 'help_screen.dart';
@@ -16,7 +16,7 @@ class MyAccountScreen extends StatelessWidget {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }
@@ -34,10 +34,8 @@ class MyAccountScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-
           const SizedBox(height: 30),
 
-          // Avatar
           Center(
             child: Column(
               children: [
@@ -73,24 +71,22 @@ class MyAccountScreen extends StatelessWidget {
           const SizedBox(height: 40),
           const Divider(),
 
-          // Opciones
-
           _AccountTile(
             icon: Icons.person_outline,
             label: 'Editar información personal',
-            onTap: () => _navigate(context,  EditProfileScreen()),
+            onTap: () => _navigate(context, EditProfileScreen()),
           ),
 
           _AccountTile(
             icon: Icons.location_on_outlined,
             label: 'Mis direcciones',
-            onTap: () => _navigate(context,  MyAddressesScreen()),
+            onTap: () => _navigate(context, MyAddressesScreen()),
           ),
 
           _AccountTile(
             icon: Icons.help_outline,
             label: 'Ayuda',
-            onTap: () => _navigate(context,  HelpScreen()),
+            onTap: () => _navigate(context, HelpScreen()),
           ),
 
           const Divider(),
