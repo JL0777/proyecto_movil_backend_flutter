@@ -1,29 +1,53 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
+
   const User = sequelize.define('Usuario', {
+
     nombre: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
+
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
+
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
+
     telefono: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
+
     rol: {
       type: DataTypes.ENUM('cliente', 'admin', 'cocinero'),
-      defaultValue: 'cliente',
+      defaultValue: 'cliente'
     }
+
+  }, {
+
+    tableName: 'Usuarios',   //
+    timestamps: true
+
   });
 
+  User.associate = function(models) {
+
+    User.hasMany(models.Direccion, {
+
+      foreignKey: 'usuarioId',
+      onDelete: 'CASCADE'
+
+    });
+
+  };
+
   return User;
+
 };

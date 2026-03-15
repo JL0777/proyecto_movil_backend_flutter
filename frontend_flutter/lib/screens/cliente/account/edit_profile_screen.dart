@@ -59,9 +59,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  /// Valida número colombiano:
-  /// - Celular: empieza en 3, exactamente 10 dígitos (ej: 3001234567)
-  /// - Fijo: 7 dígitos, primera cifra 1,2,4,5,6,7 u 8
   bool _isValidColombianPhone(String number) {
     if (!RegExp(r'^\d+$').hasMatch(number)) return false;
     if (number.startsWith('3') && number.length == 10) return true;
@@ -156,6 +153,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  // Decoración reutilizable consistente con AddEditAddressScreen
+  InputDecoration _inputDecoration(
+    String label, {
+    IconData? icon,
+    bool enabled = true,
+    Widget? prefixWidget,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w500,
+        color: enabled ? Colors.black54 : Colors.grey.shade400,
+      ),
+      floatingLabelStyle: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: enabled ? AppTheme.primaryOrange : Colors.grey.shade400,
+      ),
+      filled: true,
+      fillColor: enabled ? Colors.white : Colors.grey.shade100,
+      prefixIcon: prefixWidget ??
+          (icon != null
+              ? Icon(icon, color: Colors.grey.shade600, size: 22)
+              : null),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppTheme.primaryOrange, width: 1.8),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+    );
+  }
+
   Widget _editableField({
     required String label,
     required TextEditingController controller,
@@ -164,6 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required VoidCallback onSave,
     bool isPassword = false,
     TextInputType type = TextInputType.text,
+    IconData? icon,
     Widget? prefixWidget,
   }) {
     return Column(
@@ -177,44 +220,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 enabled: isEditing,
                 obscureText: isPassword,
                 keyboardType: type,
-                decoration: InputDecoration(
-                  labelText: label,
-                  filled: true,
-                  fillColor: isEditing ? Colors.white : Colors.grey.shade100,
-                  prefixIcon: prefixWidget,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppTheme.primaryOrange,
-                      width: 1.8,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  labelStyle: TextStyle(
-                    color: isEditing
-                        ? AppTheme.primaryOrange
-                        : Colors.grey.shade500,
-                  ),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: _inputDecoration(
+                  label,
+                  icon: icon,
+                  enabled: isEditing,
+                  prefixWidget: prefixWidget,
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            IconButton(
-              onPressed: onEditToggle,
-              icon: Icon(
-                isEditing ? Icons.close : Icons.edit,
-                color: isEditing ? Colors.grey : AppTheme.primaryOrange,
+            Container(
+              decoration: BoxDecoration(
+                color: isEditing
+                    ? Colors.grey.shade100
+                    : AppTheme.lightOrange,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isEditing
+                      ? Colors.grey.shade300
+                      : AppTheme.primaryOrange.withOpacity(0.3),
+                ),
+              ),
+              child: IconButton(
+                onPressed: onEditToggle,
+                icon: Icon(
+                  isEditing ? Icons.close : Icons.edit,
+                  color: isEditing ? Colors.grey.shade600 : AppTheme.primaryOrange,
+                  size: 20,
+                ),
               ),
             ),
           ],
@@ -231,13 +269,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 15),
               ),
-              child: const Text("Guardar"),
+              child: const Text(
+                "Guardar",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
       ],
+    );
+  }
+
+  // Campo de contraseña individual con el mismo estilo
+  Widget _passwordField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      obscureText: true,
+      style: const TextStyle(
+        fontSize: 15,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: _inputDecoration(label, icon: Icons.lock_outline),
     );
   }
 
@@ -290,8 +348,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Text(
               user!['email'] ?? '',
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
                 color: Colors.black54,
               ),
             ),
@@ -305,6 +363,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               isEditing: _editingName,
               onEditToggle: () => setState(() => _editingName = !_editingName),
               onSave: _updateName,
+              icon: Icons.person_outline,
             ),
 
             const SizedBox(height: 16),
@@ -314,10 +373,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: "Correo",
               controller: _emailController,
               isEditing: _editingEmail,
-              onEditToggle: () =>
-                  setState(() => _editingEmail = !_editingEmail),
+              onEditToggle: () => setState(() => _editingEmail = !_editingEmail),
               onSave: _updateEmail,
               type: TextInputType.emailAddress,
+              icon: Icons.email_outlined,
             ),
 
             const SizedBox(height: 16),
@@ -327,12 +386,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: "Teléfono",
               controller: _phoneController,
               isEditing: _editingPhone,
-              onEditToggle: () =>
-                  setState(() => _editingPhone = !_editingPhone),
+              onEditToggle: () => setState(() => _editingPhone = !_editingPhone),
               onSave: _updatePhone,
               type: TextInputType.phone,
               prefixWidget: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Text(
                   "+57",
                   style: TextStyle(
@@ -358,31 +416,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Expanded(
                   child: TextField(
                     enabled: false,
-                    decoration: InputDecoration(
-                      labelText: "Cambiar contraseña",
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      labelStyle: TextStyle(color: Colors.grey.shade500),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: _inputDecoration(
+                      "Cambiar contraseña",
+                      icon: Icons.lock_outline,
+                      enabled: false,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () =>
-                      setState(() => _editingPassword = !_editingPassword),
-                  icon: Icon(
-                    _editingPassword ? Icons.close : Icons.edit,
+                Container(
+                  decoration: BoxDecoration(
                     color: _editingPassword
-                        ? Colors.grey
-                        : AppTheme.primaryOrange,
+                        ? Colors.grey.shade100
+                        : AppTheme.lightOrange,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _editingPassword
+                          ? Colors.grey.shade300
+                          : AppTheme.primaryOrange.withOpacity(0.3),
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () =>
+                        setState(() => _editingPassword = !_editingPassword),
+                    icon: Icon(
+                      _editingPassword ? Icons.close : Icons.edit,
+                      color: _editingPassword
+                          ? Colors.grey.shade600
+                          : AppTheme.primaryOrange,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -390,65 +458,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             if (_editingPassword) ...[
               const SizedBox(height: 16),
-              TextField(
-                controller: _currentPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Contraseña actual",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppTheme.primaryOrange,
-                      width: 1.8,
-                    ),
-                  ),
-                ),
-              ),
+              _passwordField("Contraseña actual", _currentPasswordController),
               const SizedBox(height: 12),
-              TextField(
-                controller: _newPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Nueva contraseña",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppTheme.primaryOrange,
-                      width: 1.8,
-                    ),
-                  ),
-                ),
-              ),
+              _passwordField("Nueva contraseña", _newPasswordController),
               const SizedBox(height: 12),
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Confirmar contraseña",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: AppTheme.primaryOrange,
-                      width: 1.8,
-                    ),
-                  ),
-                ),
-              ),
+              _passwordField("Confirmar contraseña", _confirmPasswordController),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -460,9 +474,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: const Text("Guardar contraseña"),
+                  child: const Text(
+                    "Guardar contraseña",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ],
