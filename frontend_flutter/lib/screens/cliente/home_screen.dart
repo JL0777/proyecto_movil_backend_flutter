@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen>
           onTap: (i) => setState(() => _currentIndex = i),
           backgroundColor: Colors.white,
           selectedItemColor: AppTheme.primaryOrange,
-          unselectedItemColor: Color(0xFFBBBBBB),
+          unselectedItemColor: const Color(0xFFBBBBBB),
           showSelectedLabels: false,
           showUnselectedLabels: false,
           elevation: 0,
@@ -155,9 +155,11 @@ class _Header extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const SizedBox(width: 42),
-              Image.asset(
-                'assets/images/logo_mymeal.png',
-                height: 170,
+              Flexible( // ← fix del overflow
+                child: Image.asset(
+                  'assets/images/logo_mymeal.png',
+                  height: 170,
+                ),
               ),
               GestureDetector(
                 onTap: onCartTap,
@@ -210,7 +212,7 @@ class _CategoryTabBar extends StatelessWidget {
         unselectedLabelColor: AppTheme.textGrey,
         indicatorColor: AppTheme.primaryOrange,
         indicatorWeight: 3,
-        dividerColor: Color(0xFFEEEEEE),
+        dividerColor: const Color(0xFFEEEEEE),
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,

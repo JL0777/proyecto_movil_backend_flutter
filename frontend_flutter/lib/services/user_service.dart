@@ -4,7 +4,7 @@ import '../../core/session/session_manager.dart';
 
 class UserService {
 
-  static const String baseUrl = "http://10.0.2.2:3000/api/users";
+  static const String baseUrl = "http://192.168.0.11:3000/api/users";
 
   Future<String?> _getToken() async {
     return await SessionManager.getToken();

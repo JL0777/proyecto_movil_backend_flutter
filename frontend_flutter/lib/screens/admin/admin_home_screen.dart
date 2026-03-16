@@ -1,24 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/session/session_manager.dart';
-import '../welcome_screen.dart';
+import '../../core/utils/logout_helper.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final Map<String, dynamic> user;
 
-  const AdminHomeScreen({
-    super.key,
-    required this.user,
-  });
-
-  Future<void> _logout(BuildContext context) async {
-    await SessionManager.clearSession();
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-      (route) => false,
-    );
-  }
+  const AdminHomeScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +15,7 @@ class AdminHomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+            onPressed: () => LogoutHelper.confirmarCierreSesion(context),
           ),
         ],
       ),
