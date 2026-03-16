@@ -153,7 +153,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // Decoración reutilizable consistente con AddEditAddressScreen
   InputDecoration _inputDecoration(
     String label, {
     IconData? icon,
@@ -243,7 +242,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 border: Border.all(
                   color: isEditing
                       ? Colors.grey.shade300
-                      : AppTheme.primaryOrange.withOpacity(0.3),
+                      : const Color(0x4DE8760A),
                 ),
               ),
               child: IconButton(
@@ -285,7 +284,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // Campo de contraseña individual con el mismo estilo
   Widget _passwordField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
@@ -307,6 +305,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    final nombre = user!['nombre'] ?? '';
+    final email = user!['email'] ?? '';
 
     return Scaffold(
 
@@ -343,20 +344,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
 
+            // Nombre (si existe)
+            if (nombre.isNotEmpty) ...[
+              Text(
+                nombre,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+
+            // Correo
             Text(
-              user!['email'] ?? '',
+              email,
               style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Colors.black54,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF888888),
               ),
             ),
 
             const SizedBox(height: 28),
 
-            // Nombre
             _editableField(
               label: "Nombre",
               controller: _nameController,
@@ -368,7 +382,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 16),
 
-            // Correo
             _editableField(
               label: "Correo",
               controller: _emailController,
@@ -381,7 +394,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 16),
 
-            // Teléfono con prefijo +57 solo visual
             _editableField(
               label: "Teléfono",
               controller: _phoneController,
@@ -410,7 +422,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 8),
 
-            // Contraseña - fila colapsada
             Row(
               children: [
                 Expanded(
@@ -438,7 +449,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: Border.all(
                       color: _editingPassword
                           ? Colors.grey.shade300
-                          : AppTheme.primaryOrange.withOpacity(0.3),
+                          : const Color(0x4DE8760A),
                     ),
                   ),
                   child: IconButton(

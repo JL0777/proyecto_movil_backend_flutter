@@ -69,23 +69,58 @@ class _HomeScreenState extends State<HomeScreen>
               ? const MyOrdersScreen()
               : MyAccountScreen(email: widget.email),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: ''),
-        ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFEEEEEE), width: 1),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (i) => setState(() => _currentIndex = i),
+          backgroundColor: Colors.white,
+          selectedItemColor: AppTheme.primaryOrange,
+          unselectedItemColor: Color(0xFFBBBBBB),
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.home_outlined, size: 28),
+              ),
+              activeIcon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.home, size: 28),
+              ),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.receipt_long_outlined, size: 28),
+              ),
+              activeIcon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.receipt_long, size: 28),
+              ),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.person_outline, size: 28),
+              ),
+              activeIcon: Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.person, size: 28),
+              ),
+              label: '',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -101,54 +136,60 @@ class _Header extends StatelessWidget {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Container(
-      height: 250 + statusBarHeight,
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         image: DecorationImage(
-          image: const AssetImage('assets/images/background.png'),
+          image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.4),
+            Color(0x66000000),
             BlendMode.darken,
           ),
         ),
       ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, statusBarHeight + 6, 20, 8),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(width: 42),
-                Image.asset(
-                  'assets/images/logo_mymeal.png',
-                  height: 140,
-                ),
-                GestureDetector(
-                  onTap: onCartTap,
-                  child: const Icon(
-                    Icons.shopping_cart_outlined,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '¿Qué deseas comer\nel día de hoy?',
-                style: TextStyle(
+      padding: EdgeInsets.fromLTRB(20, statusBarHeight + 16, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 42),
+              Image.asset(
+                'assets/images/logo_mymeal.png',
+                height: 170,
+              ),
+              GestureDetector(
+                onTap: onCartTap,
+                child: const Icon(
+                  Icons.shopping_cart_outlined,
                   color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  size: 28,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '¿Qué deseas',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
             ),
-          ],
-        ),
+          ),
+          const Text(
+            'comer hoy?',
+            style: TextStyle(
+              color: AppTheme.primaryOrange,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
       ),
     );
   }
@@ -161,16 +202,47 @@ class _CategoryTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TabBar(
-      controller: controller,
-      labelColor: AppTheme.primaryOrange,
-      unselectedLabelColor: AppTheme.textGrey,
-      indicatorColor: AppTheme.primaryOrange,
-      tabs: const [
-        Tab(text: 'Comida\ntradicional'),
-        Tab(text: 'Comida\nRápida'),
-        Tab(text: 'Bebidas'),
-      ],
+    return Container(
+      color: Colors.white,
+      child: TabBar(
+        controller: controller,
+        labelColor: AppTheme.primaryOrange,
+        unselectedLabelColor: AppTheme.textGrey,
+        indicatorColor: AppTheme.primaryOrange,
+        indicatorWeight: 3,
+        dividerColor: Color(0xFFEEEEEE),
+        labelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        tabs: const [
+          Tab(
+            height: 56,
+            child: Text(
+              'Comida\ntradicional',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Tab(
+            height: 56,
+            child: Text(
+              'Comida\nRápida',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Tab(
+            height: 56,
+            child: Text(
+              'Bebidas',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,9 +9,8 @@ class MyOrdersScreen extends StatelessWidget {
     return SafeArea(
       child: Column(
         children: [
-          // ───── Header ─────
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Row(
               children: const [
                 Text(
@@ -28,32 +27,43 @@ class MyOrdersScreen extends StatelessWidget {
 
           const Divider(height: 1),
 
-          // ───── Estado vacío (por ahora) ─────
           Expanded(
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.receipt_long_outlined,
-                    size: 72,
-                    color: Colors.grey.shade300,
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: AppTheme.lightOrange,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.primaryOrange,
+                        width: 2.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_outlined,
+                      size: 44,
+                      color: AppTheme.primaryOrange,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'No tienes pedidos aún',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
+                  const Text(
                     'Tus pedidos aparecerán aquí',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade400,
+                      color: Color(0xFF888888),
                     ),
                   ),
                 ],

@@ -22,8 +22,21 @@ class AppTheme {
           unselectedItemColor: Color(0xFFBBBBBB),
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          elevation: 0,
+          elevation: 8,
           type: BottomNavigationBarType.fixed,
+        ),
+        tabBarTheme: const TabBarThemeData(
+          labelColor: primaryOrange,
+          unselectedLabelColor: Color(0xFF888888),
+          indicatorColor: primaryOrange,
+          labelStyle: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       );
 }
