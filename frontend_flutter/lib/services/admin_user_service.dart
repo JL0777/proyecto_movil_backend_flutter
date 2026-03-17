@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/session/session_manager.dart';
-import '../../core/config/app_config.dart';
+import '../core/config/app_config.dart';
 
 class AdminUserService {
   static const String baseUrl = '${AppConfig.baseUrl}/users';

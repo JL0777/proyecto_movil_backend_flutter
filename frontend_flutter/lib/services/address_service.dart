@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/session/session_manager.dart';
-import '../../core/config/app_config.dart';
-
+import '../core/config/app_config.dart';
 
 class AddressService {
 
-  static const String baseUrl = '${AppConfig.baseUrl}/auth';
+  static const String baseUrl = '${AppConfig.baseUrl}/addresses';
 
   Future<Map<String,String>> _headers() async {
     final token = await SessionManager.getToken();
