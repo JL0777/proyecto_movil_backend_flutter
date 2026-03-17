@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/session/session_manager.dart';
+import '../../core/config/app_config.dart';
+
 
 class AuthService {
-  static const String baseUrl = 'http://192.168.0.11:3000/api/auth';
+  static const String baseUrl = '${AppConfig.baseUrl}/auth';
 
   // ======================
   // REGISTER

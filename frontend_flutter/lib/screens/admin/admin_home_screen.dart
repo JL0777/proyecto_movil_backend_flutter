@@ -5,6 +5,7 @@ import '../../core/utils/logout_helper.dart';
 import 'tabs/pedidos_tab.dart';
 import 'tabs/productos_tab.dart';
 import 'tabs/ventas_tab.dart';
+import 'tabs/usuarios_tab.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -16,19 +17,29 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
-  int _tabSeleccionado = 0;
-
-  final List<Widget> _tabs = const [
-    PedidosTab(),
-    ProductosTab(),
-    VentasTab(),
-  ];
+  int _seccionActual = 0;
 
   final List<String> _titulos = [
     'Pedidos realizados\ny listos',
     'Gestión de\nProductos',
     'Reporte de\nVentas',
+    'Gestión de\nClientes',
   ];
+
+  Widget _getSeccion() {
+    switch (_seccionActual) {
+      case 0:
+        return const PedidosTab();
+      case 1:
+        return const ProductosTab();
+      case 2:
+        return const VentasTab();
+      case 3:
+        return const UsuariosTab();
+      default:
+        return const PedidosTab();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +52,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
 
     return Scaffold(
+
+      drawer: _AdminDrawer(
+        seccionActual: _seccionActual,
+        user: widget.user,
+        onSeccionSeleccionada: (index) {
+          setState(() => _seccionActual = index);
+          Navigator.pop(context);
+        },
+      ),
+
       body: Column(
         children: [
-
           SizedBox(
             height: 230,
             child: Stack(
               children: [
-                // Imagen de fondo
                 Positioned.fill(
                   child: Image.asset(
                     'assets/images/background.png',
@@ -56,19 +75,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     alignment: Alignment.topCenter,
                   ),
                 ),
-
-                // Overlay oscuro
                 Positioned.fill(
-                  child: Container(
-                    color: const Color(0x66000000),
-                  ),
+                  child: Container(color: const Color(0x66000000)),
                 ),
-
-                // Contenido
                 SafeArea(
                   child: Stack(
                     children: [
-                      // Logo centrado
                       Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
@@ -79,17 +91,35 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           ),
                         ),
                       ),
-
-                      // Título y botón logout abajo
                       Align(
                         alignment: Alignment.bottomLeft,
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: Row(
                             children: [
+                              // Botón menú hamburguesa
+                              Builder(
+                                builder: (context) => GestureDetector(
+                                  onTap: () => Scaffold.of(context).openDrawer(),
+                                  child: Container(
+                                    width: 45,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.25),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.menu,
+                                      color: Colors.white,
+                                      size: 26,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  _titulos[_tabSeleccionado],
+                                  _titulos[_seccionActual],
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -97,12 +127,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   ),
                                 ),
                               ),
+                              // Botón logout
                               GestureDetector(
                                 onTap: () =>
                                     LogoutHelper.confirmarCierreSesion(context),
                                 child: Container(
-                                  width: 55,
-                                  height: 55,
+                                  width: 45,
+                                  height: 45,
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.25),
                                     shape: BoxShape.circle,
@@ -110,7 +141,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   child: const Icon(
                                     Icons.logout,
                                     color: Colors.white,
-                                    size: 28,
+                                    size: 24,
                                   ),
                                 ),
                               ),
@@ -125,51 +156,191 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
           ),
 
-          // TABS
+          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+
+          Expanded(child: _getSeccion()),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminDrawer extends StatelessWidget {
+  final int seccionActual;
+  final Map<String, dynamic> user;
+  final Function(int) onSeccionSeleccionada;
+
+  const _AdminDrawer({
+    required this.seccionActual,
+    required this.user,
+    required this.onSeccionSeleccionada,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: [
+          // Header del drawer
           Container(
-            color: Colors.white,
-            child: Row(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + 20,
+              20,
+              20,
+            ),
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Color(0x66000000),
+                  BlendMode.darken,
+                ),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTab('Pedidos\nRealizados', 0),
-                _buildTab('Gestión de\nProductos', 1),
-                _buildTab('Reporte de\nVentas', 2),
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  user['nombre'] ?? 'Administrador',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user['email'] ?? '',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
 
-          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+          const SizedBox(height: 8),
 
-          Expanded(child: _tabs[_tabSeleccionado]),
+          // Items del menú
+          _drawerItem(
+            context: context,
+            icon: Icons.receipt_long_outlined,
+            titulo: 'Pedidos realizados',
+            index: 0,
+          ),
+          _drawerItem(
+            context: context,
+            icon: Icons.fastfood_outlined,
+            titulo: 'Gestión de productos',
+            index: 1,
+          ),
+          _drawerItem(
+            context: context,
+            icon: Icons.bar_chart_outlined,
+            titulo: 'Reporte de ventas',
+            index: 2,
+          ),
+          _drawerItem(
+            context: context,
+            icon: Icons.people_outline,
+            titulo: 'Gestión de clientes',
+            index: 3,
+          ),
+
+          const Spacer(),
+
+          // Cerrar sesión al fondo
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  LogoutHelper.confirmarCierreSesion(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                icon: const Icon(Icons.logout, size: 20),
+                label: const Text(
+                  'Cerrar sesión',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  Widget _buildTab(String titulo, int index) {
-    final bool activo = _tabSeleccionado == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _tabSeleccionado = index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: activo ? AppTheme.primaryOrange : Colors.transparent,
-                width: 2,
-              ),
-            ),
-          ),
-          child: Text(
-            titulo,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: activo ? FontWeight.bold : FontWeight.normal,
-              color: activo ? AppTheme.primaryOrange : Colors.grey,
-            ),
+  Widget _drawerItem({
+    required BuildContext context,
+    required IconData icon,
+    required String titulo,
+    required int index,
+  }) {
+    final bool activo = seccionActual == index;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: activo
+            ? AppTheme.primaryOrange.withValues(alpha: 0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: activo ? AppTheme.primaryOrange : Colors.grey.shade600,
+          size: 24,
+        ),
+        title: Text(
+          titulo,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: activo ? FontWeight.w700 : FontWeight.w500,
+            color: activo ? AppTheme.primaryOrange : Colors.black87,
           ),
         ),
+        trailing: activo
+            ? Container(
+                width: 4,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              )
+            : null,
+        onTap: () => onSeccionSeleccionada(index),
       ),
     );
   }

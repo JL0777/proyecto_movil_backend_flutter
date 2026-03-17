@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/session/session_manager.dart';
+import '../../core/config/app_config.dart';
+
 
 class UserService {
 
-  static const String baseUrl = "http://192.168.0.11:3000/api/users";
+  static const String baseUrl = "${AppConfig.baseUrl}/users";
 
   Future<String?> _getToken() async {
     return await SessionManager.getToken();
