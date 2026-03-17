@@ -62,6 +62,79 @@ class _UsuariosTabState extends State<UsuariosTab> {
     });
   }
 
+  Future<void> _confirmarEliminar(Map<String, dynamic> u) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text(
+              "Eliminar usuario",
+              style: TextStyle(fontSize: 17),
+            ),
+          ],
+        ),
+        content: Text(
+          "¿Estás seguro que deseas eliminar a ${u['nombre'] ?? u['email']}?",
+          style: const TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              "Cancelar",
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text("Eliminar"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final ok = await _service.deleteUser(u['id']);
+
+    if (!mounted) return;
+
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Usuario eliminado correctamente"),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      _cargarUsuarios();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Error al eliminar usuario"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -72,7 +145,6 @@ class _UsuariosTabState extends State<UsuariosTab> {
 
     return Column(
       children: [
-        // Buscador
         Padding(
           padding: const EdgeInsets.all(16),
           child: TextField(
@@ -91,8 +163,6 @@ class _UsuariosTabState extends State<UsuariosTab> {
             ),
           ),
         ),
-
-        // Lista de usuarios
         Expanded(
           child: _filtrados.isEmpty
               ? Center(
@@ -182,27 +252,51 @@ class _UsuariosTabState extends State<UsuariosTab> {
             ),
           ],
         ),
-        trailing: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF3ED),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.edit_outlined,
-            color: Color(0xFFE8651A),
-            size: 18,
-          ),
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AdminEditUserScreen(usuario: u),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AdminEditUserScreen(usuario: u),
+                  ),
+                ).then((_) => _cargarUsuarios());
+              },
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3ED),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 18,
+                ),
+              ),
             ),
-          ).then((_) => _cargarUsuarios());
-        },
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _confirmarEliminar(u),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

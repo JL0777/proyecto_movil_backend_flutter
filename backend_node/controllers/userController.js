@@ -246,3 +246,28 @@ exports.adminUpdatePassword = async (req, res) => {
     res.status(500).json({ error: "Error del servidor" });
   }
 };
+
+// ======================
+// ELIMINAR USUARIO (admin)
+// ======================
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await Usuario.findOne({
+      where: { id: req.params.id, rol: 'cliente' }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    await user.destroy();
+
+    res.json({
+      success: true,
+      message: "Usuario eliminado correctamente"
+    });
+  } catch (error) {
+    console.error("ERROR DELETE USER:", error);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+};

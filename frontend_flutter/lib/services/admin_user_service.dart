@@ -40,7 +40,8 @@ class AdminUserService {
     throw Exception("Error cargando usuario");
   }
 
-  Future<Map<String, dynamic>> updateUser(int id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateUser(
+      int id, Map<String, dynamic> data) async {
     final response = await http.put(
       Uri.parse("$baseUrl/$id"),
       headers: await _headers(),
@@ -56,7 +57,8 @@ class AdminUserService {
     return {"success": false, "error": body['error'] ?? "Error desconocido"};
   }
 
-  Future<Map<String, dynamic>> updatePassword(int id, String newPassword) async {
+  Future<Map<String, dynamic>> updatePassword(
+      int id, String newPassword) async {
     final response = await http.put(
       Uri.parse("$baseUrl/$id/password"),
       headers: await _headers(),
@@ -70,5 +72,14 @@ class AdminUserService {
     }
 
     return {"success": false, "error": body['error'] ?? "Error desconocido"};
+  }
+
+  Future<bool> deleteUser(int id) async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/$id"),
+      headers: await _headers(),
+    );
+
+    return response.statusCode == 200;
   }
 }
