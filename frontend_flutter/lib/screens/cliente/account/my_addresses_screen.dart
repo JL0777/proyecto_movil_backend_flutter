@@ -140,7 +140,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
         border: Border.all(color: Colors.grey.shade300),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -154,7 +154,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
           decoration: BoxDecoration(
             color: AppTheme.lightOrange,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppTheme.primaryOrange.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryOrange.withValues(alpha: 0.3)),
           ),
           child: Icon(
             _iconForTipo(a["tipoVivienda"]),

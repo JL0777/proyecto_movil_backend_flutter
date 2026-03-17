@@ -30,13 +30,9 @@ class SessionManager {
 
     static Future<void> clearSession() async {
       final prefs = await SharedPreferences.getInstance();
-
-      print("ANTES DE BORRAR: ${prefs.getString(_tokenKey)}");
-
+      
       await prefs.remove(_tokenKey);
       await prefs.remove(_userKey);
-
-      print("DESPUES DE BORRAR: ${prefs.getString(_tokenKey)}");
     }
 
   static Future<bool> isLoggedIn() async {

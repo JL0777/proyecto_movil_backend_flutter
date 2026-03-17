@@ -22,6 +22,34 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // ← aviso de bienvenida como invitado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Text(
+                "¡Bienvenido! Has ingresado como invitado",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.primaryOrange,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    });
   }
 
   @override
@@ -58,7 +86,7 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
           onTap: (i) => setState(() => _bottomIndex = i),
           backgroundColor: Colors.white,
           selectedItemColor: AppTheme.primaryOrange,
-          unselectedItemColor: Color(0xFFBBBBBB),
+          unselectedItemColor: const Color(0xFFBBBBBB),
           showSelectedLabels: false,
           showUnselectedLabels: false,
           elevation: 0,
@@ -162,7 +190,7 @@ class _CategoryTabs extends StatelessWidget {
         unselectedLabelColor: AppTheme.textGrey,
         indicatorColor: AppTheme.primaryOrange,
         indicatorWeight: 3,
-        dividerColor: Color(0xFFEEEEEE),
+        dividerColor: const Color(0xFFEEEEEE),
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/session/session_manager.dart';
-import '../../welcome_screen.dart';
+import '../../../core/utils/logout_helper.dart';
 import 'edit_profile_screen.dart';
 import 'my_addresses_screen.dart';
 import 'help_screen.dart';
 
 class MyAccountScreen extends StatefulWidget {
-
   final String email;
 
   const MyAccountScreen({super.key, required this.email});
@@ -17,7 +16,6 @@ class MyAccountScreen extends StatefulWidget {
 }
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
-
   Map<String, dynamic>? user;
 
   @override
@@ -31,15 +29,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     setState(() {
       user = u;
     });
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    await SessionManager.clearSession();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-      (route) => false,
-    );
   }
 
   void _navigate(BuildContext context, Widget screen) {
@@ -74,7 +63,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           width: 40,
           height: 40,
@@ -112,7 +102,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final email = user?["email"] ?? widget.email;
     final nombre = user?["nombre"] ?? "";
 
@@ -120,9 +109,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-
           const SizedBox(height: 30),
-
           Center(
             child: Column(
               children: [
@@ -144,8 +131,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Nombre (si existe)
                 if (nombre.isNotEmpty) ...[
                   Text(
                     nombre,
@@ -157,8 +142,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                   ),
                   const SizedBox(height: 4),
                 ],
-
-                // Correo
                 Text(
                   email,
                   style: const TextStyle(
@@ -170,38 +153,31 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 32),
-
           _menuItem(
             icon: Icons.person_outline,
             title: "Editar información personal",
             onTap: () => _navigate(context, const EditProfileScreen()),
           ),
-
           _menuItem(
             icon: Icons.location_on_outlined,
             title: "Mis direcciones",
             onTap: () => _navigate(context, MyAddressesScreen()),
           ),
-
           _menuItem(
             icon: Icons.help_outline,
             title: "Ayuda",
-            onTap: () => _navigate(context, HelpScreen()),
+            onTap: () => _navigate(context, const HelpScreen()),
           ),
-
           _menuItem(
             icon: Icons.logout,
             title: "Cerrar sesión",
             iconColor: Colors.red,
             iconBg: const Color(0xFFFEF2F2),
             titleColor: Colors.red,
-            onTap: () => _logout(context),
+            onTap: () => LogoutHelper.confirmarCierreSesion(context),
           ),
-
           const SizedBox(height: 40),
-
         ],
       ),
     );

@@ -3,7 +3,6 @@ import '../../../services/address_service.dart';
 import '../../../core/theme/app_theme.dart';
 
 class AddEditAddressScreen extends StatefulWidget {
-
   final Map? address;
 
   const AddEditAddressScreen({super.key, this.address});
@@ -13,7 +12,6 @@ class AddEditAddressScreen extends StatefulWidget {
 }
 
 class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
-
   final AddressService _service = AddressService();
   final _formKey = GlobalKey<FormState>();
 
@@ -57,6 +55,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       ok = await _service.createAddress(data);
     }
     setState(() => loading = false);
+    if (!mounted) return;
     if (ok) Navigator.pop(context, true);
   }
 
@@ -70,12 +69,12 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(
-        fontSize: 17,           // <-- subido de 15 a 17
+        fontSize: 17,
         color: Colors.black54,
         fontWeight: FontWeight.w500,
       ),
       floatingLabelStyle: const TextStyle(
-        fontSize: 15,           // <-- subido de 14 a 15 cuando flota arriba
+        fontSize: 15,
         color: AppTheme.primaryOrange,
         fontWeight: FontWeight.w600,
       ),
@@ -107,33 +106,24 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Colors.red, width: 1.8),
       ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
         title: Text(editMode ? "Editar dirección" : "Nueva dirección"),
       ),
-
       body: SingleChildScrollView(
-
         padding: const EdgeInsets.all(20),
-
         child: Form(
-
           key: _formKey,
-
           child: Column(
-
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
-
               Center(
                 child: Column(
                   children: [
@@ -202,7 +192,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
               const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
-                value: tipoVivienda,
+                initialValue: tipoVivienda,
                 style: const TextStyle(
                   fontSize: 15,
                   color: Colors.black87,
@@ -215,7 +205,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 borderRadius: BorderRadius.circular(10),
                 items: const [
                   DropdownMenuItem(value: "Casa", child: Text("Casa")),
-                  DropdownMenuItem(value: "Apartamento", child: Text("Apartamento")),
+                  DropdownMenuItem(
+                    value: "Apartamento",
+                    child: Text("Apartamento"),
+                  ),
                   DropdownMenuItem(
                     value: "Oficina/Local comercial",
                     child: Text("Oficina / Local comercial"),
@@ -266,7 +259,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                     backgroundColor: AppTheme.primaryOrange,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor:
-                        AppTheme.primaryOrange.withOpacity(0.6),
+                        AppTheme.primaryOrange.withValues(alpha: 0.6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -282,7 +275,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                           ),
                         )
                       : Text(
-                          editMode ? "Actualizar dirección" : "Guardar dirección",
+                          editMode
+                              ? "Actualizar dirección"
+                              : "Guardar dirección",
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -292,16 +287,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
               ),
 
               const SizedBox(height: 20),
-
             ],
-
           ),
-
         ),
-
       ),
-
     );
-
   }
 }

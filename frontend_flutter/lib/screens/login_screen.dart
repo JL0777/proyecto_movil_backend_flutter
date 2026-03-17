@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.45)),
+            child: Container(color: Colors.black.withValues(alpha: 0.45)),
           ),
           SafeArea(
             child: Column(
@@ -228,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Olvidaste tu contraseña
                           GestureDetector(
                             onTap: () {
-                              // TODO: navegar a recuperar contraseña
+                              // Aquí podrías navegar a una pantalla de recuperación de contraseña
                             },
                             child: const Text(
                               '¿Olvidaste tu contraseña?',
