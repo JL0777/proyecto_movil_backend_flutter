@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import 'cliente/home_screen.dart';
 import 'admin/admin_home_screen.dart';
 import 'cocina/cocina_home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -143,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Tabs Login / Register
                           Container(
                             decoration: BoxDecoration(
                               color: const Color(0xFFEEEEEE),
@@ -198,7 +198,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Título de bienvenida
                           const Text(
                             'BIENVENIDO A MyMeal!',
                             style: TextStyle(
@@ -225,10 +224,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          // Olvidaste tu contraseña
+                          // Olvidaste tu contraseña — ahora navega
                           GestureDetector(
                             onTap: () {
-                              // Aquí podrías navegar a una pantalla de recuperación de contraseña
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ForgotPasswordScreen(),
+                                ),
+                              );
                             },
                             child: const Text(
                               '¿Olvidaste tu contraseña?',
@@ -289,7 +293,6 @@ class _LoginScreenState extends State<LoginScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        // Solo línea inferior, sin borde completo (igual a la imagen)
         border: const UnderlineInputBorder(),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.grey),
