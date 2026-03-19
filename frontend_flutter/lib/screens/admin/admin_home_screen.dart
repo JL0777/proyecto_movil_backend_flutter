@@ -6,6 +6,7 @@ import 'tabs/pedidos_tab.dart';
 import 'tabs/productos_tab.dart';
 import 'tabs/ventas_tab.dart';
 import 'tabs/usuarios_tab.dart';
+import 'tabs/categorias_tab.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -23,7 +24,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     'Pedidos realizados\ny listos',
     'Gestión de\nProductos',
     'Reporte de\nVentas',
-    'Gestión de\nClientes',
+    'Gestión de\nUsuarios',
+    'Gestión de\nCategorías',
   ];
 
   Widget _getSeccion() {
@@ -36,6 +38,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         return const VentasTab();
       case 3:
         return const UsuariosTab();
+      case 4:
+        return const CategoriasTab();
       default:
         return const PedidosTab();
     }
@@ -43,7 +47,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -52,7 +55,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
 
     return Scaffold(
-
       drawer: _AdminDrawer(
         seccionActual: _seccionActual,
         user: widget.user,
@@ -61,7 +63,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           Navigator.pop(context);
         },
       ),
-
       body: Column(
         children: [
           SizedBox(
@@ -97,15 +98,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           padding: const EdgeInsets.all(8),
                           child: Row(
                             children: [
-                              // Botón menú hamburguesa
                               Builder(
                                 builder: (context) => GestureDetector(
-                                  onTap: () => Scaffold.of(context).openDrawer(),
+                                  onTap: () =>
+                                      Scaffold.of(context).openDrawer(),
                                   child: Container(
                                     width: 45,
                                     height: 45,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.25),
+                                      color: Colors.white
+                                          .withValues(alpha: 0.25),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -127,15 +129,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   ),
                                 ),
                               ),
-                              // Botón logout
                               GestureDetector(
                                 onTap: () =>
-                                    LogoutHelper.confirmarCierreSesion(context),
+                                    LogoutHelper.confirmarCierreSesion(
+                                        context),
                                 child: Container(
                                   width: 45,
                                   height: 45,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.25),
+                                    color: Colors.white
+                                        .withValues(alpha: 0.25),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -155,9 +158,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ],
             ),
           ),
-
           const Divider(height: 1, color: Color(0xFFEEEEEE)),
-
           Expanded(child: _getSeccion()),
         ],
       ),
@@ -181,7 +182,6 @@ class _AdminDrawer extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          // Header del drawer
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(
@@ -236,10 +236,7 @@ class _AdminDrawer extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 8),
-
-          // Items del menú
           _drawerItem(
             context: context,
             icon: Icons.receipt_long_outlined,
@@ -261,13 +258,16 @@ class _AdminDrawer extends StatelessWidget {
           _drawerItem(
             context: context,
             icon: Icons.people_outline,
-            titulo: 'Gestión de clientes',
+            titulo: 'Gestión de usuarios',
             index: 3,
           ),
-
+          _drawerItem(
+            context: context,
+            icon: Icons.category_outlined,
+            titulo: 'Gestión de categorías',
+            index: 4,
+          ),
           const Spacer(),
-
-          // Cerrar sesión al fondo
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
@@ -293,7 +293,6 @@ class _AdminDrawer extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 8),
         ],
       ),

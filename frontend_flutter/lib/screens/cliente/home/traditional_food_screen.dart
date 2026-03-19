@@ -1,106 +1,107 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../services/categoria_service.dart';
+import 'categoria_screen.dart';
 
-class TraditionalFoodScreen extends StatelessWidget {
+class TraditionalFoodScreen extends StatefulWidget {
   const TraditionalFoodScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-      children: const [
-        _Item(
-          label: 'Desayuno',
-          subtitle: 'Empieza el día con energía',
-          icon: Icons.wb_sunny_outlined,
-        ),
-        SizedBox(height: 12),
-        _Item(
-          label: 'Almuerzo',
-          subtitle: 'El plato fuerte del día',
-          icon: Icons.restaurant_outlined,
-        ),
-        SizedBox(height: 12),
-        _Item(
-          label: 'Cena',
-          subtitle: 'Cierra el día con sabor',
-          icon: Icons.nightlight_outlined,
-        ),
-      ],
-    );
-  }
+  State<TraditionalFoodScreen> createState() => _TraditionalFoodScreenState();
 }
 
-class _Item extends StatelessWidget {
-  final String label;
-  final String subtitle;
-  final IconData icon;
+class _TraditionalFoodScreenState extends State<TraditionalFoodScreen> {
+  final CategoriaService _service = CategoriaService();
+  List<dynamic> _categorias = [];
+  bool _loading = true;
 
-  const _Item({
-    required this.label,
-    required this.subtitle,
-    required this.icon,
-  });
+  final Map<String, IconData> _iconos = {
+    'desayuno': Icons.free_breakfast_outlined,
+    'almuerzo': Icons.restaurant_outlined,
+    'cena': Icons.dinner_dining_outlined,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _cargar();
+  }
+
+  Future<void> _cargar() async {
+    try {
+      final data = await _service.getByTipo('tradicional');
+      setState(() {
+        _categorias = data;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(icon, color: const Color(0xFF1A1A1A), size: 26),
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+      );
+    }
+
+    if (_categorias.isEmpty) {
+      return const Center(
+        child: Text(
+          'No hay categorías disponibles',
+          style: TextStyle(color: Colors.grey),
         ),
-        title: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A1A),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: _categorias.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final cat = _categorias[index];
+        final nombre = cat['nombre'] as String;
+        final icono = _iconos[nombre.toLowerCase()] ??
+            Icons.restaurant_outlined;
+
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 12,
           ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            subtitle,
+          leading: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3ED),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icono, color: const Color(0xFFE8651A), size: 30),
+          ),
+          title: Text(
+            nombre.toUpperCase(),
             style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF888888),
-              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              letterSpacing: 0.5,
             ),
           ),
-        ),
-        trailing: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: AppTheme.lightOrange,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
+          trailing: const Icon(
             Icons.chevron_right,
-            color: AppTheme.primaryOrange,
-            size: 22,
+            color: Color(0xFFE8651A),
           ),
-        ),
-      ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CategoriaScreen(categoria: cat),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
