@@ -11,7 +11,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-
   final UserService _userService = UserService();
 
   final _nameController = TextEditingController();
@@ -29,7 +28,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _editingPhone = false;
   bool _editingPassword = false;
 
-  Map<String,dynamic>? user;
+  Map<String, dynamic>? user;
 
   @override
   void initState() {
@@ -62,8 +61,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isValidColombianPhone(String number) {
     if (!RegExp(r'^\d+$').hasMatch(number)) return false;
     if (number.startsWith('3') && number.length == 10) return true;
-    if (number.length == 7 && RegExp(r'^[1245678]').hasMatch(number)) return true;
+    if (number.length == 7 && RegExp(r'^[1245678]').hasMatch(number))
+      return true;
     return false;
+  }
+
+  bool _isPasswordStrong(String password) {
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasNumber = password.contains(RegExp(r'[0-9]'));
+    final hasMinLength = password.length >= 8;
+    return hasUppercase && hasNumber && hasMinLength;
   }
 
   Future<void> _updateName() async {
@@ -84,25 +91,232 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  // Paso 1: solicitar código al nuevo correo
   Future<void> _updateEmail() async {
-    String email = _emailController.text.trim();
+    String newEmail = _emailController.text.trim();
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email)) {
+    if (!emailRegex.hasMatch(newEmail)) {
       _showMessage("Correo inválido");
       return;
     }
+    if (newEmail == user!["email"]) {
+      _showMessage("El nuevo correo debe ser diferente al actual");
+      return;
+    }
     setState(() => _loading = true);
-    final result = await _userService.updateEmail(user!["email"], email);
+    final result = await _userService.solicitarCodigoEmail(newEmail);
     if (!mounted) return;
     setState(() => _loading = false);
     if (result["success"]) {
-      await _loadUser();
-      setState(() => _editingEmail = false);
-      _showMessage("Correo actualizado", ok: true);
+      // Mostrar dialog para ingresar el código
+      _mostrarDialogCodigoEmail(newEmail);
     } else {
       _showMessage(result["error"]);
     }
   }
+
+void _mostrarDialogCodigoEmail(String newEmail) {
+  final _codigoController = TextEditingController();
+  bool _loadingDialog = false;
+  bool _reenviando = false;
+  int _segundosRestantes = 30;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setStateDialog) {
+
+          // Arrancar el contador la primera vez
+          if (_segundosRestantes == 30) {
+            Future.doWhile(() async {
+              await Future.delayed(const Duration(seconds: 1));
+              if (!context.mounted) return false;
+              setStateDialog(() {
+                if (_segundosRestantes > 0) _segundosRestantes--;
+              });
+              return _segundosRestantes > 0;
+            });
+          }
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              "Verifica tu nuevo correo",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Enviamos un código de 6 dígitos a $newEmail. Ingrésalo para confirmar el cambio.",
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _codigoController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 10,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    labelText: 'Código',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryOrange,
+                        width: 1.8,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Botón reenviar o contador
+                Center(
+                  child: _reenviando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryOrange,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : _segundosRestantes > 0
+                          ? Text(
+                              "¿No llegó? Reenviar en $_segundosRestantes s",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black45,
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () async {
+                                setStateDialog(() {
+                                  _reenviando = true;
+                                });
+                                final result = await _userService
+                                    .solicitarCodigoEmail(newEmail);
+                                if (!context.mounted) return;
+                                setStateDialog(() {
+                                  _reenviando = false;
+                                  _segundosRestantes = 30;
+                                });
+                                if (result['success']) {
+                                  _codigoController.clear();
+                                  // Reiniciar el contador
+                                  Future.doWhile(() async {
+                                    await Future.delayed(
+                                        const Duration(seconds: 1));
+                                    if (!context.mounted) return false;
+                                    setStateDialog(() {
+                                      if (_segundosRestantes > 0) {
+                                        _segundosRestantes--;
+                                      }
+                                    });
+                                    return _segundosRestantes > 0;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Nuevo código enviado'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(result['error']),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text(
+                                '¿No recibiste el código? Reenviar',
+                                style: TextStyle(
+                                  color: AppTheme.primaryOrange,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "Cancelar",
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _loadingDialog
+                    ? null
+                    : () async {
+                        if (_codigoController.text.trim().isEmpty) return;
+                        setStateDialog(() => _loadingDialog = true);
+                        final result = await _userService.updateEmail(
+                          user!["email"],
+                          newEmail,
+                          _codigoController.text.trim(),
+                        );
+                        setStateDialog(() => _loadingDialog = false);
+                        if (!context.mounted) return;
+                        if (result["success"]) {
+                          Navigator.pop(context);
+                          await _loadUser();
+                          setState(() => _editingEmail = false);
+                          _showMessage("Correo actualizado", ok: true);
+                        } else {
+                          _showMessage(result["error"]);
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryOrange,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: _loadingDialog
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text("Confirmar"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   Future<void> _updatePhone() async {
     String phone = _phoneController.text.trim();
@@ -127,8 +341,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _updatePassword() async {
-    if (_newPasswordController.text.length < 6) {
-      _showMessage("La contraseña debe tener mínimo 6 caracteres");
+    if (!_isPasswordStrong(_newPasswordController.text)) {
+      _showMessage(
+        "La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.",
+      );
       return;
     }
     if (_newPasswordController.text != _confirmPasswordController.text) {
@@ -173,7 +389,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       filled: true,
       fillColor: enabled ? Colors.white : Colors.grey.shade100,
-      prefixIcon: prefixWidget ??
+      prefixIcon:
+          prefixWidget ??
           (icon != null
               ? Icon(icon, color: Colors.grey.shade600, size: 22)
               : null),
@@ -235,9 +452,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(width: 8),
             Container(
               decoration: BoxDecoration(
-                color: isEditing
-                    ? Colors.grey.shade100
-                    : AppTheme.lightOrange,
+                color: isEditing ? Colors.grey.shade100 : AppTheme.lightOrange,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isEditing
@@ -249,7 +464,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onPressed: onEditToggle,
                 icon: Icon(
                   isEditing ? Icons.close : Icons.edit,
-                  color: isEditing ? Colors.grey.shade600 : AppTheme.primaryOrange,
+                  color: isEditing
+                      ? Colors.grey.shade600
+                      : AppTheme.primaryOrange,
                   size: 20,
                 ),
               ),
@@ -272,10 +489,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               child: const Text(
                 "Guardar",
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -299,43 +513,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final nombre = user!['nombre'] ?? '';
     final email = user!['email'] ?? '';
 
     return Scaffold(
-
-      appBar: AppBar(
-        title: const Text("Editar perfil"),
-      ),
+      appBar: AppBar(title: const Text("Editar perfil")),
 
       body: SingleChildScrollView(
-
         padding: const EdgeInsets.all(20),
 
         child: Column(
-
           crossAxisAlignment: CrossAxisAlignment.center,
 
           children: [
-
-            // Ícono de perfil naranja
             Container(
               width: 90,
               height: 90,
               decoration: BoxDecoration(
                 color: AppTheme.lightOrange,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppTheme.primaryOrange,
-                  width: 2.5,
-                ),
+                border: Border.all(color: AppTheme.primaryOrange, width: 2.5),
               ),
               child: const Icon(
                 Icons.person,
@@ -346,7 +547,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 10),
 
-            // Nombre (si existe)
             if (nombre.isNotEmpty) ...[
               Text(
                 nombre,
@@ -359,7 +559,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 4),
             ],
 
-            // Correo
             Text(
               email,
               style: const TextStyle(
@@ -386,7 +585,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: "Correo",
               controller: _emailController,
               isEditing: _editingEmail,
-              onEditToggle: () => setState(() => _editingEmail = !_editingEmail),
+              onEditToggle: () =>
+                  setState(() => _editingEmail = !_editingEmail),
               onSave: _updateEmail,
               type: TextInputType.emailAddress,
               icon: Icons.email_outlined,
@@ -398,11 +598,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: "Teléfono",
               controller: _phoneController,
               isEditing: _editingPhone,
-              onEditToggle: () => setState(() => _editingPhone = !_editingPhone),
+              onEditToggle: () =>
+                  setState(() => _editingPhone = !_editingPhone),
               onSave: _updatePhone,
               type: TextInputType.phone,
               prefixWidget: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
                 child: Text(
                   "+57",
                   style: TextStyle(
@@ -472,8 +676,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _passwordField("Contraseña actual", _currentPasswordController),
               const SizedBox(height: 12),
               _passwordField("Nueva contraseña", _newPasswordController),
+              const SizedBox(height: 4),
+              const Text(
+                'Mínimo 8 caracteres, una mayúscula y un número.',
+                style: TextStyle(fontSize: 11, color: Colors.black45),
+              ),
               const SizedBox(height: 12),
-              _passwordField("Confirmar contraseña", _confirmPasswordController),
+              _passwordField(
+                "Confirmar contraseña",
+                _confirmPasswordController,
+              ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -489,10 +701,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: const Text(
                     "Guardar contraseña",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -505,15 +714,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
 
             const SizedBox(height: 30),
-
           ],
-
         ),
-
       ),
-
     );
-
   }
-
 }

@@ -47,10 +47,46 @@ class UserService {
     };
   }
 
+  // ======================
+  // SOLICITAR CÓDIGO PARA CAMBIO DE EMAIL
+  // ======================
+  Future<Map<String, dynamic>> solicitarCodigoEmail(String newEmail) async {
 
+    final token = await _getToken();
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/email/solicitar-codigo"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode({
+        "newEmail": newEmail
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {
+        "success": true,
+        "message": data["message"]
+      };
+    }
+
+    return {
+      "success": false,
+      "error": data["error"]
+    };
+  }
+
+  // ======================
+  // VERIFICAR CÓDIGO Y ACTUALIZAR EMAIL
+  // ======================
   Future<Map<String, dynamic>> updateEmail(
       String currentEmail,
-      String newEmail) async {
+      String newEmail,
+      String codigo) async {
 
     final token = await _getToken();
 
@@ -62,7 +98,8 @@ class UserService {
       },
       body: jsonEncode({
         "currentEmail": currentEmail,
-        "newEmail": newEmail
+        "newEmail": newEmail,
+        "codigo": codigo,
       }),
     );
 
@@ -86,7 +123,6 @@ class UserService {
       "error": data["error"]
     };
   }
-
 
   Future<Map<String, dynamic>> updatePhone(
       String currentPhone,
@@ -126,7 +162,6 @@ class UserService {
       "error": data["error"]
     };
   }
-
 
   Future<Map<String, dynamic>> updatePassword(
       String currentPassword,

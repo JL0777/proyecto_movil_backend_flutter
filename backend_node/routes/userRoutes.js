@@ -5,6 +5,7 @@ const verifyToken = require('../middleware/authMiddleware');
 
 // Cliente
 router.put('/name', verifyToken, userController.updateName);
+router.post('/email/solicitar-codigo', verifyToken, userController.solicitarCodigoEmail);
 router.put('/email', verifyToken, userController.updateEmail);
 router.put('/phone', verifyToken, userController.updatePhone);
 router.put('/password', verifyToken, userController.updatePassword);

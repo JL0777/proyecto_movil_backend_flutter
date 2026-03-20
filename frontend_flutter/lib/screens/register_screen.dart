@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import '../services/auth_service.dart';
+import 'verify_register_code_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,7 +14,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final AuthService _authService = AuthService();
   bool _isLoading = false;
@@ -29,6 +31,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  bool _isPasswordStrong(String password) {
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasNumber = password.contains(RegExp(r'[0-9]'));
+    final hasMinLength = password.length >= 8;
+    return hasUppercase && hasNumber && hasMinLength;
+  }
+
   Future<void> _registrar() async {
     if (_emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -42,8 +51,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (_passwordController.text.length < 6) {
-      _mostrarError('La contraseña debe tener al menos 6 caracteres.');
+    if (!_isPasswordStrong(_passwordController.text)) {
+      _mostrarError(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.',
+      );
       return;
     }
 
@@ -60,23 +71,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Registro exitoso! Bienvenido a MyMeal 🎉'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VerifyRegisterCodeScreen(
+            email: _emailController.text.trim(),
+          ),
         ),
       );
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-      }
     } else {
       _mostrarError(result['error'] ?? 'Error al registrarse');
     }
@@ -151,15 +153,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const LoginScreen(),
+                                          builder: (context) =>
+                                              const LoginScreen(),
                                         ),
                                       );
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
                                       decoration: BoxDecoration(
                                         color: Colors.transparent,
-                                        borderRadius: BorderRadius.circular(30),
+                                        borderRadius:
+                                            BorderRadius.circular(30),
                                       ),
                                       child: const Text(
                                         'INICIAR SESION',
@@ -175,7 +180,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 Expanded(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFE8651A),
                                       borderRadius: BorderRadius.circular(30),
@@ -222,8 +228,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             isPassword: true,
                             isPasswordVisible: _passwordVisible,
                             onTogglePassword: () {
-                              setState(() => _passwordVisible = !_passwordVisible);
+                              setState(() =>
+                                  _passwordVisible = !_passwordVisible);
                             },
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Mínimo 8 caracteres, una mayúscula y un número.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.black45,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           _buildTextField(
@@ -232,9 +247,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             isPassword: true,
                             isPasswordVisible: _confirmPasswordVisible,
                             onTogglePassword: () {
-                              setState(
-                                () => _confirmPasswordVisible = !_confirmPasswordVisible,
-                              );
+                              setState(() => _confirmPasswordVisible =
+                                  !_confirmPasswordVisible);
                             },
                           ),
                           const SizedBox(height: 28),
@@ -252,7 +266,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 elevation: 0,
                               ),
                               child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
                                   : const Text(
                                       'REGISTRARSE',
                                       style: TextStyle(
@@ -297,7 +312,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
-                  isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  isPasswordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off,
                   color: Colors.grey,
                 ),
                 onPressed: onTogglePassword,

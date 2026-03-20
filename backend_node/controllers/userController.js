@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
-const { Usuario } = require('../models');
+const { Usuario, EmailChangeCode } = require('../models');
+const { enviarCodigoVerificacionEmail } = require('../utils/mailer');
 
 // ======================
 // ACTUALIZAR NOMBRE
@@ -34,10 +35,52 @@ exports.updateName = async (req, res) => {
 };
 
 // ======================
-// ACTUALIZAR EMAIL
+// SOLICITAR CÓDIGO PARA CAMBIO DE EMAIL
+// ======================
+exports.solicitarCodigoEmail = async (req, res) => {
+  const { newEmail } = req.body;
+  const userId = req.user.id;
+
+  if (!newEmail) {
+    return res.status(400).json({ error: "El nuevo correo es requerido" });
+  }
+
+  try {
+    const existing = await Usuario.findOne({ where: { email: newEmail } });
+    if (existing) {
+      return res.status(400).json({ error: "Ese correo ya está registrado" });
+    }
+
+    // Invalidar códigos anteriores para este correo
+    await EmailChangeCode.update(
+      { usado: true },
+      { where: { email: newEmail, usado: false } }
+    );
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const expira_en = new Date(Date.now() + 10 * 60 * 1000);
+
+    await EmailChangeCode.create({
+      email: newEmail,
+      codigo,
+      expira_en
+    });
+
+    await enviarCodigoVerificacionEmail(newEmail, codigo);
+
+    res.json({ success: true, message: 'Código enviado al nuevo correo' });
+
+  } catch (error) {
+    console.error("ERROR SOLICITAR CÓDIGO EMAIL:", error);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+};
+
+// ======================
+// VERIFICAR CÓDIGO Y ACTUALIZAR EMAIL
 // ======================
 exports.updateEmail = async (req, res) => {
-  const { currentEmail, newEmail } = req.body;
+  const { currentEmail, newEmail, codigo } = req.body;
   const userId = req.user.id;
 
   try {
@@ -51,6 +94,20 @@ exports.updateEmail = async (req, res) => {
     if (existing) {
       return res.status(400).json({ error: "Ese correo ya está registrado" });
     }
+
+    const registro = await EmailChangeCode.findOne({
+      where: { email: newEmail, codigo, usado: false }
+    });
+
+    if (!registro) {
+      return res.status(400).json({ error: "Código inválido" });
+    }
+
+    if (new Date() > new Date(registro.expira_en)) {
+      return res.status(400).json({ error: "El código ha expirado" });
+    }
+
+    await registro.update({ usado: true });
 
     user.email = newEmail;
     await user.save();

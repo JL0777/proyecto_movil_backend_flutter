@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/password_reset_service.dart';
-import 'login_screen.dart';
+import 'welcome_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -33,6 +33,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
+  bool _isPasswordStrong(String password) {
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasNumber = password.contains(RegExp(r'[0-9]'));
+    final hasMinLength = password.length >= 8;
+    return hasUppercase && hasNumber && hasMinLength;
+  }
+
   Future<void> _cambiarPassword() async {
     if (_passwordController.text.trim().isEmpty ||
         _confirmController.text.trim().isEmpty) {
@@ -45,8 +52,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return;
     }
 
-    if (_passwordController.text.trim().length < 6) {
-      _mostrarMensaje('La contraseña debe tener mínimo 6 caracteres');
+    if (!_isPasswordStrong(_passwordController.text.trim())) {
+      _mostrarMensaje(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.',
+      );
       return;
     }
 
@@ -65,7 +74,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
         (route) => false,
       );
     } else {
@@ -132,7 +141,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               color: Colors.black54,
                             ),
                           ),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Mínimo 8 caracteres, una mayúscula y un número.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.black45,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
                           TextField(
                             controller: _passwordController,
                             obscureText: !_passwordVisible,
@@ -143,7 +160,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 borderSide: BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Color(0xFFE8651A)),
+                                borderSide:
+                                    BorderSide(color: Color(0xFFE8651A)),
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -167,7 +185,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 borderSide: BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Color(0xFFE8651A)),
+                                borderSide:
+                                    BorderSide(color: Color(0xFFE8651A)),
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
