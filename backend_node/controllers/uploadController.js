@@ -35,7 +35,7 @@ exports.uploadImagen = (req, res) => {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
 
-  const ip = '10.10.162.20';
+  const ip = '192.168.0.11';
   const puerto = '3000';
   const url = `http://${ip}:${puerto}/uploads/${req.file.filename}`;
 
