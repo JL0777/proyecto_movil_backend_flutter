@@ -7,7 +7,7 @@ class AuthService {
   static const String baseUrl = '${AppConfig.baseUrl}/auth';
 
   // ======================
-  // REGISTER
+  // REGISTER — solo envía código
   // ======================
   Future<Map<String, dynamic>> register({
     required String email,
@@ -27,11 +27,85 @@ class AuthService {
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         return {
           'success': true,
           'message': data['message'],
         };
+      }
+
+      return {
+        'success': false,
+        'error': data['error'] ?? 'Error desconocido',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Error de conexión: $e',
+      };
+    }
+  }
+
+  // ======================
+  // VERIFICAR CÓDIGO Y CREAR CUENTA
+  // ======================
+  Future<Map<String, dynamic>> verificarRegistro({
+    required String email,
+    required String codigo,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/verificar-registro'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'codigo': codigo,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        await SessionManager.saveSession(
+          token: data['token'],
+          user: data['user'],
+        );
+        return {
+          'success': true,
+          'user': data['user'],
+          'message': data['message'],
+        };
+      }
+
+      return {
+        'success': false,
+        'error': data['error'] ?? 'Error desconocido',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Error de conexión: $e',
+      };
+    }
+  }
+
+  // ======================
+  // REENVIAR CÓDIGO DE REGISTRO
+  // ======================
+  Future<Map<String, dynamic>> reenviarCodigoRegistro({
+    required String email,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/reenviar-codigo-registro'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': data['message']};
       }
 
       return {
@@ -66,13 +140,10 @@ class AuthService {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-
-        // 🔥 Guardamos sesión automáticamente aquí
         await SessionManager.saveSession(
           token: data['token'],
           user: data['user'],
         );
-
         return {
           'success': true,
           'user': data['user'],
