@@ -105,3 +105,17 @@ exports.destroy = async (req, res) => {
     res.status(500).json({ error: "Error del servidor" });
   }
 };
+
+exports.getByTipoPublico = async (req, res) => {
+  try {
+    const ingredientes = await Ingrediente.findAll({
+      where: { tipo: req.params.tipo },
+      attributes: ['id', 'nombre', 'cantidad', 'precio', 'tipo'],
+      order: [['nombre', 'ASC']]
+    });
+    res.json(ingredientes);
+  } catch (error) {
+    console.error('ERROR GET BY TIPO PUBLICO:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};

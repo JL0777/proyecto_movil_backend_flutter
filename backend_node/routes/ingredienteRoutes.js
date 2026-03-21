@@ -3,6 +3,9 @@ const router = express.Router();
 const ingredienteController = require('../controllers/ingredienteController');
 const verifyToken = require('../middleware/authMiddleware');
 
+// Ruta pública
+router.get('/publico/tipo/:tipo', ingredienteController.getByTipoPublico);
+
 // Cliente
 router.get('/tipo/:tipo', verifyToken, ingredienteController.getByTipo);
 

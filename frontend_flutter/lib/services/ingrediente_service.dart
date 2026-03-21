@@ -10,7 +10,7 @@ class IngredienteService {
     final token = await SessionManager.getToken();
     return {
       "Content-Type": "application/json",
-      "Authorization": "Bearer $token"
+      "Authorization": "Bearer $token",
     };
   }
 
@@ -67,5 +67,15 @@ class IngredienteService {
     );
 
     return response.statusCode == 200;
+  }
+
+  Future<List<dynamic>> getByTipoPublico(String tipo) async {
+    final response = await http.get(Uri.parse("$baseUrl/publico/tipo/$tipo"));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Error cargando ingredientes");
   }
 }

@@ -141,7 +141,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
     if (imagen == null) return;
 
-    // Confirmación antes de subir
+    // Confirmación
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -186,6 +186,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
     setState(() => _subiendoFoto = true);
 
+    // Eliminar foto anterior si existe
+    final fotoAnterior = user?['fotoPerfil'];
+    if (fotoAnterior != null && fotoAnterior.toString().isNotEmpty) {
+      await _uploadService.eliminarImagen(fotoAnterior);
+    }
+
+    // Subir nueva foto
     final url = await _uploadService.subirImagen(File(imagen.path));
 
     if (url != null) {
@@ -221,50 +228,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   Future<void> _eliminarFoto() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text(
-              '¿Eliminar foto?',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Se eliminará tu foto de perfil y volverá al ícono por defecto. ¿Deseas continuar?',
-          style: TextStyle(fontSize: 14, color: Colors.black54),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text('Sí, eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
     setState(() => _subiendoFoto = true);
+
+    final fotoAnterior = user?['fotoPerfil'];
+    if (fotoAnterior != null && fotoAnterior.toString().isNotEmpty) {
+      await _uploadService.eliminarImagen(fotoAnterior);
+    }
+
     final result = await _userService.updateFotoPerfil('');
     if (result['success']) {
       await _loadUser();
@@ -282,6 +252,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         );
       }
     }
+
     setState(() => _subiendoFoto = false);
   }
 
