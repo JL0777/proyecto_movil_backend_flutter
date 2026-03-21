@@ -13,7 +13,10 @@ module.exports = (sequelize, DataTypes) => {
                 'carbohidrato',
                 'vegetal',
                 'bebida',
-                'complemento'
+                'complemento',
+                'pan',  
+                'salsa',    
+                'extra'     
             ),
             allowNull: false
         },

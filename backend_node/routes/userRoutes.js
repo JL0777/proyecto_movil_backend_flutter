@@ -9,6 +9,8 @@ router.post('/email/solicitar-codigo', verifyToken, userController.solicitarCodi
 router.put('/email', verifyToken, userController.updateEmail);
 router.put('/phone', verifyToken, userController.updatePhone);
 router.put('/password', verifyToken, userController.updatePassword);
+router.put('/foto-perfil', verifyToken, userController.updateFotoPerfil);
+
 
 // Admin
 router.get('/', verifyToken, userController.getAllUsers);

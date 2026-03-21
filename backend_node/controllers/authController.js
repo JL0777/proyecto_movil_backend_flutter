@@ -7,10 +7,9 @@ require('dotenv').config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // ======================
-// REGISTRO — guarda datos y envía código
+// REGISTRO
 // ======================
 exports.register = async (req, res) => {
-
   const { email, password, telefono } = req.body;
 
   if (!email || !password) {
@@ -18,27 +17,20 @@ exports.register = async (req, res) => {
   }
 
   try {
-
     const existing = await Usuario.findOne({ where: { email } });
-
     if (existing) {
       return res.status(400).json({ error: 'Este correo ya está registrado' });
     }
 
-    // Invalidar códigos anteriores del mismo correo
     await EmailVerificationCode.update(
       { usado: true },
       { where: { email, usado: false } }
     );
 
-    // Hashear password antes de guardar temporalmente
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generar código de 6 dígitos
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
     const expira_en = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Guardar datos temporalmente
     await EmailVerificationCode.create({
       email,
       codigo,
@@ -47,7 +39,6 @@ exports.register = async (req, res) => {
       expira_en
     });
 
-    // Enviar correo de verificación de cuenta
     await enviarCodigoVerificacionCuenta(email, codigo);
 
     res.status(200).json({
@@ -59,14 +50,12 @@ exports.register = async (req, res) => {
     console.error("ERROR REGISTER:", error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
-
 };
 
 // ======================
 // VERIFICAR CÓDIGO Y CREAR CUENTA
 // ======================
 exports.verificarRegistro = async (req, res) => {
-
   const { email, codigo } = req.body;
 
   if (!email || !codigo) {
@@ -74,9 +63,7 @@ exports.verificarRegistro = async (req, res) => {
   }
 
   try {
-
     const existing = await Usuario.findOne({ where: { email } });
-
     if (existing) {
       return res.status(400).json({ error: 'Este correo ya está registrado' });
     }
@@ -93,10 +80,8 @@ exports.verificarRegistro = async (req, res) => {
       return res.status(400).json({ error: 'El código ha expirado' });
     }
 
-    // Marcar código como usado
     await registro.update({ usado: true });
 
-    // Crear la cuenta con los datos guardados
     const user = await Usuario.create({
       email: registro.email,
       password: registro.password,
@@ -104,7 +89,6 @@ exports.verificarRegistro = async (req, res) => {
       rol: 'cliente'
     });
 
-    // Generar token para login automático
     const token = jwt.sign(
       { id: user.id, email: user.email, rol: user.rol },
       JWT_SECRET,
@@ -120,7 +104,8 @@ exports.verificarRegistro = async (req, res) => {
         email: user.email,
         nombre: user.nombre,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
 
@@ -128,14 +113,12 @@ exports.verificarRegistro = async (req, res) => {
     console.error("ERROR VERIFICAR REGISTRO:", error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
-
 };
 
 // ======================
 // REENVIAR CÓDIGO DE REGISTRO
 // ======================
 exports.reenviarCodigoRegistro = async (req, res) => {
-
   const { email } = req.body;
 
   if (!email) {
@@ -143,7 +126,6 @@ exports.reenviarCodigoRegistro = async (req, res) => {
   }
 
   try {
-
     const registroExistente = await EmailVerificationCode.findOne({
       where: { email, usado: false },
       order: [['createdAt', 'DESC']]
@@ -155,17 +137,14 @@ exports.reenviarCodigoRegistro = async (req, res) => {
       });
     }
 
-    // Invalidar códigos anteriores
     await EmailVerificationCode.update(
       { usado: true },
       { where: { email, usado: false } }
     );
 
-    // Generar nuevo código
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
     const expira_en = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Crear nuevo registro con los mismos datos pero nuevo código
     await EmailVerificationCode.create({
       email: registroExistente.email,
       codigo,
@@ -174,7 +153,6 @@ exports.reenviarCodigoRegistro = async (req, res) => {
       expira_en
     });
 
-    // Enviar correo de verificación de cuenta
     await enviarCodigoVerificacionCuenta(email, codigo);
 
     res.json({ success: true, message: 'Nuevo código enviado al correo' });
@@ -183,14 +161,12 @@ exports.reenviarCodigoRegistro = async (req, res) => {
     console.error("ERROR REENVIAR CÓDIGO REGISTRO:", error);
     res.status(500).json({ error: 'Error al reenviar el código' });
   }
-
 };
 
 // ======================
 // LOGIN
 // ======================
 exports.login = async (req, res) => {
-
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -198,7 +174,6 @@ exports.login = async (req, res) => {
   }
 
   try {
-
     const user = await Usuario.findOne({ where: { email } });
 
     if (!user) {
@@ -226,7 +201,8 @@ exports.login = async (req, res) => {
         email: user.email,
         nombre: user.nombre,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
 
@@ -234,5 +210,4 @@ exports.login = async (req, res) => {
     console.error("ERROR LOGIN:", error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
-
 };

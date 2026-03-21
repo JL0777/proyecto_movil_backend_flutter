@@ -9,21 +9,49 @@ class GestionIngredientesScreen extends StatefulWidget {
       _GestionIngredientesScreenState();
 }
 
-class _GestionIngredientesScreenState
-    extends State<GestionIngredientesScreen> {
+class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
+    with SingleTickerProviderStateMixin {
   final IngredienteService _service = IngredienteService();
 
   List<dynamic> _ingredientes = [];
   bool _loading = true;
-  String? _tipoSeleccionado;
+  late TabController _tabController;
 
-  final List<String> _tipos = [
+  // Filtros por tab
+  String? _filtroTradicional;
+  String? _filtroRapida;
+  String? _filtroComunes;
+
+  final List<String> _tiposTradicional = [
+    'proteina',
+    'legumbre',
+    'carbohidrato',
+    'vegetal',
+  ];
+
+  final List<String> _tiposRapida = [
+    'pan',
+    'proteina',
+    'salsa',
+    'vegetal',
+    'extra',
+  ];
+
+  final List<String> _tiposComunes = [
+    'bebida',
+    'complemento',
+  ];
+
+  final List<String> _todosLosTipos = [
     'proteina',
     'legumbre',
     'carbohidrato',
     'vegetal',
     'bebida',
     'complemento',
+    'pan',
+    'salsa',
+    'extra',
   ];
 
   final Map<String, String> _labelTipo = {
@@ -33,6 +61,9 @@ class _GestionIngredientesScreenState
     'vegetal': 'Vegetal',
     'bebida': 'Bebida',
     'complemento': 'Complemento',
+    'pan': 'Pan',
+    'salsa': 'Salsa',
+    'extra': 'Extra',
   };
 
   final Map<String, Color> _coloresTipo = {
@@ -42,18 +73,68 @@ class _GestionIngredientesScreenState
     'vegetal': Colors.teal,
     'bebida': Colors.blue,
     'complemento': Colors.purple,
+    'pan': Colors.brown,
+    'salsa': Colors.red,
+    'extra': Colors.indigo,
   };
 
-  List<dynamic> get _ingredientesFiltrados => _tipoSeleccionado == null
-      ? _ingredientes
-      : _ingredientes
-          .where((i) => i['tipo'] == _tipoSeleccionado)
-          .toList();
+  List<dynamic> _ingredientesFiltrados(int tabIndex) {
+    List<String> tipos;
+    String? filtro;
+
+    if (tabIndex == 0) {
+      tipos = _tiposTradicional;
+      filtro = _filtroTradicional;
+    } else if (tabIndex == 1) {
+      tipos = _tiposRapida;
+      filtro = _filtroRapida;
+    } else {
+      tipos = _tiposComunes;
+      filtro = _filtroComunes;
+    }
+
+    final base =
+        _ingredientes.where((i) => tipos.contains(i['tipo'])).toList();
+
+    if (filtro != null) {
+      return base.where((i) => i['tipo'] == filtro).toList();
+    }
+
+    return base;
+  }
+
+  List<String> _tiposPorTab(int tabIndex) {
+    if (tabIndex == 0) return _tiposTradicional;
+    if (tabIndex == 1) return _tiposRapida;
+    return _tiposComunes;
+  }
+
+  String? _filtroActual(int tabIndex) {
+    if (tabIndex == 0) return _filtroTradicional;
+    if (tabIndex == 1) return _filtroRapida;
+    return _filtroComunes;
+  }
+
+  void _setFiltro(int tabIndex, String? valor) {
+    setState(() {
+      if (tabIndex == 0) _filtroTradicional = valor;
+      if (tabIndex == 1) _filtroRapida = valor;
+      if (tabIndex == 2) _filtroComunes = valor;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _cargar();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _cargar() async {
@@ -75,7 +156,9 @@ class _GestionIngredientesScreenState
         text: ingrediente?['cantidad']?.toString() ?? '');
     final precioController = TextEditingController(
         text: ingrediente?['precio']?.toString() ?? '0');
-    String tipo = ingrediente?['tipo'] ?? _tipos.first;
+
+    String tipo = ingrediente?['tipo'] ??
+        _tiposPorTab(_tabController.index).first;
 
     showModalBottomSheet(
       context: context,
@@ -147,7 +230,7 @@ class _GestionIngredientesScreenState
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Precio base',
-                    helperText: 'Precio para la cantidad base',
+                    helperText: 'Precio para la cantidad base (IVA incluido)',
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -176,10 +259,23 @@ class _GestionIngredientesScreenState
                     child: DropdownButton<String>(
                       value: tipo,
                       isExpanded: true,
-                      items: _tipos
+                      items: _todosLosTipos
                           .map((t) => DropdownMenuItem(
                                 value: t,
-                                child: Text(_labelTipo[t] ?? t),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: _coloresTipo[t] ?? Colors.grey,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(_labelTipo[t] ?? t),
+                                  ],
+                                ),
                               ))
                           .toList(),
                       onChanged: (v) =>
@@ -205,8 +301,7 @@ class _GestionIngredientesScreenState
                       if (cantidadController.text.trim().isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                                'La cantidad base es requerida'),
+                            content: Text('La cantidad base es requerida'),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -260,8 +355,7 @@ class _GestionIngredientesScreenState
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
                       ingrediente == null
@@ -368,6 +462,295 @@ class _GestionIngredientesScreenState
     );
   }
 
+  Widget _buildSelect(int tabIndex) {
+    final tipos = _tiposPorTab(tabIndex);
+    final filtroActual = _filtroActual(tabIndex);
+    final lista = _ingredientesFiltrados(tabIndex);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String?>(
+                value: filtroActual,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Color(0xFFE8651A),
+                ),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text('Todos los tipos'),
+                  ),
+                  ...tipos.map((t) => DropdownMenuItem<String?>(
+                        value: t,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: _coloresTipo[t] ?? Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(_labelTipo[t] ?? t),
+                          ],
+                        ),
+                      )),
+                ],
+                onChanged: (v) => _setFiltro(tabIndex, v),
+              ),
+            ),
+          ),
+        ),
+
+        // Contador y limpiar filtro
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                '${lista.length} ingrediente${lista.length != 1 ? 's' : ''}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (filtroActual != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _setFiltro(tabIndex, null),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Limpiar filtro',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFE8651A),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.close,
+                          size: 12,
+                          color: Color(0xFFE8651A),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLista(int tabIndex) {
+    final lista = _ingredientesFiltrados(tabIndex);
+
+    if (lista.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.fastfood_outlined,
+                size: 60, color: Colors.grey.shade400),
+            const SizedBox(height: 12),
+            Text(
+              'No hay ingredientes aquí',
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Toca + para agregar uno',
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _cargar,
+      color: const Color(0xFFE8651A),
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        itemCount: lista.length,
+        itemBuilder: (context, index) {
+          final ing = lista[index];
+          final precio = double.parse(ing['precio'].toString());
+          final cantidad = ing['cantidad'] != null
+              ? double.parse(ing['cantidad'].toString())
+              : 0.0;
+          final color = _coloresTipo[ing['tipo']] ?? Colors.grey;
+          final precioPorGramo = cantidad > 0 ? precio / cantidad : 0.0;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.restaurant_outlined,
+                  color: color,
+                  size: 22,
+                ),
+              ),
+              title: Text(
+                ing['nombre'],
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Base: ${cantidad.toStringAsFixed(0)}g/ml',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          _labelTipo[ing['tipo']] ?? ing['tipo'],
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${precio.toStringAsFixed(0)} · \$${precioPorGramo.toStringAsFixed(1)}/g',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFE8651A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => _mostrarFormulario(ingrediente: ing),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3ED),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.edit_outlined,
+                        color: Color(0xFFE8651A),
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _eliminar(ing),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -375,6 +758,92 @@ class _GestionIngredientesScreenState
         title: const Text('Gestión de ingredientes'),
         backgroundColor: const Color(0xFFE8651A),
         foregroundColor: Colors.white,
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          tabs: [
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Tradicional'),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${_ingredientesFiltrados(0).length}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Rápida'),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${_ingredientesFiltrados(1).length}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Comunes'),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${_ingredientesFiltrados(2).length}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _mostrarFormulario(),
@@ -383,324 +852,20 @@ class _GestionIngredientesScreenState
       ),
       body: _loading
           ? const Center(
-              child:
-                  CircularProgressIndicator(color: Color(0xFFE8651A)),
+              child: CircularProgressIndicator(color: Color(0xFFE8651A)),
             )
-          : Column(
-              children: [
-
-                // Select de tipo
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Container(
-                    width: double.infinity,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String?>(
-                        value: _tipoSeleccionado,
-                        isExpanded: true,
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Color(0xFFE8651A),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String?>(
-                            value: null,
-                            child: Text('Todos los tipos'),
-                          ),
-                          ..._tipos.map((t) => DropdownMenuItem<String?>(
-                                value: t,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        color: _coloresTipo[t] ??
-                                            Colors.grey,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(_labelTipo[t] ?? t),
-                                  ],
-                                ),
-                              )),
-                        ],
-                        onChanged: (v) =>
-                            setState(() => _tipoSeleccionado = v),
-                      ),
-                    ),
-                  ),
+          : TabBarView(
+              controller: _tabController,
+              children: List.generate(
+                3,
+                (tabIndex) => Column(
+                  children: [
+                    _buildSelect(tabIndex),
+                    const SizedBox(height: 8),
+                    Expanded(child: _buildLista(tabIndex)),
+                  ],
                 ),
-
-                // Contador y limpiar filtro
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${_ingredientesFiltrados.length} ingrediente${_ingredientesFiltrados.length != 1 ? 's' : ''}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      if (_tipoSeleccionado != null) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => setState(
-                              () => _tipoSeleccionado = null),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8651A)
-                                  .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Limpiar filtro',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFFE8651A),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(
-                                  Icons.close,
-                                  size: 12,
-                                  color: Color(0xFFE8651A),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Lista
-                Expanded(
-                  child: _ingredientesFiltrados.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.fastfood_outlined,
-                                  size: 60,
-                                  color: Colors.grey.shade400),
-                              const SizedBox(height: 12),
-                              Text(
-                                _tipoSeleccionado != null
-                                    ? 'No hay ingredientes de este tipo'
-                                    : 'No hay ingredientes creados',
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Toca + para agregar uno',
-                                style: TextStyle(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: _cargar,
-                          color: const Color(0xFFE8651A),
-                          child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(
-                                16, 0, 16, 100),
-                            itemCount: _ingredientesFiltrados.length,
-                            itemBuilder: (context, index) {
-                              final ing =
-                                  _ingredientesFiltrados[index];
-                              final precio = double.parse(
-                                  ing['precio'].toString());
-                              final cantidad = ing['cantidad'] != null
-                                  ? double.parse(
-                                      ing['cantidad'].toString())
-                                  : 0.0;
-                              final color = _coloresTipo[ing['tipo']] ??
-                                  Colors.grey;
-                              final precioPorGramo = cantidad > 0
-                                  ? precio / cantidad
-                                  : 0.0;
-
-                              return Container(
-                                margin:
-                                    const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius:
-                                      BorderRadius.circular(14),
-                                  border: Border.all(
-                                      color: Colors.grey.shade200),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.05),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: ListTile(
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  leading: Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          color.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.restaurant_outlined,
-                                      color: color,
-                                      size: 22,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    ing['nombre'],
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Base: ${cantidad.toStringAsFixed(0)}g/ml',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 4,
-                                        children: [
-                                          Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: color.withValues(
-                                                  alpha: 0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      20),
-                                            ),
-                                            child: Text(
-                                              _labelTipo[ing['tipo']] ??
-                                                  ing['tipo'],
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: color,
-                                                fontWeight:
-                                                    FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            '\$${precio.toStringAsFixed(0)} · \$${precioPorGramo.toStringAsFixed(1)}/g',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFFE8651A),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () => _mostrarFormulario(
-                                            ingrediente: ing),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                const Color(0xFFFFF3ED),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: const Icon(
-                                            Icons.edit_outlined,
-                                            color: Color(0xFFE8651A),
-                                            size: 18,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () => _eliminar(ing),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                const Color(0xFFFEF2F2),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: const Icon(
-                                            Icons.delete_outline,
-                                            color: Colors.red,
-                                            size: 18,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                ),
-              ],
+              ),
             ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/pedido_service.dart';
+import '../../../services/address_service.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -84,13 +85,578 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     }
   }
 
+  Future<void> _cancelarPedido(Map<String, dynamic> pedido) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text(
+              '¿Cancelar pedido?',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Esta acción no se puede deshacer. ¿Estás seguro que deseas cancelar este pedido?',
+          style: TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('No, mantener',
+                style: TextStyle(color: Colors.grey.shade600)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Sí, cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final result = await _service.cancelarPedido(pedido['id']);
+
+    if (!mounted) return;
+
+    if (result['success']) {
+      _cargar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Pedido cancelado correctamente'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Error al cancelar'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _editarPedido(Map<String, dynamic> pedido) async {
+    final AddressService addressService = AddressService();
+    final List<dynamic> direcciones = await addressService.getAddresses();
+
+    if (!mounted) return;
+
+    final detalles = pedido['DetallePedidos'] as List? ?? [];
+    final tipo = pedido['tipo'] ?? 'predefinido';
+
+    Map<String, dynamic>? direccionSeleccionada = direcciones.firstWhere(
+      (d) => d['id'] == pedido['direccionId'],
+      orElse: () => direcciones.isNotEmpty ? direcciones.first : null,
+    );
+    String metodoPago = pedido['metodoPago'] ?? 'contraentrega';
+    List<Map<String, dynamic>> items = detalles.map((d) {
+      if (d['Menu'] != null) {
+        return {
+          'menuId': d['menuId'],
+          'nombre': d['Menu']?['nombre'] ?? '',
+          'precio': double.parse(d['precioUnitario'].toString()),
+          'cantidad': d['cantidad'] ?? 1,
+        };
+      } else {
+        return {
+          'ingredienteId': d['ingredienteId'],
+          'nombre': d['Ingrediente']?['nombre'] ?? '',
+          'precio': double.parse(d['precioUnitario'].toString()),
+          'cantidad': d['cantidad'] ?? 1,
+        };
+      }
+    }).toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          double calcularTotal() {
+            return items.fold(
+                0, (sum, i) => sum + (i['precio'] * i['cantidad']));
+          }
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Editar pedido',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                      width: 40,
+                      height: 2,
+                      color: const Color(0xFFE8651A)),
+                  const SizedBox(height: 20),
+
+                  // Productos
+                  const Text(
+                    'PRODUCTOS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  ...items.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['nombre'],
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '\$${item['precio'].toStringAsFixed(0)} c/u',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setModalState(() {
+                                    if (item['cantidad'] > 1) {
+                                      items[index]['cantidad']--;
+                                    } else {
+                                      items.removeAt(index);
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE8651A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.remove,
+                                      color: Colors.white, size: 16),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10),
+                                child: Text(
+                                  '${item['cantidad']}',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  setModalState(
+                                      () => items[index]['cantidad']++);
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE8651A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.add,
+                                      color: Colors.white, size: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '\$${(item['precio'] * item['cantidad']).toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE8651A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+
+                  if (items.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded,
+                              color: Colors.red, size: 16),
+                          SizedBox(width: 8),
+                          Text(
+                            'Debes tener al menos un producto',
+                            style: TextStyle(
+                                color: Colors.red, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // Dirección
+                  const Text(
+                    'DIRECCIÓN DE ENTREGA',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (direcciones.isEmpty)
+                    Text(
+                      'No tienes direcciones guardadas',
+                      style: TextStyle(
+                          color: Colors.grey.shade500, fontSize: 13),
+                    )
+                  else
+                    ...direcciones.map((dir) {
+                      final seleccionada =
+                          direccionSeleccionada?['id'] == dir['id'];
+                      return GestureDetector(
+                        onTap: () => setModalState(
+                            () => direccionSeleccionada = dir),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: seleccionada
+                                ? const Color(0xFFFFF3ED)
+                                : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: seleccionada
+                                  ? const Color(0xFFE8651A)
+                                  : Colors.grey.shade300,
+                              width: seleccionada ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_outlined,
+                                color: seleccionada
+                                    ? const Color(0xFFE8651A)
+                                    : Colors.grey,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dir['barrio'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: seleccionada
+                                            ? const Color(0xFFE8651A)
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                    Text(
+                                      dir['direccion'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (seleccionada)
+                                const Icon(Icons.check_circle,
+                                    color: Color(0xFFE8651A), size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+
+                  const SizedBox(height: 20),
+
+                  // Método de pago
+                  const Text(
+                    'MÉTODO DE PAGO',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: ['pse', 'contraentrega'].map((m) {
+                      final seleccionado = metodoPago == m;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () =>
+                              setModalState(() => metodoPago = m),
+                          child: Container(
+                            margin: EdgeInsets.only(
+                                right: m == 'pse' ? 8 : 0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12),
+                            decoration: BoxDecoration(
+                              color: seleccionado
+                                  ? const Color(0xFFFFF3ED)
+                                  : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: seleccionado
+                                    ? const Color(0xFFE8651A)
+                                    : Colors.grey.shade300,
+                                width: seleccionado ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  m == 'pse'
+                                      ? Icons.account_balance_outlined
+                                      : Icons.payments_outlined,
+                                  color: seleccionado
+                                      ? const Color(0xFFE8651A)
+                                      : Colors.grey,
+                                  size: 20,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  m == 'pse' ? 'PSE' : 'Contraentrega',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: seleccionado
+                                        ? const Color(0xFFE8651A)
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Total
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3ED),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFE8651A)
+                            .withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Nuevo total:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '\$${calcularTotal().toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFE8651A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: items.isEmpty ||
+                              direccionSeleccionada == null
+                          ? null
+                          : () async {
+                              final data = {
+                                'direccionId':
+                                    direccionSeleccionada!['id'],
+                                'metodoPago': metodoPago,
+                                'items': items.map((i) {
+                                  if (tipo == 'predefinido') {
+                                    return {
+                                      'menuId': i['menuId'],
+                                      'cantidad': i['cantidad'],
+                                    };
+                                  } else {
+                                    return {
+                                      'ingredienteId':
+                                          i['ingredienteId'],
+                                      'cantidad': i['cantidad'],
+                                    };
+                                  }
+                                }).toList(),
+                              };
+
+                              final result = await _service
+                                  .editarPedido(pedido['id'], data);
+
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+
+                              if (result['success']) {
+                                _cargar();
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                        'Pedido actualizado correctamente'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                    ),
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(
+                                  SnackBar(
+                                    content: Text(result['error'] ??
+                                        'Error al editar'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE8651A),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'Guardar cambios',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Column(
@@ -114,7 +680,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
             ),
           ),
 
-          // Tabs
           Container(
             color: Colors.white,
             child: TabBar(
@@ -176,7 +741,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
             ),
           ),
 
-          // Contenido
           Expanded(
             child: _loading
                 ? const Center(
@@ -226,7 +790,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         onRefresh: _cargar,
                         color: const Color(0xFFE8651A),
                         child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                          padding: const EdgeInsets.fromLTRB(
+                              16, 12, 16, 20),
                           itemCount: lista.length,
                           itemBuilder: (context, index) {
                             return _pedidoCard(
@@ -255,6 +820,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     final metodoPago = pedido['metodoPago'] ?? 'contraentrega';
     final colorEstado = _colorEstado(estado);
     final expandido = _expandidos.contains(numero);
+    final esPendiente = estado == 'Pendiente';
 
     String? imagenUrl;
     if (tipo == 'predefinido' && detalles.isNotEmpty) {
@@ -269,7 +835,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: esPendiente
+              ? Colors.grey.withValues(alpha: 0.4)
+              : Colors.grey.shade200,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -296,11 +866,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               children: [
                 Row(
                   children: [
-                    Icon(
-                      _iconoEstado(estado),
-                      color: colorEstado,
-                      size: 18,
-                    ),
+                    Icon(_iconoEstado(estado),
+                        color: colorEstado, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Pedido #$numero',
@@ -314,9 +881,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: colorEstado.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -342,7 +907,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Imagen + info principal
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -367,7 +931,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                           Row(
                             children: [
                               Icon(Icons.calendar_today_outlined,
-                                  size: 13, color: Colors.grey.shade500),
+                                  size: 13,
+                                  color: Colors.grey.shade500),
                               const SizedBox(width: 4),
                               Text(fecha,
                                   style: TextStyle(
@@ -434,7 +999,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         Text(
                           'total',
                           style: TextStyle(
-                              fontSize: 11, color: Colors.grey.shade400),
+                              fontSize: 11,
+                              color: Colors.grey.shade400),
                         ),
                       ],
                     ),
@@ -445,7 +1011,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 const Divider(),
                 const SizedBox(height: 8),
 
-                // Productos
                 if (detalles.isNotEmpty) ...[
                   ...productosAMostrar.map((d) {
                     final nombre = d['Menu'] != null
@@ -479,7 +1044,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     );
                   }),
 
-                  // Botón ver más / ver menos
                   if (detalles.length > 3)
                     GestureDetector(
                       onTap: () {
@@ -521,7 +1085,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                 const SizedBox(height: 10),
 
-                // Dirección
                 if (direccion != null)
                   Row(
                     children: [
@@ -532,7 +1095,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         child: Text(
                           '${direccion['barrio']} - ${direccion['direccion']}',
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade500),
+                              fontSize: 12,
+                              color: Colors.grey.shade500),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -541,7 +1105,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                 const SizedBox(height: 10),
 
-                // Subtotal e IVA
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -557,6 +1120,97 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     ),
                   ],
                 ),
+
+                if (esPendiente) ...[
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline,
+                            color: Colors.orange, size: 14),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Puedes editar o cancelar este pedido mientras esté Pendiente.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.orange,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _editarPedido(pedido),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                                color: Color(0xFFE8651A)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10),
+                          ),
+                          icon: const Icon(Icons.edit_outlined,
+                              color: Color(0xFFE8651A), size: 16),
+                          label: const Text(
+                            'Editar',
+                            style: TextStyle(
+                              color: Color(0xFFE8651A),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _cancelarPedido(pedido),
+                          style: OutlinedButton.styleFrom(
+                            side:
+                                const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10),
+                          ),
+                          icon: const Icon(Icons.cancel_outlined,
+                              color: Colors.red, size: 16),
+                          label: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

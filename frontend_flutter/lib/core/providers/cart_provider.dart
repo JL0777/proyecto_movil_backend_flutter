@@ -30,12 +30,11 @@ class CartProvider extends ChangeNotifier {
 
   int get totalItems => _items.fold(0, (sum, i) => sum + i.cantidad);
 
-  double get subtotal =>
-      _items.fold(0, (sum, i) => sum + (i.precio * i.cantidad));
+  double get total => _items.fold(0, (sum, i) => sum + (i.precio * i.cantidad));
 
-  double get iva => subtotal * 0.19;
+  double get iva => total - (total / 1.19);
 
-  double get total => subtotal + iva;
+  double get subtotal => total - iva;
 
   bool get isEmpty => _items.isEmpty;
 
@@ -49,12 +48,14 @@ class CartProvider extends ChangeNotifier {
     if (existente.menuId == id) {
       existente.cantidad += cantidad;
     } else {
-      _items.add(CartItem(
-        menuId: id,
-        nombre: menu['nombre'],
-        precio: double.parse(menu['precio'].toString()),
-        cantidad: cantidad,
-      ));
+      _items.add(
+        CartItem(
+          menuId: id,
+          nombre: menu['nombre'],
+          precio: double.parse(menu['precio'].toString()),
+          cantidad: cantidad,
+        ),
+      );
     }
     notifyListeners();
   }
@@ -85,5 +86,27 @@ class CartProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> buildItems() {
     return _items.map((i) => i.toItem()).toList();
+  }
+
+  void agregarIngrediente(Map<String, dynamic> ingrediente, int cantidad) {
+    final id = ingrediente['id'];
+    final existente = _items.firstWhere(
+      (i) => i.ingredienteId == id,
+      orElse: () => CartItem(ingredienteId: -1, nombre: '', precio: 0),
+    );
+
+    if (existente.ingredienteId == id) {
+      existente.cantidad += cantidad;
+    } else {
+      _items.add(
+        CartItem(
+          ingredienteId: id,
+          nombre: ingrediente['nombre'],
+          precio: double.parse(ingrediente['precio'].toString()),
+          cantidad: cantidad,
+        ),
+      );
+    }
+    notifyListeners();
   }
 }

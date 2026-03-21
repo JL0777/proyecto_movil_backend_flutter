@@ -25,7 +25,8 @@ exports.updateName = async (req, res) => {
         email: user.email,
         nombre: user.nombre,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
   } catch (error) {
@@ -51,7 +52,6 @@ exports.solicitarCodigoEmail = async (req, res) => {
       return res.status(400).json({ error: "Ese correo ya está registrado" });
     }
 
-    // Invalidar códigos anteriores para este correo
     await EmailChangeCode.update(
       { usado: true },
       { where: { email: newEmail, usado: false } }
@@ -60,12 +60,7 @@ exports.solicitarCodigoEmail = async (req, res) => {
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
     const expira_en = new Date(Date.now() + 10 * 60 * 1000);
 
-    await EmailChangeCode.create({
-      email: newEmail,
-      codigo,
-      expira_en
-    });
-
+    await EmailChangeCode.create({ email: newEmail, codigo, expira_en });
     await enviarCodigoVerificacionEmail(newEmail, codigo);
 
     res.json({ success: true, message: 'Código enviado al nuevo correo' });
@@ -108,7 +103,6 @@ exports.updateEmail = async (req, res) => {
     }
 
     await registro.update({ usado: true });
-
     user.email = newEmail;
     await user.save();
 
@@ -119,7 +113,8 @@ exports.updateEmail = async (req, res) => {
         email: user.email,
         nombre: user.nombre,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
   } catch (error) {
@@ -152,7 +147,8 @@ exports.updatePhone = async (req, res) => {
         email: user.email,
         nombre: user.nombre,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
   } catch (error) {
@@ -191,13 +187,45 @@ exports.updatePassword = async (req, res) => {
 };
 
 // ======================
+// ACTUALIZAR FOTO DE PERFIL
+// ======================
+exports.updateFotoPerfil = async (req, res) => {
+  try {
+    const { fotoPerfil } = req.body;
+    const usuario = await Usuario.findByPk(req.user.id);
+
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    usuario.fotoPerfil = fotoPerfil || null;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      user: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        telefono: usuario.telefono,
+        rol: usuario.rol,
+        fotoPerfil: usuario.fotoPerfil,
+      }
+    });
+  } catch (error) {
+    console.error('ERROR UPDATE FOTO:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+// ======================
 // LISTAR TODOS (admin)
 // ======================
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await Usuario.findAll({
       where: { rol: 'cliente' },
-      attributes: ['id', 'nombre', 'email', 'telefono', 'rol', 'createdAt'],
+      attributes: ['id', 'nombre', 'email', 'telefono', 'rol', 'createdAt', 'fotoPerfil'],
       order: [['createdAt', 'DESC']]
     });
 
@@ -260,7 +288,8 @@ exports.adminUpdateUser = async (req, res) => {
         nombre: user.nombre,
         email: user.email,
         telefono: user.telefono,
-        rol: user.rol
+        rol: user.rol,
+        fotoPerfil: user.fotoPerfil
       }
     });
   } catch (error) {

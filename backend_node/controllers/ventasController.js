@@ -52,7 +52,7 @@ exports.getReporte = async (req, res) => {
             include: [
                 {
                     model: Usuario,
-                    attributes: ['nombre', 'email']
+                    attributes: ['nombre', 'email', 'fotoPerfil']
                 }
             ],
             order: [['createdAt', 'DESC']],

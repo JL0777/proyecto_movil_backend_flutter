@@ -10,7 +10,7 @@ class PedidoService {
     final token = await SessionManager.getToken();
     return {
       "Content-Type": "application/json",
-      "Authorization": "Bearer $token"
+      "Authorization": "Bearer $token",
     };
   }
 
@@ -85,12 +85,45 @@ class PedidoService {
     return {"success": false, "error": body['error'] ?? "Error desconocido"};
   }
 
-  Future<Map<String, dynamic>> updateEstadoCocina(
-      int id, String estado) async {
+  Future<Map<String, dynamic>> updateEstadoCocina(int id, String estado) async {
     final response = await http.put(
       Uri.parse("$baseUrl/$id/estado-cocina"),
       headers: await _headers(),
       body: jsonEncode({"estado": estado}),
+    );
+
+    final body = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {"success": true};
+    }
+
+    return {"success": false, "error": body['error'] ?? "Error desconocido"};
+  }
+
+  Future<Map<String, dynamic>> cancelarPedido(int id) async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/$id"),
+      headers: await _headers(),
+    );
+
+    final body = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {"success": true};
+    }
+
+    return {"success": false, "error": body['error'] ?? "Error desconocido"};
+  }
+
+  Future<Map<String, dynamic>> editarPedido(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await http.put(
+      Uri.parse("$baseUrl/$id/editar"),
+      headers: await _headers(),
+      body: jsonEncode(data),
     );
 
     final body = jsonDecode(response.body);

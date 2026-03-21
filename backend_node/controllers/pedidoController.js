@@ -14,23 +14,24 @@ exports.create = async (req, res) => {
   }
 
   try {
-    let subtotal = 0;
+    let total = 0;
 
-    // Calcular subtotal
+    // Calcular total (precio ya incluye IVA)
     for (const item of items) {
       if (tipo === 'predefinido') {
         const menu = await Menu.findByPk(item.menuId);
         if (!menu) return res.status(404).json({ error: "Menú no encontrado" });
-        subtotal += parseFloat(menu.precio) * item.cantidad;
+        total += parseFloat(menu.precio) * item.cantidad;
       } else {
         const ingrediente = await Ingrediente.findByPk(item.ingredienteId);
         if (!ingrediente) return res.status(404).json({ error: "Ingrediente no encontrado" });
-        subtotal += parseFloat(ingrediente.precio) * item.cantidad;
+        total += parseFloat(ingrediente.precio) * item.cantidad;
       }
     }
 
-    const iva = subtotal * 0.19;
-    const total = subtotal + iva;
+    // IVA ya incluido en el precio
+    const iva = total - (total / 1.19);
+    const subtotal = total - iva;
 
     // Crear pedido
     const pedido = await Pedido.create({
@@ -113,15 +114,18 @@ exports.getMisPedidos = async (req, res) => {
 };
 
 // ======================
-// TODOS LOS PEDIDOS (admin)
+// TODOS LOS PEDIDOS (admin) — solo Enviados
 // ======================
 exports.getAll = async (req, res) => {
   try {
     const pedidos = await Pedido.findAll({
+      where: {
+        estado: ['Enviado']
+      },
       include: [
         {
           model: Usuario,
-          attributes: ['id', 'nombre', 'email', 'telefono']
+          attributes: ['id', 'nombre', 'email', 'telefono', 'fotoPerfil']
         },
         {
           model: Direccion,
@@ -154,26 +158,16 @@ exports.getAll = async (req, res) => {
 };
 
 // ======================
-// ACTUALIZAR ESTADO (admin)
+// ACTUALIZAR ESTADO (admin) — ya no se usa
 // ======================
 exports.updateEstado = async (req, res) => {
   const { estado } = req.body;
-
-  if (estado !== 'Enviado') {
-    return res.status(400).json({ error: "Estado no válido" });
-  }
 
   try {
     const pedido = await Pedido.findByPk(req.params.id);
 
     if (!pedido) {
       return res.status(404).json({ error: "Pedido no encontrado" });
-    }
-
-    if (pedido.estado !== 'Realizado') {
-      return res.status(400).json({
-        error: "Solo se pueden enviar pedidos Realizados"
-      });
     }
 
     pedido.estado = estado;
@@ -231,11 +225,11 @@ exports.getPedidosCocina = async (req, res) => {
 };
 
 // ======================
-// CAMBIAR ESTADO COCINA
+// CAMBIAR ESTADO COCINA — ahora incluye Enviado
 // ======================
 exports.updateEstadoCocina = async (req, res) => {
   const { estado } = req.body;
-  const estadosValidos = ['Activo', 'Realizado'];
+  const estadosValidos = ['Activo', 'Realizado', 'Enviado'];
 
   if (!estadosValidos.includes(estado)) {
     return res.status(400).json({ error: "Estado no válido" });
@@ -255,5 +249,120 @@ exports.updateEstadoCocina = async (req, res) => {
   } catch (error) {
     console.error("ERROR UPDATE ESTADO COCINA:", error);
     res.status(500).json({ error: "Error del servidor" });
+  }
+};
+
+// ======================
+  // CANCELAR PEDIDO (cliente)
+  // ======================
+  exports.cancelarPedido = async (req, res) => {
+    const usuarioId = req.user.id;
+
+    try {
+      const pedido = await Pedido.findOne({
+        where: { id: req.params.id, usuarioId }
+      });
+
+      if (!pedido) {
+        return res.status(404).json({ error: 'Pedido no encontrado' });
+      }
+
+      if (pedido.estado !== 'Pendiente') {
+        return res.status(400).json({
+          error: 'Solo puedes cancelar pedidos en estado Pendiente'
+        });
+      }
+
+      await DetallePedido.destroy({ where: { pedidoId: pedido.id } });
+      await pedido.destroy();
+
+      res.json({ success: true, message: 'Pedido cancelado correctamente' });
+    } catch (error) {
+      console.error('ERROR CANCELAR PEDIDO:', error);
+      res.status(500).json({ error: 'Error del servidor' });
+    }
+  };
+
+  // ======================
+// EDITAR PEDIDO (cliente) — solo si está Pendiente
+// ======================
+exports.editarPedido = async (req, res) => {
+  const usuarioId = req.user.id;
+  const { direccionId, metodoPago, items } = req.body;
+
+  try {
+    const pedido = await Pedido.findOne({
+      where: { id: req.params.id, usuarioId }
+    });
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    if (pedido.estado !== 'Pendiente') {
+      return res.status(400).json({
+        error: 'Solo puedes editar pedidos en estado Pendiente'
+      });
+    }
+
+    // Actualizar dirección y método de pago
+    if (direccionId) pedido.direccionId = direccionId;
+    if (metodoPago) pedido.metodoPago = metodoPago;
+
+    // Recalcular total si hay nuevos items
+    if (items && items.length > 0) {
+      let total = 0;
+
+      for (const item of items) {
+        if (pedido.tipo === 'predefinido') {
+          const menu = await Menu.findByPk(item.menuId);
+          if (!menu) return res.status(404).json({ error: 'Menú no encontrado' });
+          total += parseFloat(menu.precio) * item.cantidad;
+        } else {
+          const ingrediente = await Ingrediente.findByPk(item.ingredienteId);
+          if (!ingrediente) return res.status(404).json({ error: 'Ingrediente no encontrado' });
+          total += parseFloat(ingrediente.precio) * item.cantidad;
+        }
+      }
+
+      const iva = total - (total / 1.19);
+      const subtotal = total - iva;
+
+      pedido.total = total;
+      pedido.iva = iva;
+      pedido.subtotal = subtotal;
+
+      // Eliminar detalles anteriores y crear nuevos
+      await DetallePedido.destroy({ where: { pedidoId: pedido.id } });
+
+      for (const item of items) {
+        if (pedido.tipo === 'predefinido') {
+          const menu = await Menu.findByPk(item.menuId);
+          await DetallePedido.create({
+            pedidoId: pedido.id,
+            menuId: item.menuId,
+            ingredienteId: null,
+            cantidad: item.cantidad,
+            precioUnitario: menu.precio
+          });
+        } else {
+          const ingrediente = await Ingrediente.findByPk(item.ingredienteId);
+          await DetallePedido.create({
+            pedidoId: pedido.id,
+            menuId: null,
+            ingredienteId: item.ingredienteId,
+            cantidad: item.cantidad,
+            precioUnitario: ingrediente.precio
+          });
+        }
+      }
+    }
+
+    await pedido.save();
+
+    res.json({ success: true, pedido });
+  } catch (error) {
+    console.error('ERROR EDITAR PEDIDO:', error);
+    res.status(500).json({ error: 'Error del servidor' });
   }
 };

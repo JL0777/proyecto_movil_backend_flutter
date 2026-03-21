@@ -22,10 +22,8 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   List<dynamic> get _enPreparacion =>
       _pedidos.where((p) => p['estado'] == 'Activo').toList();
-
   List<dynamic> get _nuevos =>
       _pedidos.where((p) => p['estado'] == 'Pendiente').toList();
-
   List<dynamic> get _realizados =>
       _pedidos.where((p) => p['estado'] == 'Realizado').toList();
 
@@ -74,6 +72,126 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     }
   }
 
+  void _verInfoCliente(Map<String, dynamic> pedido, int numero) {
+    final usuario = pedido['Usuario'];
+    final direccion = pedido['Direccion'];
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Pedido #$numero',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE8651A),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Información del Cliente',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(width: 50, height: 3, color: const Color(0xFFE8651A)),
+                const SizedBox(height: 16),
+                _infoRow(
+                  Icons.person_outline,
+                  usuario?['nombre'] ?? 'Sin nombre',
+                ),
+                _infoRow(
+                  Icons.email_outlined,
+                  usuario?['email'] ?? 'Sin correo',
+                ),
+                _infoRow(
+                  Icons.phone_outlined,
+                  usuario?['telefono'] ?? 'Sin teléfono',
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Dirección de entrega',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(width: 50, height: 3, color: const Color(0xFFE8651A)),
+                const SizedBox(height: 16),
+                _infoRow(
+                  Icons.location_on_outlined,
+                  direccion?['direccion'] ?? 'Sin dirección',
+                ),
+                _infoRow(
+                  Icons.map_outlined,
+                  direccion?['barrio'] ?? 'Sin barrio',
+                ),
+                _infoRow(
+                  Icons.home_outlined,
+                  direccion?['tipoVivienda'] ?? 'No especificado',
+                ),
+                if (direccion?['instrucciones'] != null &&
+                    direccion!['instrucciones'].toString().isNotEmpty)
+                  _infoRow(Icons.info_outline, direccion['instrucciones']),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _verPedido(pedido, numero);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8651A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Ver detalle del pedido',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _verPedido(Map<String, dynamic> pedido, int numero) {
     final detalles = pedido['DetallePedidos'] as List? ?? [];
     final tipo = pedido['tipo'] ?? 'predefinido';
@@ -97,17 +215,16 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back,
-                          color: Colors.black87),
+                      icon: const Icon(Icons.arrow_back, color: Colors.black87),
                       onPressed: () => Navigator.pop(context),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Pedido #$numero',
+                      'Detalle del pedido #$numero',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE8651A),
                       ),
@@ -119,49 +236,68 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                 if (tipo == 'predefinido' && detalles.isNotEmpty) ...[
                   if (detalles.first['Menu'] != null &&
                       detalles.first['Menu']['imagenUrl'] != null &&
-                      detalles.first['Menu']['imagenUrl']
-                          .toString()
-                          .isNotEmpty)
+                      detalles.first['Menu']['imagenUrl'].toString().isNotEmpty)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.network(
                         detalles.first['Menu']['imagenUrl'],
                         width: double.infinity,
-                        height: 180,
+                        height: 160,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _imagenPlaceholder(),
+                        errorBuilder: (_, __, ___) => _imagenPlaceholder(),
                       ),
                     )
                   else
                     _imagenPlaceholder(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     detalles.first['Menu']?['nombre'] ?? '',
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    detalles.first['Menu']?['descripcion'] ?? '',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      height: 1.5,
+                  if (detalles.first['Menu']?['descripcion'] != null &&
+                      detalles.first['Menu']['descripcion']
+                          .toString()
+                          .isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      detalles.first['Menu']['descripcion'],
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
 
                 if (tipo == 'personalizado') ...[
-                  const Text(
-                    'Menú Personalizado',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3ED),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.tune_outlined,
+                          color: Color(0xFFE8651A),
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Menú Personalizado',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -171,24 +307,38 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                     final cantidad = d['cantidad'] ?? 1;
                     final tipoIng = ing['tipo'] ?? '';
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            '• ',
-                            style: TextStyle(
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
                               color: Color(0xFFE8651A),
-                              fontSize: 14,
+                              shape: BoxShape.circle,
                             ),
                           ),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              _labelIngrediente(tipoIng, ing['nombre'],
-                                  cantidad, ing['cantidad']),
+                              _labelIngrediente(
+                                tipoIng,
+                                ing['nombre'],
+                                cantidad,
+                                ing['cantidad'],
+                              ),
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 13,
                                 color: Colors.black87,
                               ),
                             ),
@@ -206,8 +356,31 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     );
   }
 
+  Widget _infoRow(IconData icono, String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icono, size: 16, color: const Color(0xFFE8651A)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texto,
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _labelIngrediente(
-      String tipo, String nombre, int cantidad, dynamic cantidadBase) {
+    String tipo,
+    String nombre,
+    int cantidad,
+    dynamic cantidadBase,
+  ) {
     switch (tipo) {
       case 'proteina':
         return 'Base: $nombre (${cantidadBase ?? cantidad}g)';
@@ -221,6 +394,12 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         return 'Bebida: $nombre (${cantidadBase ?? cantidad}ml)';
       case 'complemento':
         return 'Complemento: $nombre x$cantidad';
+      case 'pan':
+        return 'Pan: $nombre';
+      case 'salsa':
+        return 'Salsa: $nombre';
+      case 'extra':
+        return 'Extra: $nombre';
       default:
         return '$nombre x$cantidad';
     }
@@ -228,7 +407,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   Widget _imagenPlaceholder() {
     return Container(
-      height: 180,
+      height: 160,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -246,6 +425,8 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         return ['Pendiente', 'Activo'];
       case 'Activo':
         return ['Activo', 'Realizado'];
+      case 'Realizado':
+        return ['Realizado', 'Enviado'];
       default:
         return [estadoActual];
     }
@@ -253,14 +434,31 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   Color _colorEstado(String estado) {
     switch (estado) {
+      case 'Pendiente':
+        return Colors.grey;
       case 'Activo':
         return const Color(0xFFE8651A);
       case 'Realizado':
         return Colors.green;
-      case 'Pendiente':
-        return Colors.grey;
+      case 'Enviado':
+        return Colors.blue;
       default:
         return Colors.grey;
+    }
+  }
+
+  IconData _iconoEstado(String estado) {
+    switch (estado) {
+      case 'Pendiente':
+        return Icons.hourglass_empty_outlined;
+      case 'Activo':
+        return Icons.restaurant_outlined;
+      case 'Realizado':
+        return Icons.check_circle_outline;
+      case 'Enviado':
+        return Icons.delivery_dining_outlined;
+      default:
+        return Icons.receipt_outlined;
     }
   }
 
@@ -270,15 +468,15 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 60, color: Colors.grey.shade400),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 60,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
             Text(
               'No hay pedidos aquí',
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
             ),
           ],
         ),
@@ -289,7 +487,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
       onRefresh: _cargar,
       color: const Color(0xFFE8651A),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         itemCount: pedidos.length,
         itemBuilder: (context, index) {
           final pedido = pedidos[index];
@@ -299,177 +497,277 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
           final tipo = pedido['tipo'] ?? 'predefinido';
           final detalles = pedido['DetallePedidos'] as List? ?? [];
           final estadosDisponibles = _estadosDisponibles(estado);
+          final colorEstado = _colorEstado(estado);
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Pedido #$numero:',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+          // Imagen del menú
+          String? imagenUrl;
+          if (tipo == 'predefinido' &&
+              detalles.isNotEmpty &&
+              detalles.first['Menu'] != null) {
+            imagenUrl = detalles.first['Menu']['imagenUrl'];
+          }
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Text('Cliente: ',
-                      style: TextStyle(fontWeight: FontWeight.w500)),
-                  Expanded(
-                    child: Text(
-                      usuario?['nombre'] ?? 'Sin nombre',
-                      overflow: TextOverflow.ellipsis,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header con estado
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorEstado.withValues(alpha: 0.08),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  const Text('Tipo: ',
-                      style: TextStyle(fontWeight: FontWeight.w500)),
-                  Expanded(
-                    child: Text(
-                      tipo == 'personalizado'
-                          ? 'Personalizado'
-                          : detalles.isNotEmpty &&
-                                  detalles.first['Menu'] != null
-                              ? detalles.first['Menu']['nombre']
-                              : 'Predefinido',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: tipo == 'predefinido' &&
-                            detalles.isNotEmpty &&
-                            detalles.first['Menu'] != null &&
-                            detalles.first['Menu']['imagenUrl'] != null &&
-                            detalles.first['Menu']['imagenUrl']
-                                .toString()
-                                .isNotEmpty
-                        ? Image.network(
-                            detalles.first['Menu']['imagenUrl'],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _miniPlaceholder(),
-                          )
-                        : _miniPlaceholder(),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(20),
-                            border:
-                                Border.all(color: Colors.grey.shade300),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            _iconoEstado(estado),
+                            color: colorEstado,
+                            size: 18,
                           ),
-                          child: Row(
-                            children: [
-                              const Text('Estado: ',
-                                  style: TextStyle(fontSize: 12)),
-                              Expanded(
-                                child: estadosDisponibles.length > 1
-                                    ? DropdownButtonHideUnderline(
-                                        child: DropdownButton<String>(
-                                          value: estado,
-                                          isDense: true,
-                                          isExpanded: true,
-                                          style: TextStyle(
-                                            color: _colorEstado(estado),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pedido #$numero',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Select de estado
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorEstado.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: colorEstado.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: estadosDisponibles.length > 1
+                            ? DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: estado,
+                                  isDense: true,
+                                  style: TextStyle(
+                                    color: colorEstado,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: colorEstado,
+                                    size: 16,
+                                  ),
+                                  items: estadosDisponibles
+                                      .map(
+                                        (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(
+                                            e,
+                                            style: TextStyle(
+                                              color: _colorEstado(e),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 12,
+                                            ),
                                           ),
-                                          items: estadosDisponibles
-                                              .map((e) => DropdownMenuItem(
-                                                    value: e,
-                                                    child: Text(
-                                                      e,
-                                                      style: TextStyle(
-                                                        color:
-                                                            _colorEstado(e),
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                  ))
-                                              .toList(),
-                                          onChanged: (nuevoEstado) async {
-                                            if (nuevoEstado != null &&
-                                                nuevoEstado != estado) {
-                                              await _cambiarEstado(
-                                                  pedido['id'],
-                                                  nuevoEstado);
-                                            }
-                                          },
                                         ),
                                       )
-                                    : Text(
-                                        estado,
-                                        style: TextStyle(
-                                          color: _colorEstado(estado),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                              ),
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: _colorEstado(estado),
-                                  shape: BoxShape.circle,
+                                      .toList(),
+                                  onChanged: (nuevoEstado) async {
+                                    if (nuevoEstado != null &&
+                                        nuevoEstado != estado) {
+                                      await _cambiarEstado(
+                                        pedido['id'],
+                                        nuevoEstado,
+                                      );
+                                    }
+                                  },
+                                ),
+                              )
+                            : Text(
+                                estado,
+                                style: TextStyle(
+                                  color: colorEstado,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () => _verPedido(pedido, numero),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                  color: Color(0xFFE8651A)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 6),
-                            ),
-                            child: const Text(
-                              'Ver pedido',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFFE8651A),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const Divider(height: 24),
-            ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Imagen
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: imagenUrl != null && imagenUrl.isNotEmpty
+                            ? Image.network(
+                                imagenUrl,
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _miniPlaceholder(),
+                              )
+                            : _miniPlaceholder(),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Cliente
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: 14,
+                                  color: Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    usuario?['nombre'] ?? 'Sin nombre',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Tipo
+                            Row(
+                              children: [
+                                Icon(
+                                  tipo == 'personalizado'
+                                      ? Icons.tune_outlined
+                                      : Icons.restaurant_menu_outlined,
+                                  size: 14,
+                                  color: Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    tipo == 'personalizado'
+                                        ? 'Personalizado'
+                                        : detalles.isNotEmpty &&
+                                              detalles.first['Menu'] != null
+                                        ? detalles.first['Menu']['nombre']
+                                        : 'Predefinido',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Botones
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _verInfoCliente(pedido, numero),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.shade400),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          icon: Icon(
+                            Icons.person_outline,
+                            size: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                          label: Text(
+                            'Cliente',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _verPedido(pedido, numero),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFE8651A)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          icon: const Icon(
+                            Icons.receipt_outlined,
+                            size: 16,
+                            color: Color(0xFFE8651A),
+                          ),
+                          label: const Text(
+                            'Ver pedido',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFE8651A),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -478,13 +776,17 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   Widget _miniPlaceholder() {
     return Container(
-      width: 80,
-      height: 80,
+      width: 70,
+      height: 70,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: const Icon(Icons.fastfood, color: Colors.grey, size: 36),
+      child: Icon(
+        Icons.fastfood_outlined,
+        color: Colors.grey.shade400,
+        size: 32,
+      ),
     );
   }
 
@@ -500,6 +802,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     return Scaffold(
       body: Column(
         children: [
+          // Header
           SizedBox(
             height: 230,
             child: Stack(
@@ -542,8 +845,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                               const Expanded(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'BIENVENIDO AL',
@@ -566,14 +868,12 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                               ),
                               GestureDetector(
                                 onTap: () =>
-                                    LogoutHelper.confirmarCierreSesion(
-                                        context),
+                                    LogoutHelper.confirmarCierreSesion(context),
                                 child: Container(
                                   width: 42,
                                   height: 42,
                                   decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.25),
+                                    color: Colors.white.withValues(alpha: 0.25),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -597,103 +897,31 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
           // Tabs
           Container(
             color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: const Color(0xFFE8651A),
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: const Color(0xFFE8651A),
-              indicatorWeight: 3,
-              dividerColor: const Color(0xFFEEEEEE),
-              labelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('En preparación'),
-                      const SizedBox(width: 4),
-                      if (_enPreparacion.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8651A)
-                                .withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${_enPreparacion.length}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFE8651A),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                _buildTabChip(
+                  0,
+                  'En preparación',
+                  Icons.restaurant_outlined,
+                  _enPreparacion.length,
+                  const Color(0xFFE8651A),
                 ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Nuevos'),
-                      const SizedBox(width: 4),
-                      if (_nuevos.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${_nuevos.length}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                const SizedBox(width: 8),
+                _buildTabChip(
+                  1,
+                  'Nuevos',
+                  Icons.fiber_new_outlined,
+                  _nuevos.length,
+                  Colors.red,
                 ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Realizados'),
-                      const SizedBox(width: 4),
-                      if (_realizados.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color:
-                                Colors.green.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${_realizados.length}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                const SizedBox(width: 8),
+                _buildTabChip(
+                  2,
+                  'Realizados',
+                  Icons.check_circle_outline,
+                  _realizados.length,
+                  Colors.green,
                 ),
               ],
             ),
@@ -703,9 +931,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : TabBarView(
                     controller: _tabController,
@@ -717,6 +943,75 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabChip(
+    int index,
+    String label,
+    IconData icono,
+    int count,
+    Color color,
+  ) {
+    final activo = _tabController.index == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() => _tabController.animateTo(index));
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: activo ? color : color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: activo ? color : color.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icono, size: 18, color: activo ? Colors.white : color),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: activo ? Colors.white : color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (count > 0) ...[
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: activo
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: activo ? Colors.white : color,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

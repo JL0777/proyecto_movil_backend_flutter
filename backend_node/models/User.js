@@ -28,26 +28,25 @@ module.exports = (sequelize, DataTypes) => {
     rol: {
       type: DataTypes.ENUM('cliente', 'admin', 'cocinero'),
       defaultValue: 'cliente'
-    }
+    },
+
+    fotoPerfil: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
 
   }, {
-
-    tableName: 'Usuarios',   //
+    tableName: 'Usuarios',
     timestamps: true
-
   });
 
   User.associate = function(models) {
-
     User.hasMany(models.Direccion, {
-
       foreignKey: 'usuarioId',
       onDelete: 'CASCADE'
-
     });
-
   };
 
   return User;
-
 };

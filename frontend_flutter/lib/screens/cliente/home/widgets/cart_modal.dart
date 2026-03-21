@@ -37,6 +37,179 @@ class _CartModalState extends State<CartModal> {
     }
   }
 
+  void _mostrarFormularioNuevaDireccion() {
+    final barrioController = TextEditingController();
+    final direccionController = TextEditingController();
+    final instruccionesController = TextEditingController();
+    String tipoVivienda = 'Casa';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Nueva dirección',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _campo(barrioController, 'Barrio'),
+                const SizedBox(height: 12),
+                _campo(direccionController, 'Dirección'),
+                const SizedBox(height: 12),
+                _campo(
+                  instruccionesController,
+                  'Instrucciones (opcional)',
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: tipoVivienda,
+                      isExpanded: true,
+                      items: ['Casa', 'Apartamento', 'Oficina', 'Otro']
+                          .map((t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(t),
+                              ))
+                          .toList(),
+                      onChanged: (v) =>
+                          setModalState(() => tipoVivienda = v ?? tipoVivienda),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (barrioController.text.trim().isEmpty ||
+                          direccionController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Barrio y dirección son requeridos'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final ok = await _addressService.createAddress({
+                        'barrio': barrioController.text.trim(),
+                        'direccion': direccionController.text.trim(),
+                        'instrucciones': instruccionesController.text.trim(),
+                        'tipoVivienda': tipoVivienda,
+                      });
+
+                      if (!context.mounted) return;
+                      Navigator.pop(context);
+
+                      if (ok) {
+                        await _cargarDirecciones();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                  'Dirección agregada correctamente'),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(16),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8651A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      'Guardar dirección',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _campo(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(
+            color: Color(0xFFE8651A),
+            width: 1.8,
+          ),
+        ),
+        labelStyle: const TextStyle(color: Colors.grey),
+      ),
+    );
+  }
+
   Future<void> _confirmarPedido() async {
     if (_direccionSeleccionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -300,24 +473,27 @@ class _CartModalState extends State<CartModal> {
             ),
           ),
           const SizedBox(height: 8),
-          ...cart.items.map((item) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${item.nombre} x${item.cantidad}',
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                  Text(
-                    '\$${(item.precio * item.cantidad).toStringAsFixed(0)}',
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ],
-              )),
+          ...cart.items.map(
+            (item) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${item.nombre} x${item.cantidad}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+                Text(
+                  '\$${(item.precio * item.cantidad).toStringAsFixed(0)}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
           const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Subtotal:', style: TextStyle(color: Colors.grey.shade600)),
+              Text('Subtotal:',
+                  style: TextStyle(color: Colors.grey.shade600)),
               Text('\$${cart.subtotal.toStringAsFixed(0)}'),
             ],
           ),
@@ -325,7 +501,8 @@ class _CartModalState extends State<CartModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('IVA (19%):', style: TextStyle(color: Colors.grey.shade600)),
+              Text('IVA (inc.):',
+                  style: TextStyle(color: Colors.grey.shade600)),
               Text('\$${cart.iva.toStringAsFixed(0)}'),
             ],
           ),
@@ -335,7 +512,8 @@ class _CartModalState extends State<CartModal> {
             children: [
               const Text(
                 'Total:',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                style:
+                    TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
               Text(
                 '\$${cart.total.toStringAsFixed(0)}',
@@ -351,20 +529,84 @@ class _CartModalState extends State<CartModal> {
           const SizedBox(height: 20),
 
           // Dirección
-          const Text(
-            'Dirección de entrega',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Dirección de entrega',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              GestureDetector(
+                onTap: _mostrarFormularioNuevaDireccion,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3ED),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.add_location_alt_outlined,
+                        color: Color(0xFFE8651A),
+                        size: 14,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Nueva',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFE8651A),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
 
           if (_direcciones.isEmpty)
-            Text(
-              'No tienes direcciones guardadas. Ve a tu perfil y agrega una.',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            GestureDetector(
+              onTap: _mostrarFormularioNuevaDireccion,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3ED),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.add_location_alt_outlined,
+                      color: Color(0xFFE8651A),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Agrega tu primera dirección',
+                      style: TextStyle(
+                        color: Color(0xFFE8651A),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           else
             ..._direcciones.map((dir) {

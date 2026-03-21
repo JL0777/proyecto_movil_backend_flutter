@@ -127,6 +127,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               GestureDetector(
@@ -179,6 +181,8 @@ class _AdminDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fotoPerfil = user['fotoPerfil'];
+
     return Drawer(
       child: Column(
         children: [
@@ -188,7 +192,7 @@ class _AdminDrawer extends StatelessWidget {
               20,
               MediaQuery.of(context).padding.top + 20,
               20,
-              20,
+              24,
             ),
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -203,40 +207,80 @@ class _AdminDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Avatar con foto
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 36,
+                  child: ClipOval(
+                    child: fotoPerfil != null &&
+                            fotoPerfil.toString().isNotEmpty
+                        ? Image.network(
+                            fotoPerfil,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _avatarPlaceholder(),
+                          )
+                        : _avatarPlaceholder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Text(
                   user['nombre'] ?? 'Administrador',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Administrador',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   user['email'] ?? '',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
+
           const SizedBox(height: 8),
+
           _drawerItem(
             context: context,
             icon: Icons.receipt_long_outlined,
@@ -251,9 +295,9 @@ class _AdminDrawer extends StatelessWidget {
           ),
           _drawerItem(
             context: context,
-            icon: Icons.bar_chart_outlined,
-            titulo: 'Reporte de ventas',
-            index: 2,
+            icon: Icons.category_outlined,
+            titulo: 'Gestión de categorías',
+            index: 4,
           ),
           _drawerItem(
             context: context,
@@ -263,11 +307,13 @@ class _AdminDrawer extends StatelessWidget {
           ),
           _drawerItem(
             context: context,
-            icon: Icons.category_outlined,
-            titulo: 'Gestión de categorías',
-            index: 4,
+            icon: Icons.bar_chart_outlined,
+            titulo: 'Reporte de ventas',
+            index: 2,
           ),
+
           const Spacer(),
+
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
@@ -295,6 +341,17 @@ class _AdminDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+
+  Widget _avatarPlaceholder() {
+    return Container(
+      color: Colors.white.withValues(alpha: 0.25),
+      child: const Icon(
+        Icons.person,
+        color: Colors.white,
+        size: 38,
       ),
     );
   }

@@ -145,24 +145,101 @@ class _UsuariosTabState extends State<UsuariosTab> {
 
     return Column(
       children: [
+        // Buscador + contador
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Buscar por nombre o correo...',
-              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-              prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Row(
+            children: [
+              // Buscador
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar cliente...',
+                    hintStyle: TextStyle(
+                        color: Colors.grey.shade400, fontSize: 13),
+                    prefixIcon: Icon(Icons.search,
+                        color: Colors.grey.shade400, size: 20),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              _filtrar();
+                            },
+                            child: Icon(Icons.close,
+                                color: Colors.grey.shade400, size: 18),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE8651A),
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            ),
+
+              const SizedBox(width: 10),
+
+              // Tarjeta contador
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFE8651A),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE8651A)
+                          .withValues(alpha: 0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${_usuarios.length}',
+                      style: const TextStyle(
+                        color: Color(0xFFE8651A),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      'clientes',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
+
+        const SizedBox(height: 12),
+
+        // Lista
         Expanded(
           child: _filtrados.isEmpty
               ? Center(
@@ -173,7 +250,9 @@ class _UsuariosTabState extends State<UsuariosTab> {
                           size: 60, color: Colors.grey.shade400),
                       const SizedBox(height: 12),
                       Text(
-                        'No se encontraron usuarios',
+                        _searchController.text.isNotEmpty
+                            ? 'No se encontraron resultados'
+                            : 'No hay usuarios registrados',
                         style: TextStyle(
                             color: Colors.grey.shade500, fontSize: 15),
                       ),
@@ -184,7 +263,8 @@ class _UsuariosTabState extends State<UsuariosTab> {
                   onRefresh: _cargarUsuarios,
                   color: const Color(0xFFE8651A),
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _filtrados.length,
                     itemBuilder: (context, index) {
                       final u = _filtrados[index];
@@ -201,6 +281,7 @@ class _UsuariosTabState extends State<UsuariosTab> {
     final nombre = u['nombre'] ?? 'Sin nombre';
     final email = u['email'] ?? '';
     final telefono = u['telefono'] ?? 'Sin teléfono';
+    final fotoPerfil = u['fotoPerfil'];
     final inicial = nombre.isNotEmpty ? nombre[0].toUpperCase() : '?';
 
     return Container(
@@ -220,20 +301,33 @@ class _UsuariosTabState extends State<UsuariosTab> {
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE8651A),
-          child: Text(
-            inicial,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        leading: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color:
+                  const Color(0xFFE8651A).withValues(alpha: 0.4),
+              width: 2,
             ),
+          ),
+          child: ClipOval(
+            child: fotoPerfil != null &&
+                    fotoPerfil.toString().isNotEmpty
+                ? Image.network(
+                    fotoPerfil,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        _avatarConInicial(inicial),
+                  )
+                : _avatarConInicial(inicial),
           ),
         ),
         title: Text(
           nombre,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
@@ -241,14 +335,34 @@ class _UsuariosTabState extends State<UsuariosTab> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
-            Text(
-              email,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                Icon(Icons.email_outlined,
+                    size: 12, color: Colors.grey.shade400),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    email,
+                    style: TextStyle(
+                        fontSize: 12, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              telefono,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(Icons.phone_outlined,
+                    size: 12, color: Colors.grey.shade400),
+                const SizedBox(width: 4),
+                Text(
+                  telefono,
+                  style: TextStyle(
+                      fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
             ),
           ],
         ),
@@ -296,6 +410,22 @@ class _UsuariosTabState extends State<UsuariosTab> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarConInicial(String inicial) {
+    return Container(
+      color: const Color(0xFFE8651A),
+      child: Center(
+        child: Text(
+          inicial,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
         ),
       ),
     );

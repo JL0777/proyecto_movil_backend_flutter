@@ -55,7 +55,7 @@ class _ProductosTabState extends State<ProductosTab> {
                   ),
                   DropdownMenuItem(
                     value: 'ingredientes',
-                    child: Text('Gestión de productos'),
+                    child: Text('Gestión de ingredientes'),
                   ),
                 ],
                 onChanged: (valor) {

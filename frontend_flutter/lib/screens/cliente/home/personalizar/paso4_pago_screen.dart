@@ -29,25 +29,19 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
   String _metodoPago = 'contraentrega';
   bool _loading = false;
 
-  double get _iva => widget.subtotal * 0.19;
-  double get _total => widget.subtotal + _iva;
+  double get _iva => widget.subtotal - (widget.subtotal / 1.19);
+  double get _total => widget.subtotal;
 
   List<Map<String, dynamic>> _buildItems() {
     final items = <Map<String, dynamic>>[];
 
     for (final entry in widget.ingredientes.entries) {
       if (entry.value != null) {
-        items.add({
-          'ingredienteId': entry.value!['id'],
-          'cantidad': 1,
-        });
+        items.add({'ingredienteId': entry.value!['id'], 'cantidad': 1});
       }
     }
 
-    items.add({
-      'ingredienteId': widget.bebida['id'],
-      'cantidad': 1,
-    });
+    items.add({'ingredienteId': widget.bebida['id'], 'cantidad': 1});
 
     for (final entry in widget.complementos.entries) {
       items.add({
@@ -65,9 +59,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         content: Text(msg),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -98,19 +90,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 70,
-              ),
+              const Icon(Icons.check_circle, color: Colors.green, size: 70),
               const SizedBox(height: 16),
               const Text(
                 '¡HEMOS CREADO TU\nORDEN CON ÉXITO!',
@@ -232,12 +218,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
 
                         ...widget.ingredientes.entries
                             .where((e) => e.value != null)
-                            .map((e) => _filaResumen(
-                                  '${e.value!['nombre']} (${e.value!['cantidad'] ?? ''})',
-                                  1,
-                                  double.parse(
-                                      e.value!['precio'].toString()),
-                                )),
+                            .map(
+                              (e) => _filaResumen(
+                                '${e.value!['nombre']} (${e.value!['cantidad'] ?? ''})',
+                                1,
+                                double.parse(e.value!['precio'].toString()),
+                              ),
+                            ),
 
                         _filaResumen(
                           '${widget.bebida['nombre']} (${widget.bebida['cantidad'] ?? ''})',
@@ -245,17 +232,18 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                           double.parse(widget.bebida['precio'].toString()),
                         ),
 
-                        ...widget.complementos.entries.map((e) =>
-                            _filaResumen(
-                              'Complemento',
-                              e.value['cantidad'] ?? 1,
-                              0,
-                            )),
+                        ...widget.complementos.entries.map(
+                          (e) => _filaResumen(
+                            'Complemento',
+                            e.value['cantidad'] ?? 1,
+                            0,
+                          ),
+                        ),
 
                         const Divider(),
                         _filaTotal('Subtotal', widget.subtotal),
                         const SizedBox(height: 4),
-                        _filaTotal('IVA (19%)', _iva),
+                        _filaTotal('IVA (inc.)', _iva),
                         const SizedBox(height: 4),
                         _filaTotal('Total', _total, destacado: true),
                       ],
@@ -318,8 +306,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                         color: const Color(0xFFFFF3ED),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFFE8651A)
-                              .withValues(alpha: 0.3),
+                          color: const Color(0xFFE8651A).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Column(
@@ -346,8 +333,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                           const SizedBox(height: 12),
                           _datosBanco('Banco:', 'Bancolombia'),
                           _datosBanco('Tipo de cuenta:', 'Ahorros'),
-                          _datosBanco(
-                              'Número de cuenta:', '123-456789-00'),
+                          _datosBanco('Número de cuenta:', '123-456789-00'),
                           _datosBanco('Titular:', 'MyMeal S.A.S'),
                           _datosBanco('NIT:', '900.123.456-7'),
                           const SizedBox(height: 8),
@@ -425,8 +411,9 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE8651A),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFFE8651A).withValues(alpha: 0.6),
+                  disabledBackgroundColor: const Color(
+                    0xFFE8651A,
+                  ).withValues(alpha: 0.6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -472,10 +459,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
           const SizedBox(width: 8),
           Text(
             valor,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
           ),
         ],
       ),
@@ -575,10 +559,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color(0x66000000),
-            BlendMode.darken,
-          ),
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -591,11 +572,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 26,
-            ),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 26),
           ),
         ],
       ),

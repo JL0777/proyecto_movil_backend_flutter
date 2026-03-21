@@ -5,7 +5,7 @@ import '../../screens/welcome_screen.dart';
 class LogoutHelper {
   static Future<void> confirmarCierreSesion(BuildContext context) async {
     final navigator = Navigator.of(context);
-    
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -64,6 +64,34 @@ class LogoutHelper {
     if (confirm != true) return;
 
     await SessionManager.clearSession();
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle_outline,
+                  color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Sesión cerrada correctamente',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+
+      await Future.delayed(const Duration(seconds: 1));
+    }
+
     navigator.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,

@@ -15,35 +15,48 @@ class Paso1IngredientesScreen extends StatefulWidget {
 class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
   final IngredienteService _service = IngredienteService();
 
-  Map<String, List<dynamic>> _ingredientes = {
-    'proteina': [],
-    'legumbre': [],
-    'carbohidrato': [],
-    'vegetal': [],
-  };
-
-  Map<String, dynamic> _seleccionados = {
-    'proteina': null,
-    'legumbre': null,
-    'carbohidrato': null,
-    'vegetal': null,
-  };
-
+  Map<String, List<dynamic>> _ingredientes = {};
+  Map<String, dynamic> _seleccionados = {};
   bool _loading = true;
 
-  final Map<String, String> _labels = {
-    'proteina': '+ PROTEÍNA',
-    'legumbre': '+ LEGUMBRES',
-    'carbohidrato': '+ CARBOHIDRATOS',
-    'vegetal': '+ VEGETALES',
-  };
+  // Tipos según categoría
+  Map<String, String> get _labels {
+    final tipo = widget.categoria['tipo'] ?? 'tradicional';
+    if (tipo == 'rapida') {
+      return {
+        'pan': '+ TIPO DE PAN',
+        'proteina': '+ PROTEÍNA',
+        'salsa': '+ SALSA',
+        'vegetal': '+ VEGETALES',
+        'extra': '+ EXTRAS',
+      };
+    }
+    return {
+      'proteina': '+ PROTEÍNA',
+      'legumbre': '+ LEGUMBRES',
+      'carbohidrato': '+ CARBOHIDRATOS',
+      'vegetal': '+ VEGETALES',
+    };
+  }
 
-  final Map<String, Color> _colores = {
-    'proteina': const Color(0xFFE8651A),
-    'legumbre': Colors.green,
-    'carbohidrato': Colors.amber,
-    'vegetal': Colors.teal,
-  };
+  Map<String, Color> get _colores {
+    final tipo = widget.categoria['tipo'] ?? 'tradicional';
+    if (tipo == 'rapida') {
+      return {
+        'pan': Colors.brown,
+        'proteina': const Color(0xFFE8651A),
+        'salsa': Colors.red,
+        'vegetal': Colors.teal,
+        'extra': Colors.purple,
+      };
+    }
+    return {
+      'proteina': const Color(0xFFE8651A),
+      'legumbre': Colors.green,
+      'carbohidrato': Colors.amber,
+      'vegetal': Colors.teal,
+    };
+  }
 
   double get _subtotal {
     double total = 0;
@@ -63,18 +76,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
   Future<void> _cargar() async {
     try {
-      final proteinas = await _service.getByTipo('proteina');
-      final legumbres = await _service.getByTipo('legumbre');
-      final carbohidratos = await _service.getByTipo('carbohidrato');
-      final vegetales = await _service.getByTipo('vegetal');
+      final Map<String, List<dynamic>> ingredientes = {};
+      final Map<String, dynamic> seleccionados = {};
+
+      for (final tipo in _labels.keys) {
+        ingredientes[tipo] = await _service.getByTipo(tipo);
+        seleccionados[tipo] = null;
+      }
 
       setState(() {
-        _ingredientes = {
-          'proteina': proteinas,
-          'legumbre': legumbres,
-          'carbohidrato': carbohidratos,
-          'vegetal': vegetales,
-        };
+        _ingredientes = ingredientes;
+        _seleccionados = seleccionados;
         _loading = false;
       });
     } catch (e) {
@@ -182,7 +194,6 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Selector de gramos
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -253,7 +264,6 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
               const SizedBox(height: 16),
 
-              // Precio calculado
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -404,6 +414,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         ..._labels.entries.map((entry) {
                           final tipo = entry.key;
                           final seleccionado = _seleccionados[tipo];
+                          final color = _colores[tipo] ??
+                              const Color(0xFFE8651A);
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -417,13 +429,12 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: seleccionado != null
-                                      ? _colores[tipo]!
-                                          .withValues(alpha: 0.1)
+                                      ? color.withValues(alpha: 0.1)
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(
                                     color: seleccionado != null
-                                        ? _colores[tipo]!
+                                        ? color
                                         : Colors.black87,
                                     width: 1.5,
                                   ),
@@ -441,7 +452,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                           fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                           color: seleccionado != null
-                                              ? _colores[tipo]
+                                              ? color
                                               : Colors.black87,
                                         ),
                                         overflow: TextOverflow.ellipsis,
@@ -455,13 +466,13 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
-                                              color: _colores[tipo],
+                                              color: color,
                                             ),
                                           ),
                                           const SizedBox(width: 4),
                                           Icon(
                                             Icons.check_circle,
-                                            color: _colores[tipo],
+                                            color: color,
                                             size: 20,
                                           ),
                                         ],
@@ -618,8 +629,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
             shape: BoxShape.circle,
             color: activo ? const Color(0xFFE8651A) : Colors.grey.shade200,
             border: Border.all(
-              color:
-                  activo ? const Color(0xFFE8651A) : Colors.grey.shade300,
+              color: activo
+                  ? const Color(0xFFE8651A)
+                  : Colors.grey.shade300,
             ),
           ),
           child: Center(
