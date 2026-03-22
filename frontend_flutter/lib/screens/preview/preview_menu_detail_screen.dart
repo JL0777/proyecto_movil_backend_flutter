@@ -23,7 +23,8 @@ class PreviewMenuDetailScreen extends StatelessWidget {
                     ? Image.network(
                         menu['imagenUrl'],
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _imagenPlaceholder(),
+                        errorBuilder: (prevMenuErrCtx, prevMenuErrObj, prevMenuErrStack) =>
+                            _imagenPlaceholder(),
                       )
                     : _imagenPlaceholder(),
               ),

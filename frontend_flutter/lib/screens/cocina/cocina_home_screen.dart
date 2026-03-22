@@ -78,10 +78,10 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (dialogInfoContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
+          width: MediaQuery.of(dialogInfoContext).size.width * 0.9,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -96,7 +96,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(dialogInfoContext),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -167,7 +167,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(dialogInfoContext);
                       _verPedido(pedido, numero);
                     },
                     style: ElevatedButton.styleFrom(
@@ -198,10 +198,10 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (dialogPedidoContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
+          width: MediaQuery.of(dialogPedidoContext).size.width * 0.9,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -216,7 +216,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   children: [
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(dialogPedidoContext),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -244,7 +244,8 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                         width: double.infinity,
                         height: 160,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _imagenPlaceholder(),
+                        errorBuilder: (imgErrCtx, imgErrObj, imgErrStack) =>
+                            _imagenPlaceholder(),
                       ),
                     )
                   else
@@ -489,7 +490,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         itemCount: pedidos.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (listCtx, index) {
           final pedido = pedidos[index];
           final numero = _pedidos.indexOf(pedido) + 1;
           final usuario = pedido['Usuario'];
@@ -638,7 +639,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                                 width: 70,
                                 height: 70,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
+                                errorBuilder: (miniErrCtx, miniErrObj, miniErrStack) =>
                                     _miniPlaceholder(),
                               )
                             : _miniPlaceholder(),

@@ -57,19 +57,21 @@ class _CategoriasTabState extends State<CategoriasTab> {
         TextEditingController(text: categoria?['nombre'] ?? '');
     String tipo = categoria?['tipo'] ?? _tipos.first;
 
+    final messenger = ScaffoldMessenger.of(context);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setModalState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
             20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+            MediaQuery.of(sheetContext).viewInsets.bottom + 20,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -136,8 +138,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
                                     width: 10,
                                     height: 10,
                                     decoration: BoxDecoration(
-                                      color: _coloresTipo[t] ??
-                                          Colors.grey,
+                                      color: _coloresTipo[t] ?? Colors.grey,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -158,7 +159,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (nombreController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         const SnackBar(
                           content: Text('El nombre es requerido'),
                           backgroundColor: Colors.red,
@@ -176,16 +177,16 @@ class _CategoriasTabState extends State<CategoriasTab> {
                     if (categoria == null) {
                       ok = await _service.create(data);
                     } else {
-                      ok =
-                          await _service.update(categoria['id'], data);
+                      ok = await _service.update(categoria['id'], data);
                     }
 
-                    if (!mounted) return;
-                    Navigator.pop(context);
+                    if (sheetContext.mounted) {
+                      Navigator.of(sheetContext).pop();
+                    }
 
                     if (ok) {
                       _cargar();
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             categoria == null
@@ -229,9 +230,12 @@ class _CategoriasTabState extends State<CategoriasTab> {
   }
 
   Future<void> _eliminar(Map<String, dynamic> categoria) async {
+    // Capturamos messenger ANTES de cualquier await
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (eliminarDialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -247,14 +251,14 @@ class _CategoriasTabState extends State<CategoriasTab> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(eliminarDialogCtx, false),
             child: Text(
               'Cancelar',
               style: TextStyle(color: Colors.grey.shade600),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(eliminarDialogCtx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -271,10 +275,11 @@ class _CategoriasTabState extends State<CategoriasTab> {
     if (confirm != true) return;
 
     final ok = await _service.delete(categoria['id']);
+
     if (ok) {
       _cargar();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: const Text('Categoría eliminada correctamente'),
             backgroundColor: Colors.green,
@@ -306,7 +311,6 @@ class _CategoriasTabState extends State<CategoriasTab> {
       body: Column(
         children: [
 
-          // Select de tipo
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Container(
@@ -345,8 +349,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
                                 width: 10,
                                 height: 10,
                                 decoration: BoxDecoration(
-                                  color:
-                                      _coloresTipo[t] ?? Colors.grey,
+                                  color: _coloresTipo[t] ?? Colors.grey,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -363,7 +366,6 @@ class _CategoriasTabState extends State<CategoriasTab> {
             ),
           ),
 
-          // Contador y limpiar filtro
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -417,7 +419,6 @@ class _CategoriasTabState extends State<CategoriasTab> {
 
           const SizedBox(height: 8),
 
-          // Lista
           Expanded(
             child: _categoriasFiltradas.isEmpty
                 ? Center(
@@ -454,7 +455,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
                       padding:
                           const EdgeInsets.fromLTRB(16, 0, 16, 100),
                       itemCount: _categoriasFiltradas.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (catTabListCtx, index) {
                         final cat = _categoriasFiltradas[index];
                         final color = _coloresTipo[cat['tipo']] ??
                             const Color(0xFFE8651A);

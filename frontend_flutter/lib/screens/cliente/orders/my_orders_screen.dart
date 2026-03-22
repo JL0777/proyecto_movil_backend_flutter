@@ -88,7 +88,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
   Future<void> _cancelarPedido(Map<String, dynamic> pedido) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (cancelDialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -108,12 +108,12 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(cancelDialogCtx, false),
             child: Text('No, mantener',
                 style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(cancelDialogCtx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -188,14 +188,16 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       }
     }).toList();
 
+    if (!mounted) return;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
+      builder: (editModalCtx) => StatefulBuilder(
+        builder: (editModalCtx, setModalState) {
           double calcularTotal() {
             return items.fold(
                 0, (sum, i) => sum + (i['precio'] * i['cantidad']));
@@ -206,7 +208,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               20,
               20,
               20,
-              MediaQuery.of(context).viewInsets.bottom + 20,
+              MediaQuery.of(editModalCtx).viewInsets.bottom + 20,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -238,7 +240,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                       color: const Color(0xFFE8651A)),
                   const SizedBox(height: 20),
 
-                  // Productos
                   const Text(
                     'PRODUCTOS',
                     style: TextStyle(
@@ -376,7 +377,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   const SizedBox(height: 20),
 
-                  // Dirección
                   const Text(
                     'DIRECCIÓN DE ENTREGA',
                     style: TextStyle(
@@ -461,7 +461,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   const SizedBox(height: 20),
 
-                  // Método de pago
                   const Text(
                     'MÉTODO DE PAGO',
                     style: TextStyle(
@@ -528,7 +527,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   const SizedBox(height: 20),
 
-                  // Total
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -593,8 +591,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               final result = await _service
                                   .editarPedido(pedido['id'], data);
 
-                              if (!context.mounted) return;
-                              Navigator.pop(context);
+                              if (!editModalCtx.mounted) return;
+                              Navigator.pop(editModalCtx);
+
+                              if (!mounted) return;
 
                               if (result['success']) {
                                 _cargar();
@@ -793,7 +793,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                           padding: const EdgeInsets.fromLTRB(
                               16, 12, 16, 20),
                           itemCount: lista.length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (ordersListCtx, index) {
                             return _pedidoCard(
                                 lista[index],
                                 _pedidos.indexOf(lista[index]) + 1);
@@ -918,7 +918,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               width: 70,
                               height: 70,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (ordersErrCtx, ordersErrObj,
+                                      ordersErrStack) =>
                                   _miniPlaceholder(),
                             )
                           : _miniPlaceholder(),
@@ -1188,8 +1189,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _cancelarPedido(pedido),
                           style: OutlinedButton.styleFrom(
-                            side:
-                                const BorderSide(color: Colors.red),
+                            side: const BorderSide(color: Colors.red),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),

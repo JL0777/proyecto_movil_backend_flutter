@@ -65,7 +65,7 @@ class _UsuariosTabState extends State<UsuariosTab> {
   Future<void> _confirmarEliminar(Map<String, dynamic> u) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -85,14 +85,14 @@ class _UsuariosTabState extends State<UsuariosTab> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               "Cancelar",
               style: TextStyle(color: Colors.grey.shade600),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -266,7 +266,7 @@ class _UsuariosTabState extends State<UsuariosTab> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _filtrados.length,
-                    itemBuilder: (context, index) {
+                    itemBuilder: (listContext, index) {
                       final u = _filtrados[index];
                       return _usuarioCard(u);
                     },
@@ -318,7 +318,7 @@ class _UsuariosTabState extends State<UsuariosTab> {
                 ? Image.network(
                     fotoPerfil,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (imgErrContext, imgErrObj, imgErrStack) =>
                         _avatarConInicial(inicial),
                   )
                 : _avatarConInicial(inicial),

@@ -17,7 +17,6 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
   bool _loading = true;
   late TabController _tabController;
 
-  // Filtros por tab
   String? _filtroTradicional;
   String? _filtroRapida;
   String? _filtroComunes;
@@ -160,19 +159,21 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     String tipo = ingrediente?['tipo'] ??
         _tiposPorTab(_tabController.index).first;
 
+    final messenger = ScaffoldMessenger.of(context);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setModalState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
             20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+            MediaQuery.of(sheetContext).viewInsets.bottom + 20,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -289,7 +290,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                   child: ElevatedButton(
                     onPressed: () async {
                       if (nombreController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('El nombre es requerido'),
                             backgroundColor: Colors.red,
@@ -299,7 +300,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                       }
 
                       if (cantidadController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('La cantidad base es requerida'),
                             backgroundColor: Colors.red,
@@ -327,12 +328,13 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                             ingrediente['id'], data);
                       }
 
-                      if (!mounted) return;
-                      Navigator.pop(context);
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
 
                       if (ok) {
                         _cargar();
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               ingrediente == null
@@ -377,9 +379,12 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
   }
 
   Future<void> _eliminar(Map<String, dynamic> ingrediente) async {
+    // Capturamos messenger ANTES de cualquier await
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (eliminarIngDialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -393,14 +398,14 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
         content: Text('¿Eliminar "${ingrediente['nombre']}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(eliminarIngDialogCtx, false),
             child: Text(
               'Cancelar',
               style: TextStyle(color: Colors.grey.shade600),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(eliminarIngDialogCtx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -417,10 +422,11 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     if (confirm != true) return;
 
     final ok = await _service.delete(ingrediente['id']);
+
     if (ok) {
       _cargar();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: const Text('Ingrediente eliminado correctamente'),
             backgroundColor: Colors.green,
@@ -523,7 +529,6 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
           ),
         ),
 
-        // Contador y limpiar filtro
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -613,7 +618,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
         itemCount: lista.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (ingListCtx, index) {
           final ing = lista[index];
           final precio = double.parse(ing['precio'].toString());
           final cantidad = ing['cantidad'] != null

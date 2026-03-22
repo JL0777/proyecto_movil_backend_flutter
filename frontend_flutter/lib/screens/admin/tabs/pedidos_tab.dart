@@ -51,7 +51,6 @@ class _PedidosTabState extends State<PedidosTab> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 Row(
                   children: [
                     IconButton(
@@ -73,7 +72,6 @@ class _PedidosTabState extends State<PedidosTab> {
                 ),
                 const SizedBox(height: 16),
 
-                // Avatar y nombre
                 Row(
                   children: [
                     Container(
@@ -87,13 +85,12 @@ class _PedidosTabState extends State<PedidosTab> {
                         ),
                       ),
                       child: ClipOval(
-                        child:
-                            usuario?['fotoPerfil'] != null &&
+                        child: usuario?['fotoPerfil'] != null &&
                                 usuario!['fotoPerfil'].toString().isNotEmpty
                             ? Image.network(
                                 usuario['fotoPerfil'],
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                                errorBuilder: (context, error, _) => Container(
                                   color: const Color(0xFFFFF3ED),
                                   child: const Icon(
                                     Icons.person,
@@ -142,7 +139,6 @@ class _PedidosTabState extends State<PedidosTab> {
                 const Divider(),
                 const SizedBox(height: 12),
 
-                // Info contacto
                 _seccion('Contacto'),
                 const SizedBox(height: 8),
                 _infoChip(
@@ -157,7 +153,6 @@ class _PedidosTabState extends State<PedidosTab> {
 
                 const SizedBox(height: 16),
 
-                // Dirección
                 _seccion('Dirección de entrega'),
                 const SizedBox(height: 8),
                 _infoChip(
@@ -261,7 +256,6 @@ class _PedidosTabState extends State<PedidosTab> {
                 ),
                 const SizedBox(height: 16),
 
-                // Tipo y método de pago
                 Row(
                   children: [
                     _badge(
@@ -346,7 +340,6 @@ class _PedidosTabState extends State<PedidosTab> {
 
                 const SizedBox(height: 12),
 
-                // Totales
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -556,7 +549,6 @@ class _PedidosTabState extends State<PedidosTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header azul — Enviado
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -619,7 +611,6 @@ class _PedidosTabState extends State<PedidosTab> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Imagen
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: imagenUrl != null && imagenUrl.isNotEmpty
@@ -628,13 +619,13 @@ class _PedidosTabState extends State<PedidosTab> {
                                 width: 65,
                                 height: 65,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _placeholder(),
+                                errorBuilder: (context, error, _) =>
+                                    _placeholder(),
                               )
                             : _placeholder(),
                       ),
                       const SizedBox(width: 12),
 
-                      // Info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -682,7 +673,6 @@ class _PedidosTabState extends State<PedidosTab> {
                         ),
                       ),
 
-                      // Total
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
@@ -706,7 +696,7 @@ class _PedidosTabState extends State<PedidosTab> {
                     ],
                   ),
                 ),
-                // Botones ver separados
+
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                   child: Row(

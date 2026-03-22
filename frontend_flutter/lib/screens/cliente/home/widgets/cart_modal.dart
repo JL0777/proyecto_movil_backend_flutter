@@ -49,13 +49,13 @@ class _CartModalState extends State<CartModal> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (newDirSheetCtx) => StatefulBuilder(
+        builder: (newDirSheetCtx, setModalState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
             20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+            MediaQuery.of(newDirSheetCtx).viewInsets.bottom + 20,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -120,7 +120,7 @@ class _CartModalState extends State<CartModal> {
                     onPressed: () async {
                       if (barrioController.text.trim().isEmpty ||
                           direccionController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(newDirSheetCtx).showSnackBar(
                           const SnackBar(
                             content:
                                 Text('Barrio y dirección son requeridos'),
@@ -130,6 +130,10 @@ class _CartModalState extends State<CartModal> {
                         return;
                       }
 
+                      // Capturamos nav y messenger ANTES del await
+                      final nav = Navigator.of(newDirSheetCtx);
+                      final messenger = ScaffoldMessenger.of(context);
+
                       final ok = await _addressService.createAddress({
                         'barrio': barrioController.text.trim(),
                         'direccion': direccionController.text.trim(),
@@ -137,13 +141,12 @@ class _CartModalState extends State<CartModal> {
                         'tipoVivienda': tipoVivienda,
                       });
 
-                      if (!context.mounted) return;
-                      Navigator.pop(context);
+                      nav.pop();
 
                       if (ok) {
                         await _cargarDirecciones();
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: const Text(
                                   'Dirección agregada correctamente'),
@@ -262,9 +265,9 @@ class _CartModalState extends State<CartModal> {
   @override
   Widget build(BuildContext context) {
     return Consumer<CartProvider>(
-      builder: (context, cart, _) {
+      builder: (consumerCtx, cart, child) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
+          height: MediaQuery.of(consumerCtx).size.height * 0.85,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -361,7 +364,7 @@ class _CartModalState extends State<CartModal> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: cart.items.length,
-      itemBuilder: (context, index) {
+      itemBuilder: (cartListCtx, index) {
         final item = cart.items[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -463,7 +466,6 @@ class _CartModalState extends State<CartModal> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Resumen
           const Text(
             'Resumen del pedido',
             style: TextStyle(
@@ -528,7 +530,6 @@ class _CartModalState extends State<CartModal> {
 
           const SizedBox(height: 20),
 
-          // Dirección
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -668,7 +669,6 @@ class _CartModalState extends State<CartModal> {
 
           const SizedBox(height: 20),
 
-          // Método de pago
           const Text(
             'Método de pago',
             style: TextStyle(

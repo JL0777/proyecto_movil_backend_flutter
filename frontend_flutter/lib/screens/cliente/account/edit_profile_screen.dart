@@ -62,8 +62,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isValidColombianPhone(String number) {
     if (!RegExp(r'^\d+$').hasMatch(number)) return false;
     if (number.startsWith('3') && number.length == 10) return true;
-    if (number.length == 7 && RegExp(r'^[1245678]').hasMatch(number))
-      return true;
+    if (number.length == 7 && RegExp(r'^[1245678]').hasMatch(number)) {
+    return true;
+  }
     return false;
   }
 
@@ -216,8 +217,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   );
                                   if (!context.mounted) return false;
                                   setStateDialog(() {
-                                    if (segundosRestantes > 0)
+                                    if (segundosRestantes > 0) {
                                       segundosRestantes--;
+                                    }
                                   });
                                   return segundosRestantes > 0;
                                 });
@@ -415,8 +417,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ? Image.network(
                               fotoPerfil,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _avatarPlaceholder(),
+                              errorBuilder: (context, error, _) => _avatarPlaceholder(),
                             )
                           : _avatarPlaceholder(),
                     ),
@@ -789,12 +790,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _passwordField(String label, TextEditingController controller) {
-    bool _obscure = true;
+    bool obscure = true;
 
     return StatefulBuilder(
       builder: (context, setState) => TextField(
         controller: controller,
-        obscureText: _obscure,
+        obscureText: obscure,
         style: const TextStyle(
           fontSize: 14,
           color: Colors.black87,
@@ -821,13 +822,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           suffixIcon: IconButton(
             icon: Icon(
-              _obscure
+              obscure
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
               color: Colors.grey.shade500,
               size: 20,
             ),
-            onPressed: () => setState(() => _obscure = !_obscure),
+            onPressed: () => setState(() => obscure = !obscure),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),

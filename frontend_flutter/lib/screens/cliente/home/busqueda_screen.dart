@@ -156,7 +156,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: _resultados.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (busqListCtx, index) {
                         final menu = _resultados[index];
                         final precio = double.parse(
                             menu['precio'].toString());
@@ -204,7 +204,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                                         width: 60,
                                         height: 60,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
+                                        errorBuilder: (busqErrCtx, busqErrObj, busqErrStack) =>
                                             _placeholder(),
                                       )
                                     : _placeholder(),

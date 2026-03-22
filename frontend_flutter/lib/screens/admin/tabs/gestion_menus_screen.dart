@@ -64,19 +64,21 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     File? imagenSeleccionada;
     bool subiendoImagen = false;
 
+    final messenger = ScaffoldMessenger.of(context);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setModalState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
             20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+            MediaQuery.of(sheetContext).viewInsets.bottom + 20,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -109,7 +111,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                 _campo(precioController, 'Precio', tipo: TextInputType.number),
                 const SizedBox(height: 12),
 
-                // Imagen
                 const Text(
                   'Imagen del menú',
                   style: TextStyle(
@@ -120,7 +121,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Preview imagen
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: imagenSeleccionada != null
@@ -136,14 +136,14 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           height: 160,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _previewPlaceholder(),
+                          errorBuilder: (previewErrCtx, previewErrObj, previewErrStack) =>
+                              _previewPlaceholder(),
                         )
                       : _previewPlaceholder(),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Botones galería y cámara
                 Row(
                   children: [
                     Expanded(
@@ -222,7 +222,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
 
                 const SizedBox(height: 12),
 
-                // Categoría
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -259,7 +258,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                             if (nombreController.text.trim().isEmpty ||
                                 precioController.text.trim().isEmpty ||
                                 categoriaId == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 const SnackBar(
                                   content: Text('Completa todos los campos'),
                                   backgroundColor: Colors.red,
@@ -270,7 +269,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
 
                             String imagenUrl = imagenUrlController.text.trim();
 
-                            // Si hay imagen nueva, subirla primero
                             if (imagenSeleccionada != null) {
                               setModalState(() => subiendoImagen = true);
 
@@ -283,19 +281,16 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                               if (url != null) {
                                 imagenUrl = url;
                               } else {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Error al subir la imagen'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Error al subir la imagen'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
                                 return;
                               }
                             }
 
-                            // Antes de guardar, si hay imagen nueva y el menú ya tenía imagen, eliminar la anterior
                             if (imagenSeleccionada != null &&
                                 menu != null &&
                                 menu['imagenUrl'] != null &&
@@ -325,12 +320,13 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                               ok = await _menuService.update(menu['id'], data);
                             }
 
-                            if (!context.mounted) return;
-                            Navigator.pop(context);
+                            if (sheetContext.mounted) {
+                              Navigator.of(sheetContext).pop();
+                            }
 
                             if (ok) {
                               _cargar();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     menu == null
@@ -408,9 +404,12 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
   }
 
   Future<void> _eliminar(Map<String, dynamic> menu) async {
+    // Capturamos messenger ANTES de cualquier await
+    final messenger = ScaffoldMessenger.of(context);
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (eliminarMenuDialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
@@ -422,14 +421,14 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
         content: Text('¿Eliminar "${menu['nombre']}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(eliminarMenuDialogCtx, false),
             child: Text(
               'Cancelar',
               style: TextStyle(color: Colors.grey.shade600),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(eliminarMenuDialogCtx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -446,10 +445,11 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     if (confirm != true) return;
 
     final ok = await _menuService.delete(menu['id']);
+
     if (ok) {
       _cargar();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: const Text('Menú eliminado correctamente'),
             backgroundColor: Colors.green,
@@ -655,7 +655,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           child: ListView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                             itemCount: _menusFiltrados.length,
-                            itemBuilder: (context, index) {
+                            itemBuilder: (menuListCtx, index) {
                               final menu = _menusFiltrados[index];
                               final categoria = menu['Categoria'];
                               final precio = double.parse(
@@ -687,8 +687,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                   ),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child:
-                                        menu['imagenUrl'] != null &&
+                                    child: menu['imagenUrl'] != null &&
                                             menu['imagenUrl']
                                                 .toString()
                                                 .isNotEmpty
@@ -697,7 +696,9 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                             width: 56,
                                             height: 56,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
+                                            errorBuilder: (menuImgErrCtx,
+                                                    menuImgErrObj,
+                                                    menuImgErrStack) =>
                                                 _imagenPlaceholder(),
                                           )
                                         : _imagenPlaceholder(),

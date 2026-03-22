@@ -141,34 +141,36 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
     if (imagen == null) return;
 
-    // Confirmación
+    if (!mounted) return;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           '¿Subir esta foto?',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.file(
-            File(imagen.path),
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.file(
+              File(imagen.path),
+              height: 200,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
               style: TextStyle(color: Colors.grey.shade600),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE8651A),
               foregroundColor: Colors.white,
@@ -186,13 +188,11 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
     setState(() => _subiendoFoto = true);
 
-    // Eliminar foto anterior si existe
     final fotoAnterior = user?['fotoPerfil'];
     if (fotoAnterior != null && fotoAnterior.toString().isNotEmpty) {
       await _uploadService.eliminarImagen(fotoAnterior);
     }
 
-    // Subir nueva foto
     final url = await _uploadService.subirImagen(File(imagen.path));
 
     if (url != null) {
@@ -261,182 +261,184 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     final email = user?["email"] ?? widget.email;
     final nombre = user?["nombre"] ?? "";
     final fotoPerfil = user?["fotoPerfil"];
+    // Altura de la status bar para que el naranja la cubra
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header con fondo naranja
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(30),
-                ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Header naranja que cubre desde el borde superior
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-              child: Column(
-                children: [
-                  // Avatar
-                  Stack(
-                    children: [
-                      GestureDetector(
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            // El padding superior incluye la status bar
+            padding: EdgeInsets.fromLTRB(20, statusBarHeight + 20, 20, 30),
+            child: Column(
+              children: [
+                // Avatar
+                Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: _cambiarFoto,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: _subiendoFoto
+                              ? Container(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFFE8651A),
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                )
+                              : fotoPerfil != null &&
+                                    fotoPerfil.toString().isNotEmpty
+                              ? Image.network(
+                                fotoPerfil,
+                                fit: BoxFit.cover,
+                                key: ValueKey(fotoPerfil),
+                                errorBuilder: (errContext, errObj, errStack) =>
+                                    _avatarPlaceholder(),
+                              )
+                              : _avatarPlaceholder(),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
                         onTap: _cambiarFoto,
                         child: Container(
-                          width: 100,
-                          height: 100,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
+                            color: Colors.white,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: _subiendoFoto
-                                ? Container(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Color(0xFFE8651A),
-                                        strokeWidth: 2.5,
-                                      ),
-                                    ),
-                                  )
-                                : fotoPerfil != null &&
-                                      fotoPerfil.toString().isNotEmpty
-                                ? Image.network(
-                                    fotoPerfil,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        _avatarPlaceholder(),
-                                  )
-                                : _avatarPlaceholder(),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _cambiarFoto,
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFE8651A),
-                                width: 2,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt_outlined,
-                              color: Color(0xFFE8651A),
-                              size: 16,
+                            border: Border.all(
+                              color: const Color(0xFFE8651A),
+                              width: 2,
                             ),
                           ),
+                          child: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Color(0xFFE8651A),
+                            size: 16,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  if (nombre.isNotEmpty)
-                    Text(
-                      nombre,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
                       ),
                     ),
-                  const SizedBox(height: 4),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (nombre.isNotEmpty)
                   Text(
-                    email,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.85),
+                    nombre,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-            // Menú
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Mi cuenta',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black54,
-                      letterSpacing: 0.5,
-                    ),
+          // Menú
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mi cuenta',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black54,
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(height: 8),
-                  _menuItem(
-                    icon: Icons.person_outline,
-                    title: 'Editar información personal',
-                    subtitle: 'Nombre, correo y teléfono',
-                    onTap: () => _navigate(context, const EditProfileScreen()),
-                  ),
-                  _menuItem(
-                    icon: Icons.location_on_outlined,
-                    title: 'Mis direcciones',
-                    subtitle: 'Gestiona tus direcciones de entrega',
-                    onTap: () => _navigate(context, MyAddressesScreen()),
-                  ),
+                ),
+                const SizedBox(height: 8),
+                _menuItem(
+                  icon: Icons.person_outline,
+                  title: 'Editar información personal',
+                  subtitle: 'Nombre, correo y teléfono',
+                  onTap: () => _navigate(context, const EditProfileScreen()),
+                ),
+                _menuItem(
+                  icon: Icons.location_on_outlined,
+                  title: 'Mis direcciones',
+                  subtitle: 'Gestiona tus direcciones de entrega',
+                  onTap: () => _navigate(context, MyAddressesScreen()),
+                ),
 
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Soporte',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black54,
-                      letterSpacing: 0.5,
-                    ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Soporte',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black54,
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(height: 8),
-                  _menuItem(
-                    icon: Icons.help_outline,
-                    title: 'Ayuda',
-                    subtitle: 'Preguntas frecuentes y soporte',
-                    onTap: () => _navigate(context, const HelpScreen()),
-                  ),
+                ),
+                const SizedBox(height: 8),
+                _menuItem(
+                  icon: Icons.help_outline,
+                  title: 'Ayuda',
+                  subtitle: 'Preguntas frecuentes y soporte',
+                  onTap: () => _navigate(context, const HelpScreen()),
+                ),
 
-                  const SizedBox(height: 16),
-                  _menuItem(
-                    icon: Icons.logout,
-                    title: 'Cerrar sesión',
-                    subtitle: 'Salir de tu cuenta',
-                    iconColor: Colors.red,
-                    iconBg: const Color(0xFFFEF2F2),
-                    titleColor: Colors.red,
-                    onTap: () => LogoutHelper.confirmarCierreSesion(context),
-                  ),
-                  const SizedBox(height: 30),
-                ],
-              ),
+                const SizedBox(height: 16),
+                _menuItem(
+                  icon: Icons.logout,
+                  title: 'Cerrar sesión',
+                  subtitle: 'Salir de tu cuenta',
+                  iconColor: Colors.red,
+                  iconBg: const Color(0xFFFEF2F2),
+                  titleColor: Colors.red,
+                  onTap: () => LogoutHelper.confirmarCierreSesion(context),
+                ),
+                const SizedBox(height: 30),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

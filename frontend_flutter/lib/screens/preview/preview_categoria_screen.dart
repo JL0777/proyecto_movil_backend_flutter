@@ -93,8 +93,7 @@ class _PreviewCategoriaScreenState extends State<PreviewCategoriaScreen> {
           // Banner invitado
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             color: const Color(0xFFFFF3ED),
             child: Row(
               children: [
@@ -171,7 +170,7 @@ class _PreviewCategoriaScreenState extends State<PreviewCategoriaScreen> {
                           childAspectRatio: 0.85,
                         ),
                         itemCount: _menus.length,
-                        itemBuilder: (context, index) {
+                        itemBuilder: (gridCtx, index) {
                           final menu = _menus[index];
                           return _menuCard(menu);
                         },
@@ -219,7 +218,7 @@ class _PreviewCategoriaScreenState extends State<PreviewCategoriaScreen> {
                         menu['imagenUrl'],
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorBuilder: (prevCatErrCtx, prevCatErrObj, prevCatErrStack) =>
                             _imagenPlaceholder(),
                       )
                     : _imagenPlaceholder(),

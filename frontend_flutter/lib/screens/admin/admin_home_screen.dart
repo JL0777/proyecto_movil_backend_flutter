@@ -207,7 +207,6 @@ class _AdminDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar con foto
                 Container(
                   width: 70,
                   height: 70,
@@ -231,8 +230,7 @@ class _AdminDrawer extends StatelessWidget {
                         ? Image.network(
                             fotoPerfil,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _avatarPlaceholder(),
+                            errorBuilder: (context, error, _) => _avatarPlaceholder(),
                           )
                         : _avatarPlaceholder(),
                   ),

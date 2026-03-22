@@ -32,7 +32,8 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     ? Image.network(
                         widget.menu['imagenUrl'],
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _imagenPlaceholder(),
+                        errorBuilder: (menuErrCtx, menuErrObj, menuErrStack) =>
+                            _imagenPlaceholder(),
                       )
                     : _imagenPlaceholder(),
               ),

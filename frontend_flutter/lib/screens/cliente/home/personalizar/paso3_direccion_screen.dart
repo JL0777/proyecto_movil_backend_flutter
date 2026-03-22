@@ -59,13 +59,13 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (nuevaDirSheetCtx) => StatefulBuilder(
+        builder: (nuevaDirSheetCtx, setModalState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
             20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+            MediaQuery.of(nuevaDirSheetCtx).viewInsets.bottom + 20,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -100,7 +100,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     maxLines: 2),
                 const SizedBox(height: 12),
 
-                // Tipo de vivienda
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -132,7 +131,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     onPressed: () async {
                       if (barrioController.text.trim().isEmpty ||
                           direccionController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(nuevaDirSheetCtx).showSnackBar(
                           const SnackBar(
                             content: Text('Barrio y dirección son requeridos'),
                             backgroundColor: Colors.red,
@@ -141,6 +140,10 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                         return;
                       }
 
+                      // Capturamos nav y messenger ANTES del await
+                      final nav = Navigator.of(nuevaDirSheetCtx);
+                      final messenger = ScaffoldMessenger.of(context);
+
                       final ok = await _service.createAddress({
                         'barrio': barrioController.text.trim(),
                         'direccion': direccionController.text.trim(),
@@ -148,23 +151,24 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                         'tipoVivienda': tipoVivienda,
                       });
 
-                      if (!context.mounted) return;
-                      Navigator.pop(context);
+                      nav.pop();
 
                       if (ok) {
                         await _cargar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                const Text('Dirección agregada correctamente'),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                  'Dirección agregada correctamente'),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(16),
                             ),
-                            margin: const EdgeInsets.all(16),
-                          ),
-                        );
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -254,7 +258,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Botón agregar nueva dirección
                         GestureDetector(
                           onTap: _mostrarFormularioNuevaDireccion,
                           child: Container(
@@ -405,7 +408,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                   ),
           ),
 
-          // Footer
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(

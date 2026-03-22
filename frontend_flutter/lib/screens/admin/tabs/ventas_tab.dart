@@ -509,7 +509,7 @@ class _VentasTabState extends State<VentasTab> {
                           ? Image.network(
                               fotoPerfil,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (ventasErrCtx, ventasErrObj, ventasErrStack) =>
                                   _avatarPlaceholder(),
                             )
                           : _avatarPlaceholder(),
@@ -567,8 +567,7 @@ class _VentasTabState extends State<VentasTab> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color:
-                              colorEstado.withValues(alpha: 0.1),
+                          color: colorEstado.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: colorEstado.withValues(alpha: 0.3),

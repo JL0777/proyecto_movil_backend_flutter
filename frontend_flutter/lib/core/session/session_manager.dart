@@ -28,12 +28,12 @@ class SessionManager {
     return null;
   }
 
-    static Future<void> clearSession() async {
-      final prefs = await SharedPreferences.getInstance();
-      
-      await prefs.remove(_tokenKey);
-      await prefs.remove(_userKey);
-    }
+  static Future<void> clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userKey);
+  }
 
   static Future<bool> isLoggedIn() async {
     final token = await getToken();

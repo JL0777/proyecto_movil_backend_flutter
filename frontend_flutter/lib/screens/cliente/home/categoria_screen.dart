@@ -210,7 +210,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                             childAspectRatio: 0.85,
                           ),
                           itemCount: _menus.length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (catGridCtx, index) {
                             final menu = _menus[index];
                             return _menuCard(menu);
                           },
@@ -261,7 +261,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                         menu['imagenUrl'],
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorBuilder: (catErrCtx, catErrObj, catErrStack) =>
                             _imagenPlaceholder(),
                       )
                     : _imagenPlaceholder(),

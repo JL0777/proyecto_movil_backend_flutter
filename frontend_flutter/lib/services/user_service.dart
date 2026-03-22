@@ -145,25 +145,25 @@ class UserService {
   }
 
 
-  Future<Map<String, dynamic>> updateFotoPerfil(String fotoPerfil) async {
-    final token = await _getToken();
+Future<Map<String, dynamic>> updateFotoPerfil(String fotoPerfil) async {
+  final token = await _getToken();
 
-    final response = await http.put(
-      Uri.parse("$baseUrl/foto-perfil"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({"fotoPerfil": fotoPerfil}),
-    );
+  final response = await http.put(
+    Uri.parse("$baseUrl/foto-perfil"),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token",
+    },
+    body: jsonEncode({"fotoPerfil": fotoPerfil}),
+  );
 
-    final data = jsonDecode(response.body);
+  final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      await SessionManager.saveSession(token: token!, user: data['user']);
-      return {"success": true, "user": data['user']};
-    }
-
-    return {"success": false, "error": data["error"]};
+  if (response.statusCode == 200) {
+    await SessionManager.saveSession(token: token!, user: data['user']);
+    return {"success": true, "user": data['user']};
   }
+
+  return {"success": false, "error": data["error"]};
+}
 }

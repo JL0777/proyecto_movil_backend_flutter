@@ -19,7 +19,6 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
   Map<String, dynamic> _seleccionados = {};
   bool _loading = true;
 
-  // Tipos según categoría
   Map<String, String> get _labels {
     final tipo = widget.categoria['tipo'] ?? 'tradicional';
     if (tipo == 'rapida') {
@@ -107,12 +106,15 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
       return;
     }
 
+    // Capturamos el navigator ANTES de entrar al builder
+    final nav = Navigator.of(context);
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Column(
+      builder: (sheetOpcionesCtx) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
@@ -148,7 +150,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   ),
                 ),
                 onTap: () {
-                  Navigator.pop(context);
+                  nav.pop();
                   _mostrarEditorCantidad(tipo, op);
                 },
               )),
@@ -170,8 +172,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
+      builder: (editorDialogCtx) => StatefulBuilder(
+        builder: (editorDialogCtx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -224,7 +226,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                     child: Column(
                       children: [
                         Text(
-                          '${gramos.toStringAsFixed(0)}',
+                          gramos.toStringAsFixed(0),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
@@ -298,7 +300,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(editorDialogCtx),
               child: Text(
                 'Cancelar',
                 style: TextStyle(color: Colors.grey.shade600),
@@ -311,7 +313,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 opConCantidad['precio'] =
                     (precioPorGramo * gramos).toStringAsFixed(0);
                 setState(() => _seleccionados[tipo] = opConCantidad);
-                Navigator.pop(context);
+                Navigator.pop(editorDialogCtx);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8651A),
@@ -390,7 +392,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                         children: _seleccionados.entries
                                             .where((e) => e.value != null)
                                             .map((e) => Text(
-                                                  '${e.value!['nombre']}',
+                                                  e.value!['nombre'],
                                                   style: const TextStyle(
                                                     fontSize: 9,
                                                     fontWeight:
