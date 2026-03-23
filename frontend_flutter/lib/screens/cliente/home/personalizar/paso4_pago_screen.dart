@@ -41,7 +41,9 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
       }
     }
 
-    items.add({'ingredienteId': widget.bebida['id'], 'cantidad': 1});
+    if (widget.bebida.isNotEmpty && widget.bebida['id'] != null) {
+      items.add({'ingredienteId': widget.bebida['id'], 'cantidad': 1});
+    }
 
     for (final entry in widget.complementos.entries) {
       items.add({
@@ -226,19 +228,21 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                               ),
                             ),
 
-                        _filaResumen(
-                          '${widget.bebida['nombre']} (${widget.bebida['cantidad'] ?? ''})',
-                          1,
-                          double.parse(widget.bebida['precio'].toString()),
-                        ),
+                        if (widget.bebida.isNotEmpty &&
+                            widget.bebida['nombre'] != null)
+                          _filaResumen(
+                            '${widget.bebida['nombre']} (${widget.bebida['cantidad'] ?? ''})',
+                            1,
+                            double.parse(widget.bebida['precio'].toString()),
+                          ),
 
-                        ...widget.complementos.entries.map(
-                          (e) => _filaResumen(
+                        ...widget.complementos.entries.map((e) {
+                          return _filaResumen(
                             'Complemento',
                             e.value['cantidad'] ?? 1,
                             0,
-                          ),
-                        ),
+                          );
+                        }),
 
                         const Divider(),
                         _filaTotal('Subtotal', widget.subtotal),

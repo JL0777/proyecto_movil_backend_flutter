@@ -20,6 +20,20 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   final torreController = TextEditingController();
   final instruccionesController = TextEditingController();
 
+  String _normalizarTipoVivienda(String tipo) {
+    switch (tipo.toLowerCase()) {
+      case 'apartamento':
+        return 'Apartamento';
+      case 'oficina':
+      case 'oficina/local comercial':
+        return 'Oficina/Local comercial';
+      case 'hotel':
+        return 'Hotel';
+      default:
+        return 'Casa';
+    }
+  }
+
   String tipoVivienda = "Casa";
   bool loading = false;
 
@@ -30,11 +44,13 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     super.initState();
     if (editMode) {
       final a = widget.address!;
-      barrioController.text = a["barrio"];
-      direccionController.text = a["direccion"];
-      torreController.text = a["torreApartamento"] ?? "";
-      instruccionesController.text = a["instrucciones"] ?? "";
-      tipoVivienda = a["tipoVivienda"];
+      barrioController.text = a["barrio"]?.toString() ?? "";
+      direccionController.text = a["direccion"]?.toString() ?? "";
+      torreController.text = a["torreApartamento"]?.toString() ?? "";
+      instruccionesController.text = a["instrucciones"]?.toString() ?? "";
+      tipoVivienda = _normalizarTipoVivienda(
+        a["tipoVivienda"]?.toString() ?? "Casa",
+      );
     }
   }
 
@@ -93,10 +109,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(
-          color: AppTheme.primaryOrange,
-          width: 1.8,
-        ),
+        borderSide: const BorderSide(color: AppTheme.primaryOrange, width: 1.8),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -106,8 +119,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Colors.red, width: 1.8),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
     );
   }
 
@@ -258,8 +270,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryOrange,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppTheme.primaryOrange.withValues(alpha: 0.6),
+                    disabledBackgroundColor: AppTheme.primaryOrange.withValues(
+                      alpha: 0.6,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

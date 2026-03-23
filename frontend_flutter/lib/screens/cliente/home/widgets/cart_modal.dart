@@ -102,7 +102,7 @@ class _CartModalState extends State<CartModal> {
                     child: DropdownButton<String>(
                       value: tipoVivienda,
                       isExpanded: true,
-                      items: ['Casa', 'Apartamento', 'Oficina', 'Otro']
+                      items: ['Casa', 'Apartamento', 'Oficina/Local comercial', 'Hotel']
                           .map((t) => DropdownMenuItem(
                                 value: t,
                                 child: Text(t),

@@ -111,7 +111,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     child: DropdownButton<String>(
                       value: tipoVivienda,
                       isExpanded: true,
-                      items: ['Casa', 'Apartamento', 'Oficina', 'Otro']
+                      items: ['Casa', 'Apartamento', 'Oficina/Local comercial', 'Hotel']
                           .map((t) => DropdownMenuItem(
                                 value: t,
                                 child: Text(t),
