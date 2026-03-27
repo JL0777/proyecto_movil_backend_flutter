@@ -30,7 +30,8 @@ class CartProvider extends ChangeNotifier {
 
   int get totalItems => _items.fold(0, (sum, i) => sum + i.cantidad);
 
-  double get total => _items.fold(0, (sum, i) => sum + (i.precio * i.cantidad));
+  double get total =>
+      _items.fold(0, (sum, i) => sum + (i.precio * i.cantidad));
 
   double get iva => total - (total / 1.19);
 
@@ -39,20 +40,40 @@ class CartProvider extends ChangeNotifier {
   bool get isEmpty => _items.isEmpty;
 
   void agregarMenu(Map<String, dynamic> menu, int cantidad) {
-    final id = menu['id'];
-    final existente = _items.firstWhere(
-      (i) => i.menuId == id,
-      orElse: () => CartItem(menuId: -1, nombre: '', precio: 0),
-    );
+    // ← cast explícito a int para evitar comparación dynamic == int fallida
+    final id = int.parse(menu['id'].toString());
 
-    if (existente.menuId == id) {
-      existente.cantidad += cantidad;
+    final index = _items.indexWhere((i) => i.menuId == id);
+
+    if (index != -1) {
+      _items[index].cantidad += cantidad;
     } else {
       _items.add(
         CartItem(
           menuId: id,
-          nombre: menu['nombre'],
+          nombre: menu['nombre'].toString(),
           precio: double.parse(menu['precio'].toString()),
+          cantidad: cantidad,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  void agregarIngrediente(Map<String, dynamic> ingrediente, int cantidad) {
+    // ← cast explícito a int
+    final id = int.parse(ingrediente['id'].toString());
+
+    final index = _items.indexWhere((i) => i.ingredienteId == id);
+
+    if (index != -1) {
+      _items[index].cantidad += cantidad;
+    } else {
+      _items.add(
+        CartItem(
+          ingredienteId: id,
+          nombre: ingrediente['nombre'].toString(),
+          precio: double.parse(ingrediente['precio'].toString()),
           cantidad: cantidad,
         ),
       );
@@ -86,27 +107,5 @@ class CartProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> buildItems() {
     return _items.map((i) => i.toItem()).toList();
-  }
-
-  void agregarIngrediente(Map<String, dynamic> ingrediente, int cantidad) {
-    final id = ingrediente['id'];
-    final existente = _items.firstWhere(
-      (i) => i.ingredienteId == id,
-      orElse: () => CartItem(ingredienteId: -1, nombre: '', precio: 0),
-    );
-
-    if (existente.ingredienteId == id) {
-      existente.cantidad += cantidad;
-    } else {
-      _items.add(
-        CartItem(
-          ingredienteId: id,
-          nombre: ingrediente['nombre'],
-          precio: double.parse(ingrediente['precio'].toString()),
-          cantidad: cantidad,
-        ),
-      );
-    }
-    notifyListeners();
   }
 }

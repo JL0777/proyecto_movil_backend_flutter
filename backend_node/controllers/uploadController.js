@@ -35,8 +35,8 @@ exports.uploadImagen = (req, res) => {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
 
-  const url = `http://192.168.0.11:3000/uploads/${req.file.filename}`;
-
+  const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  
   res.json({
     success: true,
     url

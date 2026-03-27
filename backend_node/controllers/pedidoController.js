@@ -8,32 +8,33 @@ exports.create = async (req, res) => {
   const usuarioId = req.user.id;
 
   if (!direccionId || !tipo || !metodoPago || !items || items.length === 0) {
-    return res.status(400).json({
-      error: "Todos los campos son requeridos"
-    });
+    return res.status(400).json({ error: "Todos los campos son requeridos" });
   }
 
   try {
     let total = 0;
 
-    // Calcular total (precio ya incluye IVA)
+    // ── Calcular total detectando tipo POR ITEM ──────────────
     for (const item of items) {
-      if (tipo === 'predefinido') {
+      if (item.menuId != null) {
+        // Es un menú predefinido
         const menu = await Menu.findByPk(item.menuId);
         if (!menu) return res.status(404).json({ error: "Menú no encontrado" });
         total += parseFloat(menu.precio) * item.cantidad;
-      } else {
+      } else if (item.ingredienteId != null) {
+        // Es un ingrediente o bebida
         const ingrediente = await Ingrediente.findByPk(item.ingredienteId);
         if (!ingrediente) return res.status(404).json({ error: "Ingrediente no encontrado" });
         total += parseFloat(ingrediente.precio) * item.cantidad;
+      } else {
+        return res.status(400).json({ error: "Item inválido: debe tener menuId o ingredienteId" });
       }
     }
 
-    // IVA ya incluido en el precio
     const iva = total - (total / 1.19);
     const subtotal = total - iva;
 
-    // Crear pedido
+    // ── Crear pedido ─────────────────────────────────────────
     const pedido = await Pedido.create({
       usuarioId,
       direccionId,
@@ -44,9 +45,9 @@ exports.create = async (req, res) => {
       total
     });
 
-    // Crear detalles
+    // ── Crear detalles detectando tipo POR ITEM ──────────────
     for (const item of items) {
-      if (tipo === 'predefinido') {
+      if (item.menuId != null) {
         const menu = await Menu.findByPk(item.menuId);
         await DetallePedido.create({
           pedidoId: pedido.id,
@@ -253,37 +254,37 @@ exports.updateEstadoCocina = async (req, res) => {
 };
 
 // ======================
-  // CANCELAR PEDIDO (cliente)
-  // ======================
-  exports.cancelarPedido = async (req, res) => {
-    const usuarioId = req.user.id;
+// CANCELAR PEDIDO (cliente)
+// ======================
+exports.cancelarPedido = async (req, res) => {
+  const usuarioId = req.user.id;
 
-    try {
-      const pedido = await Pedido.findOne({
-        where: { id: req.params.id, usuarioId }
-      });
+  try {
+    const pedido = await Pedido.findOne({
+      where: { id: req.params.id, usuarioId }
+    });
 
-      if (!pedido) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      if (pedido.estado !== 'Pendiente') {
-        return res.status(400).json({
-          error: 'Solo puedes cancelar pedidos en estado Pendiente'
-        });
-      }
-
-      await DetallePedido.destroy({ where: { pedidoId: pedido.id } });
-      await pedido.destroy();
-
-      res.json({ success: true, message: 'Pedido cancelado correctamente' });
-    } catch (error) {
-      console.error('ERROR CANCELAR PEDIDO:', error);
-      res.status(500).json({ error: 'Error del servidor' });
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
     }
-  };
 
-  // ======================
+    if (pedido.estado !== 'Pendiente') {
+      return res.status(400).json({
+        error: 'Solo puedes cancelar pedidos en estado Pendiente'
+      });
+    }
+
+    await DetallePedido.destroy({ where: { pedidoId: pedido.id } });
+    await pedido.destroy();
+
+    res.json({ success: true, message: 'Pedido cancelado correctamente' });
+  } catch (error) {
+    console.error('ERROR CANCELAR PEDIDO:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+// ======================
 // EDITAR PEDIDO (cliente) — solo si está Pendiente
 // ======================
 exports.editarPedido = async (req, res) => {
