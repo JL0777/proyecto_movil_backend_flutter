@@ -6,7 +6,7 @@ class Paso3DireccionScreen extends StatefulWidget {
   final Map<String, dynamic> categoria;
   final Map<String, dynamic> ingredientes;
   final Map<String, dynamic> bebida;
-  final Map<String, Map<String, int>> complementos;
+  final Map<String, Map<String, dynamic>> complementos;
   final double subtotal;
 
   const Paso3DireccionScreen({

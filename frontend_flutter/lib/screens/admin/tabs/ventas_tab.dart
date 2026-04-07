@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/ventas_service.dart';
+import 'historial_pedidos_screen.dart';
 
 class VentasTab extends StatefulWidget {
   const VentasTab({super.key});
@@ -88,7 +89,6 @@ class _VentasTabState extends State<VentasTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-
           // Banner principal de ingresos
           Container(
             width: double.infinity,
@@ -148,7 +148,9 @@ class _VentasTabState extends State<VentasTab> {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -163,6 +165,41 @@ class _VentasTabState extends State<VentasTab> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HistorialPedidosScreen()),
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE8651A), width: 1.5),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.history, color: Color(0xFFE8651A), size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Ver historial completo de pedidos',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE8651A),
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: Color(0xFFE8651A), size: 20),
+                ],
+              ),
             ),
           ),
 
@@ -215,8 +252,9 @@ class _VentasTabState extends State<VentasTab> {
                 final estado = e['estado'] as String;
                 final total = int.parse(e['total'].toString());
                 final color = _colorEstado(estado);
-                final porcentaje =
-                    totalPedidos > 0 ? total / totalPedidos : 0.0;
+                final porcentaje = totalPedidos > 0
+                    ? total / totalPedidos
+                    : 0.0;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 14),
@@ -262,8 +300,7 @@ class _VentasTabState extends State<VentasTab> {
                         child: LinearProgressIndicator(
                           value: porcentaje,
                           backgroundColor: Colors.grey.shade100,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(color),
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
                           minHeight: 8,
                         ),
                       ),
@@ -306,8 +343,7 @@ class _VentasTabState extends State<VentasTab> {
                           final label = e['tipo'] == 'personalizado'
                               ? 'Personalizado'
                               : 'Predefinido';
-                          final total =
-                              int.parse(e['total'].toString());
+                          final total = int.parse(e['total'].toString());
                           final color = e['tipo'] == 'personalizado'
                               ? const Color(0xFFE8651A)
                               : Colors.blue;
@@ -318,8 +354,7 @@ class _VentasTabState extends State<VentasTab> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   mainAxisAlignment:
@@ -350,11 +385,10 @@ class _VentasTabState extends State<VentasTab> {
                                   borderRadius: BorderRadius.circular(4),
                                   child: LinearProgressIndicator(
                                     value: porcentaje,
-                                    backgroundColor:
-                                        Colors.grey.shade100,
-                                    valueColor:
-                                        AlwaysStoppedAnimation<Color>(
-                                            color),
+                                    backgroundColor: Colors.grey.shade100,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      color,
+                                    ),
                                     minHeight: 6,
                                   ),
                                 ),
@@ -396,8 +430,7 @@ class _VentasTabState extends State<VentasTab> {
                           final label = e['metodoPago'] == 'pse'
                               ? 'PSE'
                               : 'Contraentrega';
-                          final total =
-                              int.parse(e['total'].toString());
+                          final total = int.parse(e['total'].toString());
                           final color = e['metodoPago'] == 'pse'
                               ? Colors.purple
                               : Colors.teal;
@@ -408,8 +441,7 @@ class _VentasTabState extends State<VentasTab> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   mainAxisAlignment:
@@ -440,11 +472,10 @@ class _VentasTabState extends State<VentasTab> {
                                   borderRadius: BorderRadius.circular(4),
                                   child: LinearProgressIndicator(
                                     value: porcentaje,
-                                    backgroundColor:
-                                        Colors.grey.shade100,
-                                    valueColor:
-                                        AlwaysStoppedAnimation<Color>(
-                                            color),
+                                    backgroundColor: Colors.grey.shade100,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      color,
+                                    ),
                                     minHeight: 6,
                                   ),
                                 ),
@@ -469,8 +500,7 @@ class _VentasTabState extends State<VentasTab> {
           ...ultimosPedidos.map((p) {
             final usuario = p['Usuario'];
             final total = double.parse(p['total'].toString());
-            final fecha =
-                p['createdAt']?.toString().substring(0, 10) ?? '';
+            final fecha = p['createdAt']?.toString().substring(0, 10) ?? '';
             final estado = p['estado'] ?? 'Realizado';
             final colorEstado = _colorEstado(estado);
             final fotoPerfil = usuario?['fotoPerfil'];
@@ -504,13 +534,17 @@ class _VentasTabState extends State<VentasTab> {
                       ),
                     ),
                     child: ClipOval(
-                      child: fotoPerfil != null &&
-                              fotoPerfil.toString().isNotEmpty
+                      child:
+                          fotoPerfil != null && fotoPerfil.toString().isNotEmpty
                           ? Image.network(
                               fotoPerfil,
                               fit: BoxFit.cover,
-                              errorBuilder: (ventasErrCtx, ventasErrObj, ventasErrStack) =>
-                                  _avatarPlaceholder(),
+                              errorBuilder:
+                                  (
+                                    ventasErrCtx,
+                                    ventasErrObj,
+                                    ventasErrStack,
+                                  ) => _avatarPlaceholder(),
                             )
                           : _avatarPlaceholder(),
                     ),
@@ -533,9 +567,11 @@ class _VentasTabState extends State<VentasTab> {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Icon(Icons.calendar_today_outlined,
-                                size: 11,
-                                color: Colors.grey.shade400),
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 11,
+                              color: Colors.grey.shade400,
+                            ),
                             const SizedBox(width: 3),
                             Text(
                               fecha,
@@ -565,7 +601,9 @@ class _VentasTabState extends State<VentasTab> {
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: colorEstado.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -598,11 +636,7 @@ class _VentasTabState extends State<VentasTab> {
   Widget _avatarPlaceholder() {
     return Container(
       color: const Color(0xFFFFF3ED),
-      child: const Icon(
-        Icons.person,
-        color: Color(0xFFE8651A),
-        size: 24,
-      ),
+      child: const Icon(Icons.person, color: Color(0xFFE8651A), size: 24),
     );
   }
 
@@ -652,10 +686,7 @@ class _VentasTabState extends State<VentasTab> {
                 ),
                 Text(
                   titulo,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 ),
               ],
             ),

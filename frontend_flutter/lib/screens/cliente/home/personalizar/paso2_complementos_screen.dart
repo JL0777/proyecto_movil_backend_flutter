@@ -85,33 +85,44 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
-          ..._bebidas.map((b) => ListTile(
-                title: Text(b['nombre']),
-                subtitle: Text(b['cantidad'] != null
+          ..._bebidas.map(
+            (b) => ListTile(
+              title: Text(b['nombre']),
+              subtitle: Text(
+                b['cantidad'] != null
                     ? '${double.parse(b['cantidad'].toString()).toStringAsFixed(0)}ml'
-                    : ''),
-                trailing: Text(
-                  '\$${double.parse(b['precio'].toString()).toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    color: Color(0xFFE8651A),
-                    fontWeight: FontWeight.w600,
-                  ),
+                    : '',
+              ),
+              trailing: Text(
+                '\$${double.parse(b['precio'].toString()).toStringAsFixed(0)}',
+                style: const TextStyle(
+                  color: Color(0xFFE8651A),
+                  fontWeight: FontWeight.w600,
                 ),
-                onTap: () {
-                  setState(() => _bebidaSeleccionada = b);
-                  Navigator.pop(context);
-                },
-              )),
+              ),
+              onTap: () {
+                setState(() => _bebidaSeleccionada = b);
+                Navigator.pop(context);
+              },
+            ),
+          ),
           const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Map<String, Map<String, int>> _buildComplementosParaPaso3() {
-    final result = <String, Map<String, int>>{};
+  Map<String, Map<String, dynamic>> _buildComplementosParaPaso3() {
+    final result = <String, Map<String, dynamic>>{};
     _complementosSeleccionados.forEach((id, cantidad) {
-      result[id] = {'cantidad': cantidad};
+      final comp = _complementos.firstWhere(
+        (c) => c['id'].toString() == id,
+        orElse: () => {'nombre': 'Complemento'},
+      );
+      result[id] = {
+        'cantidad': cantidad,
+        'nombre': comp['nombre'] ?? 'Complemento',
+      };
     });
     return result;
   }
@@ -126,9 +137,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
@@ -171,8 +180,9 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: _bebidaSeleccionada != null
-                                  ? const Color(0xFFE8651A)
-                                      .withValues(alpha: 0.1)
+                                  ? const Color(
+                                      0xFFE8651A,
+                                    ).withValues(alpha: 0.1)
                                   : Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
@@ -182,8 +192,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                               ),
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   _bebidaSeleccionada != null
@@ -235,14 +244,12 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
 
                         ..._complementos.map((comp) {
                           final id = comp['id'].toString();
-                          final cantidad =
-                              _complementosSeleccionados[id] ?? 0;
+                          final cantidad = _complementosSeleccionados[id] ?? 0;
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Text(
@@ -260,11 +267,12 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                                         if (cantidad > 0) {
                                           setState(() {
                                             if (cantidad == 1) {
-                                              _complementosSeleccionados
-                                                  .remove(id);
+                                              _complementosSeleccionados.remove(
+                                                id,
+                                              );
                                             } else {
-                                              _complementosSeleccionados[
-                                                  id] = cantidad - 1;
+                                              _complementosSeleccionados[id] =
+                                                  cantidad - 1;
                                             }
                                           });
                                         }
@@ -299,20 +307,21 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                                     ),
                                     GestureDetector(
                                       onTap: () {
-                                        if (_totalComplementos < _maxComplementosGratis) {
+                                        if (_totalComplementos <
+                                            _maxComplementosGratis) {
                                           setState(() {
-                                            _complementosSeleccionados[
-                                                id] = cantidad + 1;
+                                            _complementosSeleccionados[id] =
+                                                cantidad + 1;
                                           });
                                         } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
                                               content: Text(
                                                 'Máximo 3 complementos gratis',
                                               ),
-                                              backgroundColor:
-                                                  Colors.orange,
+                                              backgroundColor: Colors.orange,
                                             ),
                                           );
                                         }
@@ -424,10 +433,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color(0x66000000),
-            BlendMode.darken,
-          ),
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -440,11 +446,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 26,
-            ),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 26),
           ),
         ],
       ),

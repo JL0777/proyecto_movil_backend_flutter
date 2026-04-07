@@ -5,7 +5,7 @@ class Paso4PagoScreen extends StatefulWidget {
   final Map<String, dynamic> categoria;
   final Map<String, dynamic> ingredientes;
   final Map<String, dynamic> bebida;
-  final Map<String, Map<String, int>> complementos;
+  final Map<String, Map<String, dynamic>> complementos;
   final Map<String, dynamic> direccion;
   final double subtotal;
 
@@ -238,7 +238,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
 
                         ...widget.complementos.entries.map((e) {
                           return _filaResumen(
-                            'Complemento',
+                            e.value['nombre']?.toString() ?? 'Complemento',
                             e.value['cantidad'] ?? 1,
                             0,
                           );
