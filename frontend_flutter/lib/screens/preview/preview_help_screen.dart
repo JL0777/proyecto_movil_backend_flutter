@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import 'preview_orders_screen.dart';
+import 'preview_payments_screen.dart';
+import 'preview_delivery_screen.dart';
+import 'preview_contact_screen.dart';
 
 class PreviewHelpScreen extends StatelessWidget {
   const PreviewHelpScreen({super.key});
@@ -58,30 +62,51 @@ class PreviewHelpScreen extends StatelessWidget {
           const Divider(),
           const SizedBox(height: 16),
 
-          const _HelpCard(
+          _HelpCard(
             icon: Icons.shopping_bag_outlined,
             title: "Mis pedidos",
             subtitle: "Consulta el estado de tus pedidos",
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PreviewOrdersScreen()),
+            ),
           ),
+
           const SizedBox(height: 12),
-          const _HelpCard(
+
+          _HelpCard(
             icon: Icons.payment_outlined,
             title: "Pagos y facturación",
             subtitle: "Información sobre métodos de pago",
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PreviewPaymentsScreen()),
+            ),
           ),
+
           const SizedBox(height: 12),
-          const _HelpCard(
+
+          _HelpCard(
             icon: Icons.location_on_outlined,
             title: "Entregas y direcciones",
             subtitle: "Todo sobre el envío de tu pedido",
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PreviewDeliveryScreen()),
+            ),
           ),
+
           const SizedBox(height: 12),
-          const _HelpCard(
+
+          _HelpCard(
             icon: Icons.chat_bubble_outline,
             title: "Contáctanos",
             subtitle: "Habla con nuestro equipo de soporte",
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PreviewContactScreen()),
+            ),
           ),
-
         ],
       ),
     );
@@ -92,68 +117,74 @@ class _HelpCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
 
   const _HelpCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: const Color(0xFF1A1A1A), size: 22),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A1A),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF1A1A1A), size: 22),
           ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(
-            subtitle,
+          title: Text(
+            title,
             style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF888888),
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A1A),
             ),
           ),
-        ),
-        trailing: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppTheme.lightOrange,
-            borderRadius: BorderRadius.circular(8),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF888888),
+              ),
+            ),
           ),
-          child: const Icon(
-            Icons.chevron_right,
-            color: AppTheme.primaryOrange,
-            size: 20,
+          trailing: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppTheme.lightOrange,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.chevron_right,
+              color: AppTheme.primaryOrange,
+              size: 20,
+            ),
           ),
         ),
       ),

@@ -26,6 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   late AnimationController _heroController;
   late AnimationController _cardController;
   late AnimationController _fieldsController;
+  late AnimationController _bottomBarController;
 
   late Animation<double> _heroFade;
   late Animation<Offset> _heroSlide;
@@ -33,6 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   late Animation<Offset> _cardSlide;
   late Animation<double> _fieldsFade;
   late Animation<Offset> _fieldsSlide;
+  late Animation<double> _bottomBarFade;
 
   @override
   void initState() {
@@ -50,20 +52,22 @@ class _RegisterScreenState extends State<RegisterScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+    _bottomBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
 
-    _heroFade = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
+    _heroFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _heroController, curve: Curves.easeOut),
+    );
     _heroSlide = Tween<Offset>(
       begin: const Offset(0, -0.2),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
 
-    _cardFade = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _cardController, curve: Curves.easeOut));
+    _cardFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.easeOut),
+    );
     _cardSlide = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -72,14 +76,23 @@ class _RegisterScreenState extends State<RegisterScreen>
     _fieldsFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
     );
-    _fieldsSlide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
-        );
+    _fieldsSlide = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
+    );
+
+    _bottomBarFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _bottomBarController, curve: Curves.easeOut),
+    );
 
     _heroController.forward();
     Future.delayed(const Duration(milliseconds: 250), () {
       if (mounted) _cardController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _bottomBarController.forward();
     });
     Future.delayed(const Duration(milliseconds: 450), () {
       if (mounted) _fieldsController.forward();
@@ -95,6 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     _heroController.dispose();
     _cardController.dispose();
     _fieldsController.dispose();
+    _bottomBarController.dispose();
     super.dispose();
   }
 
@@ -161,12 +175,15 @@ class _RegisterScreenState extends State<RegisterScreen>
     final keyboardOpen = bottomInset > 0;
     final screenHeight = MediaQuery.of(context).size.height;
     final safeAreaTop = MediaQuery.of(context).padding.top;
-    final availableHeight = screenHeight - safeAreaTop - bottomInset;
-    final heroHeight = keyboardOpen ? 70.0 : screenHeight * 0.28;
-    final cardHeight = availableHeight - heroHeight;
+    final safeAreaBottom = MediaQuery.of(context).padding.bottom;
+    final availableHeight =
+        screenHeight - safeAreaTop - safeAreaBottom - bottomInset;
+    final heroHeight = keyboardOpen ? 60.0 : screenHeight * 0.28;
+    final cardHeight =
+        (availableHeight - heroHeight).clamp(300.0, double.infinity);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false, // ← clave: nosotros manejamos el espacio
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned.fill(
@@ -179,26 +196,42 @@ class _RegisterScreenState extends State<RegisterScreen>
           Positioned.fill(
             child: Container(color: Colors.black.withValues(alpha: 0.50)),
           ),
+          // Barra blanca inferior con animación
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: safeAreaBottom + 10,
+            child: FadeTransition(
+              opacity: _bottomBarFade,
+              child: Container(color: Colors.white),
+            ),
+          ),
           SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
                   height: heroHeight,
-                  child: FadeTransition(
-                    opacity: _heroFade,
-                    child: SlideTransition(
-                      position: _heroSlide,
-                      child: _buildHeroArea(collapsed: keyboardOpen),
+                  child: ClipRect(
+                    child: FadeTransition(
+                      opacity: _heroFade,
+                      child: SlideTransition(
+                        position: _heroSlide,
+                        child: _buildHeroArea(collapsed: keyboardOpen),
+                      ),
                     ),
                   ),
                 ),
-                FadeTransition(
-                  opacity: _cardFade,
-                  child: SlideTransition(
-                    position: _cardSlide,
-                    child: _buildCard(cardHeight: cardHeight),
+                Flexible(
+                  child: FadeTransition(
+                    opacity: _cardFade,
+                    child: SlideTransition(
+                      position: _cardSlide,
+                      child: _buildCard(cardHeight: cardHeight),
+                    ),
                   ),
                 ),
               ],
@@ -209,7 +242,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ── Hero ───────────────────────────────────────────────────
   Widget _buildHeroArea({bool collapsed = false}) {
     if (collapsed) {
       return Padding(
@@ -277,12 +309,10 @@ class _RegisterScreenState extends State<RegisterScreen>
       );
     }
 
-    // Vista normal
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Stack(
         children: [
-          // Flecha arriba izquierda
           Positioned(
             top: 0,
             left: 0,
@@ -307,7 +337,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          // Badge + título centrados
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -379,7 +408,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ── Card ───────────────────────────────────────────────────
   Widget _buildCard({required double cardHeight}) {
     return ClipRect(
       child: AnimatedContainer(
@@ -395,7 +423,8 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(28, 20, 28, 24),
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
           child: FadeTransition(
             opacity: _fieldsFade,
             child: SlideTransition(
@@ -405,7 +434,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                 children: [
                   _buildTabToggle(),
                   const SizedBox(height: 18),
-
                   _buildField(
                     label: 'CORREO ELECTRÓNICO',
                     icon: Icons.mail_outline_rounded,
@@ -413,7 +441,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 12),
-
                   _buildField(
                     label: 'TELÉFONO',
                     icon: Icons.phone_outlined,
@@ -422,7 +449,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                     prefixText: '+57 ',
                   ),
                   const SizedBox(height: 12),
-
                   _buildField(
                     label: 'CONTRASEÑA',
                     icon: Icons.lock_outline_rounded,
@@ -442,7 +468,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-
                   _buildField(
                     label: 'CONFIRMAR CONTRASEÑA',
                     icon: Icons.lock_outline_rounded,
@@ -450,11 +475,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                     isPassword: true,
                     passwordVisible: _confirmPasswordVisible,
                     onTogglePassword: () => setState(
-                      () => _confirmPasswordVisible = !_confirmPasswordVisible,
+                      () =>
+                          _confirmPasswordVisible = !_confirmPasswordVisible,
                     ),
                   ),
                   const SizedBox(height: 22),
-
                   _RegisterButton(isLoading: _isLoading, onTap: _registrar),
                 ],
               ),
@@ -465,7 +490,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ── Tabs ───────────────────────────────────────────────────
   Widget _buildTabToggle() {
     return Container(
       decoration: BoxDecoration(
@@ -520,7 +544,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  // ── Campo ──────────────────────────────────────────────────
   Widget _buildField({
     required String label,
     required IconData icon,
@@ -544,7 +567,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 }
 
-// ── Campo con foco animado ─────────────────────────────────────
 class _FocusField extends StatefulWidget {
   final String label;
   final IconData icon;
@@ -688,7 +710,6 @@ class _FocusFieldState extends State<_FocusField>
   }
 }
 
-// ── Botón con animación de press ───────────────────────────────
 class _RegisterButton extends StatefulWidget {
   final bool isLoading;
   final VoidCallback onTap;

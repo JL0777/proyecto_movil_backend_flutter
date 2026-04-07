@@ -26,12 +26,16 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _cardController;
   late AnimationController _fieldsController;
 
+  // Controlador para animar la barra blanca inferior
+  late AnimationController _bottomBarController;
+
   late Animation<double> _heroFade;
   late Animation<Offset> _heroSlide;
   late Animation<double> _cardFade;
   late Animation<Offset> _cardSlide;
   late Animation<double> _fieldsFade;
   late Animation<Offset> _fieldsSlide;
+  late Animation<double> _bottomBarFade;
 
   @override
   void initState() {
@@ -49,20 +53,22 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+    _bottomBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
 
-    _heroFade = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
+    _heroFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _heroController, curve: Curves.easeOut),
+    );
     _heroSlide = Tween<Offset>(
       begin: const Offset(0, -0.2),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
 
-    _cardFade = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _cardController, curve: Curves.easeOut));
+    _cardFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.easeOut),
+    );
     _cardSlide = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -71,14 +77,23 @@ class _LoginScreenState extends State<LoginScreen>
     _fieldsFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
     );
-    _fieldsSlide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
-        );
+    _fieldsSlide = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
+    );
+
+    _bottomBarFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _bottomBarController, curve: Curves.easeOut),
+    );
 
     _heroController.forward();
     Future.delayed(const Duration(milliseconds: 250), () {
       if (mounted) _cardController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _bottomBarController.forward();
     });
     Future.delayed(const Duration(milliseconds: 450), () {
       if (mounted) _fieldsController.forward();
@@ -92,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen>
     _heroController.dispose();
     _cardController.dispose();
     _fieldsController.dispose();
+    _bottomBarController.dispose();
     super.dispose();
   }
 
@@ -165,9 +181,12 @@ class _LoginScreenState extends State<LoginScreen>
     final keyboardOpen = bottomInset > 0;
     final screenHeight = MediaQuery.of(context).size.height;
     final safeAreaTop = MediaQuery.of(context).padding.top;
-    final availableHeight = screenHeight - safeAreaTop - bottomInset;
-    final heroHeight = keyboardOpen ? 70.0 : screenHeight * 0.42;
-    final cardHeight = availableHeight - heroHeight;
+    final safeAreaBottom = MediaQuery.of(context).padding.bottom;
+    final availableHeight =
+        screenHeight - safeAreaTop - safeAreaBottom - bottomInset;
+    final heroHeight = keyboardOpen ? 60.0 : screenHeight * 0.42;
+    final cardHeight =
+        (availableHeight - heroHeight).clamp(300.0, double.infinity);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -183,26 +202,42 @@ class _LoginScreenState extends State<LoginScreen>
           Positioned.fill(
             child: Container(color: Colors.black.withValues(alpha: 0.50)),
           ),
+          // Barra blanca inferior con animación
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: safeAreaBottom + 10,
+            child: FadeTransition(
+              opacity: _bottomBarFade,
+              child: Container(color: Colors.white),
+            ),
+          ),
           SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
                   height: heroHeight,
-                  child: FadeTransition(
-                    opacity: _heroFade,
-                    child: SlideTransition(
-                      position: _heroSlide,
-                      child: _buildHeroArea(collapsed: keyboardOpen),
+                  child: ClipRect(
+                    child: FadeTransition(
+                      opacity: _heroFade,
+                      child: SlideTransition(
+                        position: _heroSlide,
+                        child: _buildHeroArea(collapsed: keyboardOpen),
+                      ),
                     ),
                   ),
                 ),
-                FadeTransition(
-                  opacity: _cardFade,
-                  child: SlideTransition(
-                    position: _cardSlide,
-                    child: _buildCard(cardHeight: cardHeight),
+                Flexible(
+                  child: FadeTransition(
+                    opacity: _cardFade,
+                    child: SlideTransition(
+                      position: _cardSlide,
+                      child: _buildCard(cardHeight: cardHeight),
+                    ),
                   ),
                 ),
               ],
@@ -213,9 +248,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ── Hero ───────────────────────────────────────────────────
   Widget _buildHeroArea({bool collapsed = false}) {
-    // Vista compacta cuando el teclado está abierto
     if (collapsed) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -282,12 +315,10 @@ class _LoginScreenState extends State<LoginScreen>
       );
     }
 
-    // Vista normal completa
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Stack(
         children: [
-          // Flecha arriba izquierda
           Positioned(
             top: 0,
             left: 0,
@@ -312,12 +343,10 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          // Badge + título + subtítulo centrados
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Badge MYMEAL
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -356,7 +385,6 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Título
                 const Text(
                   'Bienvenido\nde vuelta',
                   textAlign: TextAlign.center,
@@ -369,7 +397,6 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Subtítulo
                 Text(
                   'Inicia sesión para continuar',
                   textAlign: TextAlign.center,
@@ -387,7 +414,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ── Card blanca ────────────────────────────────────────────
   Widget _buildCard({required double cardHeight}) {
     return ClipRect(
       child: AnimatedContainer(
@@ -403,7 +429,8 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(28, 22, 28, 24),
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(28, 22, 28, 40),
           child: FadeTransition(
             opacity: _fieldsFade,
             child: SlideTransition(
@@ -413,7 +440,6 @@ class _LoginScreenState extends State<LoginScreen>
                 children: [
                   _buildTabToggle(),
                   const SizedBox(height: 22),
-
                   _buildField(
                     label: 'CORREO ELECTRÓNICO',
                     icon: Icons.mail_outline_rounded,
@@ -421,7 +447,6 @@ class _LoginScreenState extends State<LoginScreen>
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
-
                   _buildField(
                     label: 'CONTRASEÑA',
                     icon: Icons.lock_outline_rounded,
@@ -429,7 +454,6 @@ class _LoginScreenState extends State<LoginScreen>
                     isPassword: true,
                   ),
                   const SizedBox(height: 8),
-
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
@@ -450,7 +474,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   _LoginButton(isLoading: _isLoading, onTap: _iniciarSesion),
                 ],
               ),
@@ -461,7 +484,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ── Tabs ───────────────────────────────────────────────────
   Widget _buildTabToggle() {
     return Container(
       decoration: BoxDecoration(
@@ -516,7 +538,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ── Campo ──────────────────────────────────────────────────
   Widget _buildField({
     required String label,
     required IconData icon,
@@ -538,7 +559,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ── Campo con foco animado ─────────────────────────────────────
 class _FocusField extends StatefulWidget {
   final String label;
   final IconData icon;
@@ -672,7 +692,6 @@ class _FocusFieldState extends State<_FocusField>
   }
 }
 
-// ── Botón con animación de press ───────────────────────────────
 class _LoginButton extends StatefulWidget {
   final bool isLoading;
   final VoidCallback onTap;
