@@ -89,9 +89,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (cancelDialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -109,8 +107,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(cancelDialogCtx, false),
-            child: Text('No, mantener',
-                style: TextStyle(color: Colors.grey.shade600)),
+            child: Text(
+              'No, mantener',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(cancelDialogCtx, true),
@@ -163,7 +163,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     if (!mounted) return;
 
     final detalles = pedido['DetallePedidos'] as List? ?? [];
-    final tipo = pedido['tipo'] ?? 'predefinido';
 
     Map<String, dynamic>? direccionSeleccionada = direcciones.firstWhere(
       (d) => d['id'] == pedido['direccionId'],
@@ -200,7 +199,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
         builder: (editModalCtx, setModalState) {
           double calcularTotal() {
             return items.fold(
-                0, (sum, i) => sum + (i['precio'] * i['cantidad']));
+              0,
+              (sum, i) => sum + (i['precio'] * i['cantidad']),
+            );
           }
 
           return Padding(
@@ -228,16 +229,14 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                   const SizedBox(height: 16),
                   const Text(
                     'Editar pedido',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Container(
-                      width: 40,
-                      height: 2,
-                      color: const Color(0xFFE8651A)),
+                    width: 40,
+                    height: 2,
+                    color: const Color(0xFFE8651A),
+                  ),
                   const SizedBox(height: 20),
 
                   const Text(
@@ -257,7 +256,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(10),
@@ -305,13 +306,17 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                     color: Color(0xFFE8651A),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.remove,
-                                      color: Colors.white, size: 16),
+                                  child: const Icon(
+                                    Icons.remove,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10),
+                                  horizontal: 10,
+                                ),
                                 child: Text(
                                   '${item['cantidad']}',
                                   style: const TextStyle(
@@ -323,7 +328,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               GestureDetector(
                                 onTap: () {
                                   setModalState(
-                                      () => items[index]['cantidad']++);
+                                    () => items[index]['cantidad']++,
+                                  );
                                 },
                                 child: Container(
                                   width: 28,
@@ -332,8 +338,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                     color: Color(0xFFE8651A),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.add,
-                                      color: Colors.white, size: 16),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                             ],
@@ -359,17 +368,20 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         color: Colors.red.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: Colors.red.withValues(alpha: 0.3)),
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.warning_amber_rounded,
-                              color: Colors.red, size: 16),
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.red,
+                            size: 16,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Debes tener al menos un producto',
-                            style: TextStyle(
-                                color: Colors.red, fontSize: 12),
+                            style: TextStyle(color: Colors.red, fontSize: 12),
                           ),
                         ],
                       ),
@@ -391,15 +403,17 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     Text(
                       'No tienes direcciones guardadas',
                       style: TextStyle(
-                          color: Colors.grey.shade500, fontSize: 13),
+                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                      ),
                     )
                   else
                     ...direcciones.map((dir) {
                       final seleccionada =
                           direccionSeleccionada?['id'] == dir['id'];
                       return GestureDetector(
-                        onTap: () => setModalState(
-                            () => direccionSeleccionada = dir),
+                        onTap: () =>
+                            setModalState(() => direccionSeleccionada = dir),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
@@ -427,8 +441,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       dir['barrio'] ?? '',
@@ -451,8 +464,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                 ),
                               ),
                               if (seleccionada)
-                                const Icon(Icons.check_circle,
-                                    color: Color(0xFFE8651A), size: 18),
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFFE8651A),
+                                  size: 18,
+                                ),
                             ],
                           ),
                         ),
@@ -476,13 +492,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                       final seleccionado = metodoPago == m;
                       return Expanded(
                         child: GestureDetector(
-                          onTap: () =>
-                              setModalState(() => metodoPago = m),
+                          onTap: () => setModalState(() => metodoPago = m),
                           child: Container(
-                            margin: EdgeInsets.only(
-                                right: m == 'pse' ? 8 : 0),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12),
+                            margin: EdgeInsets.only(right: m == 'pse' ? 8 : 0),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               color: seleccionado
                                   ? const Color(0xFFFFF3ED)
@@ -533,8 +546,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                       color: const Color(0xFFFFF3ED),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFE8651A)
-                            .withValues(alpha: 0.3),
+                        color: const Color(0xFFE8651A).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -564,32 +576,31 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: items.isEmpty ||
-                              direccionSeleccionada == null
+                      onPressed: items.isEmpty || direccionSeleccionada == null
                           ? null
                           : () async {
                               final data = {
-                                'direccionId':
-                                    direccionSeleccionada!['id'],
+                                'direccionId': direccionSeleccionada!['id'],
                                 'metodoPago': metodoPago,
                                 'items': items.map((i) {
-                                  if (tipo == 'predefinido') {
+                                  if (i['menuId'] != null) {
                                     return {
                                       'menuId': i['menuId'],
                                       'cantidad': i['cantidad'],
                                     };
                                   } else {
                                     return {
-                                      'ingredienteId':
-                                          i['ingredienteId'],
+                                      'ingredienteId': i['ingredienteId'],
                                       'cantidad': i['cantidad'],
                                     };
                                   }
                                 }).toList(),
                               };
 
-                              final result = await _service
-                                  .editarPedido(pedido['id'], data);
+                              final result = await _service.editarPedido(
+                                pedido['id'],
+                                data,
+                              );
 
                               if (!editModalCtx.mounted) return;
                               Navigator.pop(editModalCtx);
@@ -598,26 +609,25 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                               if (result['success']) {
                                 _cargar();
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
+                                ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text(
-                                        'Pedido actualizado correctamente'),
+                                      'Pedido actualizado correctamente',
+                                    ),
                                     backgroundColor: Colors.green,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     margin: const EdgeInsets.all(16),
                                   ),
                                 );
                               } else {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
+                                ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(result['error'] ??
-                                        'Error al editar'),
+                                    content: Text(
+                                      result['error'] ?? 'Error al editar',
+                                    ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -630,8 +640,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text(
                         'Guardar cambios',
@@ -671,11 +680,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                   ),
                 ),
                 const SizedBox(height: 4),
-                Container(
-                  width: 50,
-                  height: 3,
-                  color: const Color(0xFFE8651A),
-                ),
+                Container(width: 50, height: 3, color: const Color(0xFFE8651A)),
               ],
             ),
           ),
@@ -702,9 +707,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               tabs: _tabs.map((tab) {
                 final count = tab == 'Todos'
                     ? _pedidos.length
-                    : _pedidos
-                        .where((p) => p['estado'] == tab)
-                        .length;
+                    : _pedidos.where((p) => p['estado'] == tab).length;
                 return Tab(
                   child: Row(
                     children: [
@@ -713,13 +716,15 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: tab == 'Todos'
-                                ? const Color(0xFFE8651A)
-                                    .withValues(alpha: 0.15)
-                                : _colorEstado(tab)
-                                    .withValues(alpha: 0.15),
+                                ? const Color(
+                                    0xFFE8651A,
+                                  ).withValues(alpha: 0.15)
+                                : _colorEstado(tab).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -744,9 +749,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : TabBarView(
                     controller: _tabController,
@@ -790,13 +793,13 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         onRefresh: _cargar,
                         color: const Color(0xFFE8651A),
                         child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(
-                              16, 12, 16, 20),
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                           itemCount: lista.length,
                           itemBuilder: (ordersListCtx, index) {
                             return _pedidoCard(
-                                lista[index],
-                                _pedidos.indexOf(lista[index]) + 1);
+                              lista[index],
+                              _pedidos.indexOf(lista[index]) + 1,
+                            );
                           },
                         ),
                       );
@@ -827,8 +830,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       imagenUrl = detalles.first['Menu']?['imagenUrl'];
     }
 
-    final productosAMostrar =
-        expandido ? detalles : detalles.take(3).toList();
+    final productosAMostrar = expandido ? detalles : detalles.take(3).toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -853,8 +855,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
         children: [
           // Header
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: colorEstado.withValues(alpha: 0.08),
               borderRadius: const BorderRadius.vertical(
@@ -866,8 +867,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               children: [
                 Row(
                   children: [
-                    Icon(_iconoEstado(estado),
-                        color: colorEstado, size: 18),
+                    Icon(_iconoEstado(estado), color: colorEstado, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Pedido #$numero',
@@ -881,7 +881,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colorEstado.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -918,9 +920,12 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               width: 70,
                               height: 70,
                               fit: BoxFit.cover,
-                              errorBuilder: (ordersErrCtx, ordersErrObj,
-                                      ordersErrStack) =>
-                                  _miniPlaceholder(),
+                              errorBuilder:
+                                  (
+                                    ordersErrCtx,
+                                    ordersErrObj,
+                                    ordersErrStack,
+                                  ) => _miniPlaceholder(),
                             )
                           : _miniPlaceholder(),
                     ),
@@ -931,14 +936,19 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.calendar_today_outlined,
-                                  size: 13,
-                                  color: Colors.grey.shade500),
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 13,
+                                color: Colors.grey.shade500,
+                              ),
                               const SizedBox(width: 4),
-                              Text(fecha,
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade500)),
+                              Text(
+                                fecha,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -957,8 +967,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                     ? 'Personalizado'
                                     : 'Predefinido',
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500),
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
                               ),
                             ],
                           ),
@@ -974,12 +985,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                metodoPago == 'pse'
-                                    ? 'PSE'
-                                    : 'Contraentrega',
+                                metodoPago == 'pse' ? 'PSE' : 'Contraentrega',
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500),
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
                               ),
                             ],
                           ),
@@ -1000,8 +1010,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         Text(
                           'total',
                           style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade400),
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ],
                     ),
@@ -1017,19 +1028,21 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     final nombre = d['Menu'] != null
                         ? d['Menu']['nombre']
                         : d['Ingrediente'] != null
-                            ? d['Ingrediente']['nombre']
-                            : 'Producto';
+                        ? d['Ingrediente']['nombre']
+                        : 'Producto';
                     final cantidad = d['cantidad'] ?? 1;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 3),
                       child: Row(
                         children: [
-                          const Text('• ',
-                              style: TextStyle(
-                                color: Color(0xFFE8651A),
-                                fontWeight: FontWeight.w700,
-                              )),
+                          const Text(
+                            '• ',
+                            style: TextStyle(
+                              color: Color(0xFFE8651A),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           Expanded(
                             child: Text(
                               '$nombre x$cantidad',
@@ -1089,15 +1102,19 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 if (direccion != null)
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined,
-                          size: 14, color: Colors.grey.shade500),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: Colors.grey.shade500,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           '${direccion['barrio']} - ${direccion['direccion']}',
                           style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500),
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1112,12 +1129,16 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     Text(
                       'Subtotal: \$${subtotal.toStringAsFixed(0)}',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                     Text(
                       'IVA: \$${iva.toStringAsFixed(0)}',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                   ],
                 ),
@@ -1129,7 +1150,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
@@ -1139,8 +1162,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.info_outline,
-                            color: Colors.orange, size: 14),
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.orange,
+                          size: 14,
+                        ),
                         SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -1164,16 +1190,17 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _editarPedido(pedido),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                color: Color(0xFFE8651A)),
+                            side: const BorderSide(color: Color(0xFFE8651A)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                          icon: const Icon(Icons.edit_outlined,
-                              color: Color(0xFFE8651A), size: 16),
+                          icon: const Icon(
+                            Icons.edit_outlined,
+                            color: Color(0xFFE8651A),
+                            size: 16,
+                          ),
                           label: const Text(
                             'Editar',
                             style: TextStyle(
@@ -1193,11 +1220,13 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                          icon: const Icon(Icons.cancel_outlined,
-                              color: Colors.red, size: 16),
+                          icon: const Icon(
+                            Icons.cancel_outlined,
+                            color: Colors.red,
+                            size: 16,
+                          ),
                           label: const Text(
                             'Cancelar',
                             style: TextStyle(

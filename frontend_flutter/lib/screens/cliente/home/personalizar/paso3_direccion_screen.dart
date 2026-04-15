@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../services/address_service.dart';
 import 'paso4_pago_screen.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/providers/cart_provider.dart';
 
 class Paso3DireccionScreen extends StatefulWidget {
   final Map<String, dynamic> categoria;
@@ -85,10 +87,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                 const SizedBox(height: 16),
                 const Text(
                   'Nueva dirección',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 16),
 
@@ -96,8 +95,11 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                 const SizedBox(height: 12),
                 _campo(direccionController, 'Dirección'),
                 const SizedBox(height: 12),
-                _campo(instruccionesController, 'Instrucciones (opcional)',
-                    maxLines: 2),
+                _campo(
+                  instruccionesController,
+                  'Instrucciones (opcional)',
+                  maxLines: 2,
+                ),
                 const SizedBox(height: 12),
 
                 Container(
@@ -111,12 +113,18 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     child: DropdownButton<String>(
                       value: tipoVivienda,
                       isExpanded: true,
-                      items: ['Casa', 'Apartamento', 'Oficina/Local comercial', 'Hotel']
-                          .map((t) => DropdownMenuItem(
-                                value: t,
-                                child: Text(t),
-                              ))
-                          .toList(),
+                      items:
+                          [
+                                'Casa',
+                                'Apartamento',
+                                'Oficina/Local comercial',
+                                'Hotel',
+                              ]
+                              .map(
+                                (t) =>
+                                    DropdownMenuItem(value: t, child: Text(t)),
+                              )
+                              .toList(),
                       onChanged: (v) =>
                           setModalState(() => tipoVivienda = v ?? tipoVivienda),
                     ),
@@ -159,7 +167,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                           messenger.showSnackBar(
                             SnackBar(
                               content: const Text(
-                                  'Dirección agregada correctamente'),
+                                'Dirección agregada correctamente',
+                              ),
                               backgroundColor: Colors.green,
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(
@@ -196,6 +205,50 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
     );
   }
 
+  void _agregarAlCarrito() {
+    if (_direccionSeleccionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona una dirección primero'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final cart = context.read<CartProvider>();
+
+    // Agregar ingredientes
+    widget.ingredientes.forEach((key, value) {
+      if (value != null) {
+        cart.agregarIngrediente(value, 1);
+      }
+    });
+
+    // Agregar bebida
+    if (widget.bebida.isNotEmpty) {
+      cart.agregarIngrediente(widget.bebida, 1);
+    }
+
+    // Agregar complementos — ahora sí tienen id, precio y cantidad
+    widget.complementos.forEach((key, value) {
+      final cantidad = int.tryParse(value['cantidad'].toString()) ?? 1;
+      cart.agregarIngrediente(value, cantidad);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('¡Combo agregado al carrito!'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   Widget _campo(
     TextEditingController controller,
     String label, {
@@ -208,15 +261,10 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         labelText: label,
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(
-            color: Color(0xFFE8651A),
-            width: 1.8,
-          ),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         labelStyle: const TextStyle(color: Colors.grey),
       ),
@@ -233,9 +281,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
@@ -340,9 +386,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                                 _direccionSeleccionada?['id'] == dir['id'];
 
                             return GestureDetector(
-                              onTap: () => setState(
-                                () => _direccionSeleccionada = dir,
-                              ),
+                              onTap: () =>
+                                  setState(() => _direccionSeleccionada = dir),
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
@@ -420,43 +465,81 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                 ),
               ],
             ),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _direccionSeleccionada != null
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => Paso4PagoScreen(
-                              categoria: widget.categoria,
-                              ingredientes: widget.ingredientes,
-                              bebida: widget.bebida,
-                              complementos: widget.complementos,
-                              direccion: _direccionSeleccionada!,
-                              subtotal: widget.subtotal,
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8651A),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text(
-                  'Confirmar',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Botón Añadir al carrito
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _direccionSeleccionada != null
+                        ? _agregarAlCarrito
+                        : null,
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                    label: const Text(
+                      'Añadir al carrito',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFE8651A),
+                      disabledForegroundColor: Colors.grey.shade400,
+                      side: BorderSide(
+                        color: _direccionSeleccionada != null
+                            ? const Color(0xFFE8651A)
+                            : Colors.grey.shade300,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                // Botón Confirmar (va al paso 4)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _direccionSeleccionada != null
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => Paso4PagoScreen(
+                                  categoria: widget.categoria,
+                                  ingredientes: widget.ingredientes,
+                                  bebida: widget.bebida,
+                                  complementos: widget.complementos,
+                                  direccion: _direccionSeleccionada!,
+                                  subtotal: widget.subtotal,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8651A),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      'Confirmar',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -471,10 +554,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color(0x66000000),
-            BlendMode.darken,
-          ),
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -487,11 +567,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 26,
-            ),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 26),
           ),
         ],
       ),

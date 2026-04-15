@@ -120,8 +120,10 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         orElse: () => {'nombre': 'Complemento'},
       );
       result[id] = {
+        'id': comp['id'],
         'cantidad': cantidad,
         'nombre': comp['nombre'] ?? 'Complemento',
+        'precio': comp['precio'] ?? '0',
       };
     });
     return result;

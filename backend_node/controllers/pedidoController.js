@@ -284,9 +284,7 @@ exports.cancelarPedido = async (req, res) => {
   }
 };
 
-// ======================
 // EDITAR PEDIDO (cliente) — solo si está Pendiente
-// ======================
 exports.editarPedido = async (req, res) => {
   const usuarioId = req.user.id;
   const { direccionId, metodoPago, items } = req.body;
@@ -306,23 +304,23 @@ exports.editarPedido = async (req, res) => {
       });
     }
 
-    // Actualizar dirección y método de pago
     if (direccionId) pedido.direccionId = direccionId;
     if (metodoPago) pedido.metodoPago = metodoPago;
 
-    // Recalcular total si hay nuevos items
     if (items && items.length > 0) {
       let total = 0;
 
       for (const item of items) {
-        if (pedido.tipo === 'predefinido') {
+        if (item.menuId != null) {
           const menu = await Menu.findByPk(item.menuId);
           if (!menu) return res.status(404).json({ error: 'Menú no encontrado' });
           total += parseFloat(menu.precio) * item.cantidad;
-        } else {
+        } else if (item.ingredienteId != null) {
           const ingrediente = await Ingrediente.findByPk(item.ingredienteId);
           if (!ingrediente) return res.status(404).json({ error: 'Ingrediente no encontrado' });
           total += parseFloat(ingrediente.precio) * item.cantidad;
+        } else {
+          return res.status(400).json({ error: 'Item inválido' });
         }
       }
 
@@ -333,11 +331,10 @@ exports.editarPedido = async (req, res) => {
       pedido.iva = iva;
       pedido.subtotal = subtotal;
 
-      // Eliminar detalles anteriores y crear nuevos
       await DetallePedido.destroy({ where: { pedidoId: pedido.id } });
 
       for (const item of items) {
-        if (pedido.tipo === 'predefinido') {
+        if (item.menuId != null) {
           const menu = await Menu.findByPk(item.menuId);
           await DetallePedido.create({
             pedidoId: pedido.id,

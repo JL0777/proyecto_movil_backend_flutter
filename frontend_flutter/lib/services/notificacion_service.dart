@@ -16,7 +16,7 @@ class NotificacionService {
   final Map<String, String> _mensajes = {
     'Pendiente': '⏳ Tu pedido está siendo procesado',
     'Activo': '👨‍🍳 Tu pedido está en preparación',
-    'Realizado': '✅ Tu pedido está listo y en camino',
+    'Realizado': '✅ Tu pedido está listo',
     'Enviado': '🛵 Tu pedido fue enviado',
   };
 

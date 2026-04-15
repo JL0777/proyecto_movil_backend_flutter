@@ -95,6 +95,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
   void _mostrarOpciones(String tipo) {
     final opciones = _ingredientes[tipo] ?? [];
+    final seleccionado = _seleccionados[tipo];
 
     if (opciones.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,6 +133,27 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
+          if (seleccionado != null)
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text('Eliminar selección'),
+              subtitle: const Text('Eliminar ingrediente'),
+              onTap: () {
+                nav.pop();
+                setState(() => _seleccionados[tipo] = null);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Ingrediente eliminado correctamente'),
+                    backgroundColor: Color.fromARGB(255, 76, 175, 80),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                    margin: EdgeInsets.all(16),
+                  ),
+                );
+              },
+            ),
           ...opciones.map(
             (op) => ListTile(
               title: Text(op['nombre']),
