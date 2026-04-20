@@ -651,12 +651,15 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// HEADER
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Column(
@@ -680,67 +683,71 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
             ),
           ),
 
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: const Color(0xFFE8651A),
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: const Color(0xFFE8651A),
-              indicatorWeight: 3,
-              dividerColor: const Color(0xFFEEEEEE),
-              labelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: _tabs.map((tab) {
-                final count = tab == 'Todos'
-                    ? _pedidos.length
-                    : _pedidos
-                        .where((p) => p['estado'] == tab)
-                        .length;
-                return Tab(
-                  child: Row(
-                    children: [
-                      Text(tab),
-                      if (count > 0) ...[
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: tab == 'Todos'
-                                ? const Color(0xFFE8651A)
-                                    .withValues(alpha: 0.15)
-                                : _colorEstado(tab)
-                                    .withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$count',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+            Material(
+              color: Colors.white,
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                // 1. Quita el espacio extra al inicio para alinear a la izquierda
+                tabAlignment: TabAlignment.start,
+                // 2. Controla el espacio entre pestañas
+                labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                labelColor: const Color(0xFFE8651A),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: const Color(0xFFE8651A),
+                // 3. Hace que la línea naranja coincida con el ancho del texto/badge
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorWeight: 3,
+                dividerColor: const Color(0xFFEEEEEE),
+                labelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                tabs: _tabs.map((tab) {
+                  final count = tab == 'Todos'
+                      ? _pedidos.length
+                      : _pedidos.where((p) => p['estado'] == tab).length;
+
+                  return Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(tab),
+                        if (count > 0) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              // CORRECCIÓN: Uso de withValues para los badges
                               color: tab == 'Todos'
-                                  ? const Color(0xFFE8651A)
-                                  : _colorEstado(tab),
+                                  ? const Color(0xFFE8651A).withValues(alpha: 0.15)
+                                  : _colorEstado(tab).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$count',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: tab == 'Todos'
+                                    ? const Color(0xFFE8651A)
+                                    : _colorEstado(tab),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
-                    ],
-                  ),
-                );
-              }).toList(),
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
 
+          /// CONTENIDO
           Expanded(
             child: _loading
                 ? const Center(
@@ -752,6 +759,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                     controller: _tabController,
                     children: _tabs.map((tab) {
                       final lista = _filtrados(tab);
+
                       if (lista.isEmpty) {
                         return Center(
                           child: Column(
@@ -790,13 +798,14 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         onRefresh: _cargar,
                         color: const Color(0xFFE8651A),
                         child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(
-                              16, 12, 16, 20),
+                          padding:
+                              const EdgeInsets.fromLTRB(16, 12, 16, 20),
                           itemCount: lista.length,
-                          itemBuilder: (ordersListCtx, index) {
+                          itemBuilder: (context, index) {
                             return _pedidoCard(
-                                lista[index],
-                                _pedidos.indexOf(lista[index]) + 1);
+                              lista[index],
+                              _pedidos.indexOf(lista[index]) + 1,
+                            );
                           },
                         ),
                       );
@@ -805,8 +814,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _pedidoCard(Map<String, dynamic> pedido, int numero) {
     final estado = pedido['estado'] ?? 'Pendiente';

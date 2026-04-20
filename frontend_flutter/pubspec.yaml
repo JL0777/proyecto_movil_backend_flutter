@@ -99,3 +99,31 @@ flutter:
     - assets/images/logo_mymeal.png
     - assets/images/pse.png
     - assets/images/contraentrega.png
+    - assets/help/delivery_field_barrio.png
+    - assets/help/delivery_field_direccion.png
+    - assets/help/delivery_field_tipo.png
+    - assets/help/delivery_field_instrucciones.png
+    - assets/help/delivery_field_torre.png
+    - assets/help/delivery_addresses_screen.png
+    - assets/help/pago_seleccion.png
+    - assets/help/pago_revision.png
+    - assets/help/estado_pendiente.png
+    - assets/help/estado_activo.png
+    - assets/help/estado_preparado.png
+    - assets/help/estado_enviado.png
+    - assets/help/editar_cancelar.png
+    - assets/help/historial_pedidos.png
+    - assets/help/pedido_opcion_personalizado.png
+    - assets/help/pedido_paso_ingredientes.png
+    - assets/help/pedido_paso_complementos.png
+    - assets/help/pedido_paso_direccion.png
+    - assets/help/pedido_paso_pago.png
+    - assets/help/pedido_paso_revision.png
+    - assets/help/pedido_paso_confirmar.png
+    - assets/help/menu_seleccion.png
+    - assets/help/menu_carrito.png
+    - assets/help/menu_carrito_vista.png
+    - assets/help/menu_direccion.png
+    - assets/help/menu_pago.png
+    - assets/help/menu_revision.png
+    - assets/help/menu_confirmar.png

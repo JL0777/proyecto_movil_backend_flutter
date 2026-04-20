@@ -11,7 +11,6 @@ class MyAddressesScreen extends StatefulWidget {
 }
 
 class _MyAddressesScreenState extends State<MyAddressesScreen> {
-
   final AddressService _service = AddressService();
 
   List addresses = [];
@@ -22,6 +21,9 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
       SnackBar(
         content: Text(texto),
         backgroundColor: ok ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(15),
       ),
     );
   }
@@ -73,34 +75,49 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
           ),
           title: Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded, color: AppTheme.primaryOrange),
-              SizedBox(width: 8),
-              Text("Eliminar dirección"),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              ),
+              const SizedBox(width: 12),
+              const Text("¿Eliminar?", style: TextStyle(fontWeight: FontWeight.w900)),
             ],
           ),
-          content: const Text("¿Seguro que deseas eliminar esta dirección?"),
+          content: const Text(
+            "Esta dirección se eliminará permanentemente de tu cuenta.",
+            style: TextStyle(color: Colors.black54),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: Text(
                 "Cancelar",
-                style: TextStyle(color: Colors.grey.shade700),
+                style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold),
               ),
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade400,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 8),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                child: const Text("Eliminar", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
-              child: const Text("Eliminar"),
             ),
           ],
         );
@@ -121,82 +138,80 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   IconData _iconForTipo(String tipo) {
     switch (tipo) {
       case "Apartamento":
-        return Icons.apartment;
+        return Icons.apartment_rounded;
       case "Oficina/Local comercial":
-        return Icons.store_outlined;
+        return Icons.business_center_rounded;
       case "Hotel":
-        return Icons.hotel_outlined;
+        return Icons.hotel_rounded;
       default:
-        return Icons.home_outlined;
+        return Icons.home_rounded;
     }
   }
 
   Widget tarjetaDireccion(Map a) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 7),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFF2F2F2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding: const EdgeInsets.all(16),
         leading: Container(
-          width: 48,
-          height: 48,
+          width: 58,
+          height: 58,
           decoration: BoxDecoration(
-            color: AppTheme.lightOrange,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppTheme.primaryOrange.withValues(alpha: 0.3)),
+            color: AppTheme.primaryOrange.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Icon(
             _iconForTipo(a["tipoVivienda"]),
             color: AppTheme.primaryOrange,
-            size: 24,
+            size: 28,
           ),
         ),
         title: Padding(
-          padding: const EdgeInsets.only(bottom: 5),
+          padding: const EdgeInsets.only(bottom: 6),
           child: Text(
             a["direccion"],
             style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: Colors.black87,
+              fontWeight: FontWeight.w900,
+              fontSize: 17,
+              color: Color(0xFF1E1E1E),
             ),
           ),
         ),
         subtitle: Text(
           "${a["barrio"]} • ${a["tipoVivienda"]}",
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
           ),
         ),
         trailing: PopupMenuButton(
-          icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
+          icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
+          elevation: 4,
+          offset: const Offset(0, 45),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
           ),
           itemBuilder: (context) => [
             PopupMenuItem(
               value: "editar",
               child: Row(
-                children: const [
-                  Icon(Icons.edit_outlined, size: 20, color: AppTheme.primaryOrange),
-                  SizedBox(width: 10),
-                  Text(
-                    "Editar",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                  ),
+                children: [
+                  Icon(Icons.edit_rounded, size: 20, color: Colors.blue.shade600),
+                  const SizedBox(width: 12),
+                  const Text("Editar", style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -204,16 +219,10 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
               value: "eliminar",
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 20, color: Colors.red.shade400),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Eliminar",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red.shade400,
-                    ),
-                  ),
+                  Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red.shade400),
+                  const SizedBox(width: 12),
+                  Text("Eliminar", 
+                    style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -230,87 +239,112 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text("Mis direcciones"),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.location_on_rounded, color: AppTheme.primaryOrange, size: 16),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              "Mis direcciones",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: agregar,
         backgroundColor: AppTheme.primaryOrange,
-        child: const Icon(Icons.add, color: Colors.white),
+        elevation: 6,
+        icon: const Icon(Icons.add_location_alt_rounded, color: Colors.white),
+        label: const Text(
+          "",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+        ),
       ),
 
       body: loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryOrange))
           : addresses.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          color: AppTheme.lightOrange,
-                          shape: BoxShape.circle,
-                          border: Border.all(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryOrange.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.map_rounded,
+                            size: 60,
                             color: AppTheme.primaryOrange,
-                            width: 2.5,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.location_off_outlined,
-                          size: 44,
-                          color: AppTheme.primaryOrange,
+                        const SizedBox(height: 24),
+                        const Text(
+                          "¡No has agregado ninguna dirección!",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1A1A1A),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "Sin direcciones registradas",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        "Agrega una para continuar",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: agregar,
-                        icon: const Icon(Icons.add),
-                        label: const Text(
-                          "Agregar dirección",
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Agrega una para que podamos\nllevarte tu comida favorita.",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                            color: Colors.black45,
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 13,
+                        const SizedBox(height: 35),
+                        ElevatedButton.icon(
+                          onPressed: agregar,
+                          icon: const Icon(Icons.add_rounded, size: 22),
+                          label: const Text("AGREGAR DIRECCIÓN", style: TextStyle(fontWeight: FontWeight.w900)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 4,
+                            shadowColor: AppTheme.primaryOrange.withValues(alpha: 0.4),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 15, 20, 110),
                   itemCount: addresses.length,
                   itemBuilder: (context, index) {
                     return tarjetaDireccion(addresses[index]);

@@ -7,8 +7,7 @@ class PreviewPaymentsScreen extends StatefulWidget {
   const PreviewPaymentsScreen({super.key});
 
   @override
-  State<PreviewPaymentsScreen> createState() =>
-      _PreviewPaymentsScreenState();
+  State<PreviewPaymentsScreen> createState() => _PreviewPaymentsScreenState();
 }
 
 class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
@@ -31,7 +30,7 @@ class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
     );
 
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0, 0.1),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
@@ -49,7 +48,17 @@ class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Pagos y facturación")),
+      backgroundColor: const Color(0xFFFBFBFB),
+      appBar: AppBar(
+        title: const Text(
+          "Pagos y facturación",
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -58,65 +67,118 @@ class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
               child: SlideTransition(
                 position: _slide,
                 child: ListView(
-                  padding: const EdgeInsets.all(20),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   children: [
-                    Column(
-                      children: [
-                        Container(
-                          width: 90,
-                          height: 90,
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightOrange,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.primaryOrange,
-                              width: 2.5,
+                    /// HEADER PREMIUM
+                    Center(
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 110,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryOrange.withValues(alpha: 0.05),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Container(
+                                width: 85,
+                                height: 85,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [AppTheme.primaryOrange, Color(0xFFFF8C42)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.primaryOrange.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    )
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.payments_rounded,
+                                  size: 42,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Gestión de pagos",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1A1A1A),
                             ),
                           ),
-                          child: const Icon(
-                            Icons.payments_rounded,
-                            size: 48,
-                            color: AppTheme.primaryOrange,
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              "Conoce nuestras opciones de pago seguras para disfrutar de tu almuerzo sin complicaciones.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Información sobre pagos",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Aquí podrás conocer los métodos de pago disponibles y cómo funcionan dentro de la app.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: AppTheme.textGrey),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 40),
+                    _sectionLabel("MÉTODOS DISPONIBLES"),
+                    const SizedBox(height: 16),
 
-                    _item("Pago con PSE",
-                        "Aprende cómo pagar directamente desde tu banco.",
-                        'assets/images/pse.png'),
-                    _item("Contraentrega",
-                        "Conoce cómo funciona el pago en efectivo al recibir.",
-                        'assets/images/contraentrega.png'),
+                    _buildPaymentCard(
+                      "Pago Seguro (PSE)",
+                      "Transfiere directamente desde tu cuenta bancaria de forma instantánea.",
+                      'assets/images/pse.png',
+                    ),
+                    _buildPaymentCard(
+                      "Contraentrega",
+                      "Paga en efectivo o con datáfono en el momento de recibir tu pedido.",
+                      'assets/images/contraentrega.png',
+                    ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 24),
 
+                    /// BANNER INFORMATIVO
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppTheme.lightOrange,
-                        borderRadius: BorderRadius.circular(16),
+                        color: AppTheme.primaryOrange.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppTheme.primaryOrange.withValues(alpha: 0.1),
+                        ),
                       ),
-                      child: const Text(
-                        "Inicia sesión para acceder a la sección donde podrás gestionar tus pagos.",
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shield_moon_outlined, color: AppTheme.primaryOrange),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              "Inicia sesión para registrar tus métodos de pago y facturación.",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.primaryOrange.withValues(alpha: 0.9),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -125,37 +187,68 @@ class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
             ),
           ),
 
+          /// BOTONES INFERIORES
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+            padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()));
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryOrange,
-                      borderRadius: BorderRadius.circular(26),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryOrange.withValues(alpha: 0.25),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     ),
-                    alignment: Alignment.center,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryOrange,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
                     child: const Text(
                       "INICIAR SESIÓN",
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w700),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const RegisterScreen()));
-                  },
-                  child: const Text("Crear cuenta"),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      text: "¿No tienes cuenta? ",
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                      children: const [
+                        TextSpan(
+                          text: "Regístrate ahora",
+                          style: TextStyle(
+                            color: AppTheme.primaryOrange,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -165,29 +258,80 @@ class _PreviewPaymentsScreenState extends State<PreviewPaymentsScreen>
     );
   }
 
-  Widget _item(String title, String desc, String img) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.lightGrey,
-        borderRadius: BorderRadius.circular(16),
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFFBBBBBB),
+        letterSpacing: 1.5,
       ),
-      child: Row(
-        children: [
-          Image.asset(img, width: 45),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(desc),
-              ],
-            ),
-          )
+    );
+  }
+
+  Widget _buildPaymentCard(String title, String desc, String imgPath) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF0F0F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9F9F9),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Image.asset(
+                imgPath,
+                fit: BoxFit.contain,
+                // Si la imagen falla (assets no cargados), mostramos un icono genérico
+                errorBuilder: (context, error, stackTrace) => 
+                  const Icon(Icons.account_balance_wallet_rounded, color: AppTheme.primaryOrange),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF666666),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
