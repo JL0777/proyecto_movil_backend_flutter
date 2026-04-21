@@ -30,7 +30,7 @@ class _PreviewContactScreenState extends State<PreviewContactScreen>
     );
 
     _slide = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0, 0.1),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
@@ -48,7 +48,17 @@ class _PreviewContactScreenState extends State<PreviewContactScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Contáctanos")),
+      backgroundColor: const Color(0xFFFBFBFB),
+      appBar: AppBar(
+        title: const Text(
+          "Contáctanos",
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -57,79 +67,96 @@ class _PreviewContactScreenState extends State<PreviewContactScreen>
               child: SlideTransition(
                 position: _slide,
                 child: ListView(
-                  padding: const EdgeInsets.all(20),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
                   children: [
-                    // HEADER PRO
-                    Column(
-                      children: [
-                        Container(
-                          width: 90,
-                          height: 90,
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightOrange,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.primaryOrange,
-                              width: 2.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryOrange
-                                    .withValues(alpha: 0.25),
-                                blurRadius: 18,
-                                offset: const Offset(0, 6),
+                    /// HEADER CON GRADIENTE
+                    Center(
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 110,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryOrange.withValues(alpha: 0.05),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Container(
+                                width: 85,
+                                height: 85,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [AppTheme.primaryOrange, Color(0xFFFF8C42)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.primaryOrange.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    )
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.support_agent_rounded,
+                                  size: 42,
+                                  color: Colors.white,
+                                ),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.support_agent_rounded, // ICONO PRO
-                            size: 48,
-                            color: AppTheme.primaryOrange,
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Soporte MyMeal",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1A1A1A),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        const Text(
-                          "Soporte MyMeal",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF1A1A1A),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              "Estamos aquí para resolver tus dudas a través de estos canales:",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-
-                        Text(
-                          "Puedes comunicarte con nosotros a través de los siguientes canales:",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppTheme.textGrey,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 40),
+                    _sectionLabel("CANALES DISPONIBLES"),
+                    const SizedBox(height: 16),
 
-                    _item(
+                    _buildContactCard(
                       Icons.email_outlined,
-                      "Correo",
+                      "Correo electrónico",
                       "noreply.mymeal@gmail.com",
                     ),
                     const SizedBox(height: 12),
-
-                    _item(
-                      Icons.phone_outlined,
-                      "Teléfono",
+                    _buildContactCard(
+                      Icons.phone_iphone_rounded,
+                      "Línea de atención",
                       "+57 323 490 0920",
                     ),
                     const SizedBox(height: 12),
-
-                    _item(
-                      Icons.access_time_outlined,
+                    _buildContactCard(
+                      Icons.access_time_rounded,
                       "Horario",
-                      "Lunes a sábado de 8:00 AM a 8:00 PM",
+                      "Lunes a sábado | 8:00 AM - 8:00 PM",
                     ),
                   ],
                 ),
@@ -137,59 +164,66 @@ class _PreviewContactScreenState extends State<PreviewContactScreen>
             ),
           ),
 
-          // BOTONES (MEJORADOS)
+          /// BOTONES DE ACCIÓN INFERIORES
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+            padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryOrange.withValues(alpha: 0.25),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const LoginScreen()),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryOrange,
-                      borderRadius: BorderRadius.circular(26),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryOrange
-                              .withValues(alpha: 0.35),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     ),
-                    alignment: Alignment.center,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryOrange,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
                     child: const Text(
                       "INICIAR SESIÓN",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const RegisterScreen()),
-                    );
-                  },
-                  child: const Text(
-                    "Crear cuenta",
-                    style: TextStyle(
-                      color: AppTheme.primaryOrange,
-                      fontWeight: FontWeight.w600,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      text: "¿No tienes cuenta? ",
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                      children: const [
+                        TextSpan(
+                          text: "Regístrate",
+                          style: TextStyle(
+                            color: AppTheme.primaryOrange,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -201,49 +235,70 @@ class _PreviewContactScreenState extends State<PreviewContactScreen>
     );
   }
 
-  Widget _item(IconData icon, String title, String desc) {
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFFBBBBBB),
+        letterSpacing: 1.5,
+      ),
+    );
+  }
+
+  Widget _buildContactCard(IconData icon, String title, String desc) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF0F0F0)),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        leading: Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: AppTheme.lightOrange,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: AppTheme.primaryOrange, size: 22),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A1A),
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(
-            desc,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF888888),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: AppTheme.primaryOrange, size: 22),
             ),
-          ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
