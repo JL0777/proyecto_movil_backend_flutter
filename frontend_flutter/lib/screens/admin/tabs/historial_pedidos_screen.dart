@@ -17,7 +17,6 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
   bool _loading = false;
   bool _buscado = false;
 
-  // Filtros
   DateTime? _fechaInicio;
   DateTime? _fechaFin;
   String? _estado;
@@ -33,10 +32,20 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
   Color _colorEstado(String estado) {
     switch (estado) {
       case 'Pendiente': return Colors.grey;
-      case 'Activo': return Colors.orange;
+      case 'Activo':    return const Color(0xFFE8651A);
       case 'Realizado': return Colors.green;
-      case 'Enviado': return Colors.blue;
-      default: return Colors.grey;
+      case 'Enviado':   return Colors.blue;
+      default:          return Colors.grey;
+    }
+  }
+
+  IconData _iconoEstado(String estado) {
+    switch (estado) {
+      case 'Pendiente': return Icons.hourglass_empty_outlined;
+      case 'Activo':    return Icons.restaurant_outlined;
+      case 'Realizado': return Icons.check_circle_outline;
+      case 'Enviado':   return Icons.delivery_dining_outlined;
+      default:          return Icons.receipt_outlined;
     }
   }
 
@@ -110,267 +119,274 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
   }
 
   String _formatFecha(DateTime fecha) {
-    return '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
+    return '${fecha.day.toString().padLeft(2, '0')}/'
+        '${fecha.month.toString().padLeft(2, '0')}/'
+        '${fecha.year}';
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmall = size.width < 360;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('Historial de pedidos'),
+        elevation: 0,
         backgroundColor: const Color(0xFFE8651A),
         foregroundColor: Colors.white,
+        title: const Text(
+          'Historial de Pedidos',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        ),
         actions: [
           if (_buscado)
-            TextButton(
+            TextButton.icon(
               onPressed: _limpiarFiltros,
-              child: const Text(
+              icon: const Icon(Icons.refresh, color: Colors.white, size: 16),
+              label: const Text(
                 'Limpiar',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: 13),
               ),
             ),
         ],
       ),
       body: Column(
         children: [
-          // Filtros
+          // ── Panel de filtros ──
           Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x0F000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Título filtros
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3ED),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.filter_list,
+                            color: Color(0xFFE8651A), size: 16),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Filtros de búsqueda',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 // Fechas
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _seleccionarFecha(true),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _fechaInicio != null
-                                  ? const Color(0xFFE8651A)
-                                  : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 16,
-                                color: _fechaInicio != null
-                                    ? const Color(0xFFE8651A)
-                                    : Colors.grey,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _fechaInicio != null
-                                    ? _formatFecha(_fechaInicio!)
-                                    : 'Fecha inicio',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: _fechaInicio != null
-                                      ? const Color(0xFFE8651A)
-                                      : Colors.grey,
-                                  fontWeight: _fechaInicio != null
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _fechaSelector(
+                          label: _fechaInicio != null
+                              ? _formatFecha(_fechaInicio!)
+                              : 'Fecha inicio',
+                          activo: _fechaInicio != null,
+                          onTap: () => _seleccionarFecha(true),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text('—',
-                        style: TextStyle(color: Colors.grey)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _seleccionarFecha(false),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _fechaFin != null
-                                  ? const Color(0xFFE8651A)
-                                  : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 16,
-                                color: _fechaFin != null
-                                    ? const Color(0xFFE8651A)
-                                    : Colors.grey,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _fechaFin != null
-                                    ? _formatFecha(_fechaFin!)
-                                    : 'Fecha fin',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: _fechaFin != null
-                                      ? const Color(0xFFE8651A)
-                                      : Colors.grey,
-                                  fontWeight: _fechaFin != null
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Icon(Icons.arrow_forward,
+                            size: 14, color: Colors.grey.shade400),
+                      ),
+                      Expanded(
+                        child: _fechaSelector(
+                          label: _fechaFin != null
+                              ? _formatFecha(_fechaFin!)
+                              : 'Fecha fin',
+                          activo: _fechaFin != null,
+                          onTap: () => _seleccionarFecha(false),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Dropdowns en fila
-                Row(
-                  children: [
-                    Expanded(child: _dropdown(
-                      value: _estado ?? 'Todos',
-                      items: _estados,
-                      onChanged: (v) => setState(() => _estado = v),
-                      hint: 'Estado',
-                    )),
-                    const SizedBox(width: 8),
-                    Expanded(child: _dropdown(
-                      value: _tipo ?? 'Todos',
-                      items: _tipos,
-                      onChanged: (v) => setState(() => _tipo = v),
-                      hint: 'Tipo',
-                      labelMap: {
-                        'predefinido': 'Predefinido',
-                        'personalizado': 'Personalizado',
-                        'Todos': 'Todos',
-                      },
-                    )),
-                    const SizedBox(width: 8),
-                    Expanded(child: _dropdown(
-                      value: _metodoPago ?? 'Todos',
-                      items: _metodos,
-                      onChanged: (v) => setState(() => _metodoPago = v),
-                      hint: 'Pago',
-                      labelMap: {
-                        'pse': 'PSE',
-                        'contraentrega': 'Contraentrega',
-                        'Todos': 'Todos',
-                      },
-                    )),
-                  ],
+                // Dropdowns
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _dropdown(
+                          value: _estado ?? 'Todos',
+                          items: _estados,
+                          onChanged: (v) => setState(() => _estado = v),
+                          hint: 'Estado',
+                          icono: Icons.flag_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _dropdown(
+                          value: _tipo ?? 'Todos',
+                          items: _tipos,
+                          onChanged: (v) => setState(() => _tipo = v),
+                          hint: 'Tipo',
+                          icono: Icons.restaurant_menu_outlined,
+                          labelMap: {
+                            'predefinido': 'Predef.',
+                            'personalizado': 'Person.',
+                            'Todos': 'Todos',
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _dropdown(
+                          value: _metodoPago ?? 'Todos',
+                          items: _metodos,
+                          onChanged: (v) => setState(() => _metodoPago = v),
+                          hint: 'Pago',
+                          icono: Icons.payment_outlined,
+                          labelMap: {
+                            'pse': 'PSE',
+                            'contraentrega': 'Contrent.',
+                            'Todos': 'Todos',
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 12),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _loading ? null : _buscar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8651A),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                // Botón buscar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _buscar,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE8651A),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor:
+                            const Color(0xFFE8651A).withValues(alpha: 0.6),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: _loading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                      child: _loading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.search, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Buscar pedidos',
+                                  style: TextStyle(
+                                    fontSize: isSmall ? 13 : 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : const Icon(Icons.search, size: 18),
-                    label: Text(_loading ? 'Buscando...' : 'Buscar'),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 1),
-
-          // Resumen si hay resultados
-          if (_resumen != null) ...[
+          // ── Resumen ──
+          if (_resumen != null)
             Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
-              color: const Color(0xFFFFF3ED),
+                  vertical: 14, horizontal: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _resumenItem(
                     '${_resumen!['totalPedidos']}',
                     'Pedidos',
                     Icons.receipt_long_outlined,
-                    const Color(0xFFE8651A),
                   ),
                   Container(
-                    width: 1,
-                    height: 40,
-                    color: const Color(0xFFE8651A).withValues(alpha: 0.2),
-                  ),
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withValues(alpha: 0.3)),
                   _resumenItem(
                     '\$${double.parse(_resumen!['totalIngresos'].toString()).toStringAsFixed(0)}',
                     'Ingresos',
                     Icons.attach_money,
-                    Colors.green,
                   ),
                   Container(
-                    width: 1,
-                    height: 40,
-                    color: const Color(0xFFE8651A).withValues(alpha: 0.2),
-                  ),
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withValues(alpha: 0.3)),
                   _resumenItem(
                     '\$${double.parse(_resumen!['totalIva'].toString()).toStringAsFixed(0)}',
                     'IVA',
                     Icons.percent,
-                    Colors.purple,
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
-          ],
 
-          // Lista de pedidos
+          // ── Lista ──
           Expanded(
             child: !_buscado
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.search,
-                            size: 60, color: Colors.grey.shade400),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Aplica filtros y toca Buscar',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
+                ? _estadoVacio(
+                    icono: Icons.manage_search_outlined,
+                    titulo: 'Busca tus pedidos',
+                    subtitulo: 'Aplica filtros y toca Buscar',
                   )
                 : _loading
                     ? const Center(
@@ -378,221 +394,308 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
                             color: Color(0xFFE8651A)),
                       )
                     : _pedidos.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.inbox_outlined,
-                                    size: 60,
-                                    color: Colors.grey.shade400),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No hay pedidos con esos filtros',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        ? _estadoVacio(
+                            icono: Icons.inbox_outlined,
+                            titulo: 'Sin resultados',
+                            subtitulo: 'No hay pedidos con esos filtros',
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.fromLTRB(
-                                16, 12, 16, 20),
+                                16, 12, 16, 24),
                             itemCount: _pedidos.length,
-                            itemBuilder: (context, index) {
-                              final p = _pedidos[index];
-                              final usuario = p['Usuario'];
-                              final total = double.parse(
-                                  p['total'].toString());
-                              final fecha = p['createdAt']
-                                      ?.toString()
-                                      .substring(0, 10) ??
-                                  '';
-                              final estado = p['estado'] ?? '';
-                              final tipo = p['tipo'] ?? '';
-                              final metodoPago =
-                                  p['metodoPago'] ?? '';
-                              final colorEstado =
-                                  _colorEstado(estado);
-                              final fotoPerfil =
-                                  usuario?['fotoPerfil'];
-
-                              return Container(
-                                margin:
-                                    const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius:
-                                      BorderRadius.circular(14),
-                                  border: Border.all(
-                                      color: Colors.grey.shade200),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.04),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Avatar
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: const Color(0xFFE8651A)
-                                              .withValues(alpha: 0.3),
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: ClipOval(
-                                        child: fotoPerfil != null &&
-                                                fotoPerfil
-                                                    .toString()
-                                                    .isNotEmpty
-                                            ? Image.network(
-                                                fotoPerfil,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_,
-                                                        __,
-                                                        ___) =>
-                                                    _placeholder(),
-                                              )
-                                            : _placeholder(),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-
-                                    // Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            usuario?['nombre'] ??
-                                                'Sin nombre',
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.calendar_today_outlined,
-                                                size: 11,
-                                                color:
-                                                    Colors.grey.shade400,
-                                              ),
-                                              const SizedBox(width: 3),
-                                              Text(
-                                                fecha,
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color:
-                                                      Colors.grey.shade500,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                tipo == 'personalizado'
-                                                    ? Icons.tune_outlined
-                                                    : Icons.restaurant_menu_outlined,
-                                                size: 11,
-                                                color:
-                                                    Colors.grey.shade400,
-                                              ),
-                                              const SizedBox(width: 3),
-                                              Text(
-                                                tipo == 'personalizado'
-                                                    ? 'Personal.'
-                                                    : 'Predef.',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color:
-                                                      Colors.grey.shade500,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                metodoPago == 'pse'
-                                                    ? Icons.account_balance_outlined
-                                                    : Icons.payments_outlined,
-                                                size: 11,
-                                                color:
-                                                    Colors.grey.shade400,
-                                              ),
-                                              const SizedBox(width: 3),
-                                              Text(
-                                                metodoPago == 'pse'
-                                                    ? 'PSE'
-                                                    : 'Contrent.',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color:
-                                                      Colors.grey.shade500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Total y estado
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          '\$${total.toStringAsFixed(0)}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFFE8651A),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: colorEstado
-                                                .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            border: Border.all(
-                                              color: colorEstado
-                                                  .withValues(alpha: 0.3),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            estado,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w700,
-                                              color: colorEstado,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                            itemBuilder: (context, index) =>
+                                _pedidoCard(_pedidos[index], isSmall),
                           ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Widgets ────────────────────────────────────────────────
+
+  Widget _pedidoCard(Map<String, dynamic> p, bool isSmall) {
+    final usuario = p['Usuario'];
+    final total = double.parse(p['total'].toString());
+    final fecha = p['createdAt']?.toString().substring(0, 10) ?? '';
+    final estado = p['estado'] ?? '';
+    final tipo = p['tipo'] ?? '';
+    final metodoPago = p['metodoPago'] ?? '';
+    final colorEstado = _colorEstado(estado);
+    final fotoPerfil = usuario?['fotoPerfil'];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header con estado
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorEstado.withValues(alpha: 0.06),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(_iconoEstado(estado),
+                        size: 14, color: colorEstado),
+                    const SizedBox(width: 5),
+                    Text(
+                      estado,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: colorEstado,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        size: 11, color: Colors.grey.shade400),
+                    const SizedBox(width: 4),
+                    Text(
+                      fecha,
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade500),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Cuerpo
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: isSmall ? 38 : 44,
+                  height: isSmall ? 38 : 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          const Color(0xFFE8651A).withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: fotoPerfil != null &&
+                            fotoPerfil.toString().isNotEmpty
+                        ? Image.network(
+                            fotoPerfil,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _placeholder(),
+                          )
+                        : _placeholder(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Info usuario
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        usuario?['nombre'] ?? 'Sin nombre',
+                        style: TextStyle(
+                          fontSize: isSmall ? 12 : 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      // Tags
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          _tag(
+                            tipo == 'personalizado'
+                                ? 'Personalizado'
+                                : 'Predefinido',
+                            tipo == 'personalizado'
+                                ? Icons.tune_outlined
+                                : Icons.restaurant_menu_outlined,
+                            Colors.purple,
+                          ),
+                          _tag(
+                            metodoPago == 'pse' ? 'PSE' : 'Contraentrega',
+                            metodoPago == 'pse'
+                                ? Icons.account_balance_outlined
+                                : Icons.payments_outlined,
+                            Colors.teal,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Total
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '\$${total.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: isSmall ? 14 : 16,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFFE8651A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'total',
+                      style: TextStyle(
+                          fontSize: 10, color: Colors.grey.shade400),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tag(String label, IconData icono, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, size: 10, color: color),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _fechaSelector({
+    required String label,
+    required bool activo,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: activo
+              ? const Color(0xFFFFF3ED)
+              : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: activo
+                ? const Color(0xFFE8651A)
+                : Colors.grey.shade300,
+            width: activo ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              size: 14,
+              color: activo
+                  ? const Color(0xFFE8651A)
+                  : Colors.grey.shade400,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: activo
+                      ? const Color(0xFFE8651A)
+                      : Colors.grey.shade500,
+                  fontWeight: activo
+                      ? FontWeight.w700
+                      : FontWeight.normal,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _estadoVacio({
+    required IconData icono,
+    required String titulo,
+    required String subtitulo,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3ED),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icono,
+                size: 40, color: const Color(0xFFE8651A)),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            titulo,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitulo,
+            style: TextStyle(
+                fontSize: 13, color: Colors.grey.shade500),
           ),
         ],
       ),
@@ -602,30 +705,29 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
   Widget _placeholder() {
     return Container(
       color: const Color(0xFFFFF3ED),
-      child: const Icon(Icons.person,
-          color: Color(0xFFE8651A), size: 24),
+      child:
+          const Icon(Icons.person, color: Color(0xFFE8651A), size: 24),
     );
   }
 
-  Widget _resumenItem(
-      String valor, String label, IconData icono, Color color) {
+  Widget _resumenItem(String valor, String label, IconData icono) {
     return Column(
       children: [
-        Icon(icono, color: color, size: 18),
+        Icon(icono, color: Colors.white, size: 18),
         const SizedBox(height: 4),
         Text(
           valor,
-          style: TextStyle(
-            fontSize: 14,
+          style: const TextStyle(
+            fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: color,
+            color: Colors.white,
           ),
         ),
         Text(
           label,
           style: TextStyle(
             fontSize: 11,
-            color: Colors.grey.shade500,
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -637,17 +739,22 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
     required List<String> items,
     required Function(String?) onChanged,
     required String hint,
+    required IconData icono,
     Map<String, String>? labelMap,
   }) {
+    final activo = value != 'Todos';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: activo
+            ? const Color(0xFFFFF3ED)
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: value != 'Todos'
+          color: activo
               ? const Color(0xFFE8651A)
               : Colors.grey.shade300,
+          width: activo ? 1.5 : 1,
         ),
       ),
       child: DropdownButtonHideUnderline(
@@ -655,22 +762,26 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
           value: value,
           isExpanded: true,
           isDense: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            size: 14,
+            color: activo
+                ? const Color(0xFFE8651A)
+                : Colors.grey.shade400,
+          ),
           style: TextStyle(
             fontSize: 11,
-            color: value != 'Todos'
+            color: activo
                 ? const Color(0xFFE8651A)
                 : Colors.black87,
-            fontWeight: value != 'Todos'
-                ? FontWeight.w600
-                : FontWeight.normal,
+            fontWeight:
+                activo ? FontWeight.w700 : FontWeight.normal,
           ),
           items: items
               .map((e) => DropdownMenuItem(
                     value: e,
                     child: Text(
-                      labelMap != null
-                          ? (labelMap[e] ?? e)
-                          : e,
+                      labelMap != null ? (labelMap[e] ?? e) : e,
                       style: const TextStyle(fontSize: 11),
                     ),
                   ))

@@ -226,7 +226,7 @@ exports.getPedidosCocina = async (req, res) => {
 };
 
 // ======================
-// CAMBIAR ESTADO COCINA — ahora incluye Enviado
+// CAMBIAR ESTADO COCINA 
 // ======================
 exports.updateEstadoCocina = async (req, res) => {
   const { estado } = req.body;
