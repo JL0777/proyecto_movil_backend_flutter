@@ -506,7 +506,7 @@ class _HistorialPedidosScreenState extends State<HistorialPedidosScreen> {
                         ? Image.network(
                             fotoPerfil,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder(),
+                            errorBuilder: (context, error, stackTrace) => _placeholder(),
                           )
                         : _placeholder(),
                   ),
