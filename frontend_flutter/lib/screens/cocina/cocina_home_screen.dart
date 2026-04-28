@@ -7,6 +7,7 @@ import 'voice/cocina_voice_commands.dart';
 import 'widgets/cocina_header.dart';
 import 'widgets/cocina_tab_chip.dart';
 import 'widgets/pedido_card.dart';
+import '../../services/socket_service.dart';
 
 class CocinaHomeScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -19,6 +20,7 @@ class CocinaHomeScreen extends StatefulWidget {
 class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     with SingleTickerProviderStateMixin {
   final PedidoService _service = PedidoService();
+  final SocketService _socket = SocketService();
   late TabController _tabController;
   late CocinaVoiceHandler _voice;
   bool _dialogAbierto = false;
@@ -49,14 +51,94 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
     _cargar();
     _voice.inicializar();
+    _conectarSocket();
   }
 
   @override
   void dispose() {
+    _socket.dejarDeEscuchar('nuevo_pedido');
+    _socket.dejarDeEscuchar('estado_actualizado');
     _tabController.dispose();
     _voice.dispose();
     super.dispose();
   }
+
+  // ── Socket ─────────────────────────────────────────────────
+
+  void _conectarSocket() {
+    _socket.conectar();
+
+    _socket.escuchar('nuevo_pedido', (data) {
+      if (!mounted) return;
+      _cargar();
+      _mostrarNotificacionNuevoPedido(data);
+    });
+
+    _socket.escuchar('estado_actualizado', (data) {
+      if (!mounted) return;
+      _cargar();
+    });
+  }
+
+  void _mostrarNotificacionNuevoPedido(dynamic data) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications_active,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '¡Nuevo pedido!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'Pedido #${data['id']} — ${data['tipo'] ?? ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFE8651A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Ver',
+          textColor: Colors.white,
+          onPressed: () => _tabController.animateTo(1),
+        ),
+      ),
+    );
+  }
+
+  // ── Carga de datos ─────────────────────────────────────────
 
   Future<void> _cargar() async {
     try {
@@ -91,21 +173,27 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     }
   }
 
+  // ── Comandos de voz ────────────────────────────────────────
+
   void _procesarComando(String texto) {
     texto = texto.toLowerCase().trim();
     texto = CocinaVoiceCommands.convertirNumeros(texto);
 
-    // ── Cerrar dialog si hay uno abierto ──
+    // Cerrar dialog
     if (_dialogAbierto &&
         (texto.contains('cerrar') ||
-            texto.contains('salir'))) {
+            texto.contains('cierra') ||
+            texto.contains('salir') ||
+            texto.contains('volver') ||
+            texto.contains('atrás') ||
+            texto.contains('atras'))) {
       Navigator.of(context).pop();
       _dialogAbierto = false;
-      _mostrarFeedback('cerrado ✓', Colors.grey);
+      _mostrarFeedback('Cerrado ✓', Colors.grey);
       return;
     }
 
-    // ── Navegación de tabs ──
+    // Navegación tabs
     final tabIndex = CocinaVoiceCommands.detectarNavegacion(texto);
     if (tabIndex >= 0) {
       _tabController.animateTo(tabIndex);
@@ -114,13 +202,34 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
       return;
     }
 
-    // ── Acción sobre pedido ──
+    // Lista del tab activo
+    final List<dynamic> listaActiva;
+    switch (_tabController.index) {
+      case 0:
+        listaActiva = _enPreparacion;
+        break;
+      case 1:
+        listaActiva = _nuevos;
+        break;
+      case 2:
+        listaActiva = _realizados;
+        break;
+      default:
+        listaActiva = _pedidos;
+    }
+
     CocinaVoiceCommands.procesarPedido(
       texto: texto,
-      pedidos: _pedidos,
+      pedidos: listaActiva,
       onCambiarEstado: (id, estado) => _cambiarEstado(id, estado),
-      onVerPedido: _verPedido,
-      onVerCliente: _verInfoCliente,
+      onVerPedido: (pedido, _) {
+        final numero = listaActiva.indexOf(pedido) + 1;
+        _verPedido(pedido, numero);
+      },
+      onVerCliente: (pedido, _) {
+        final numero = listaActiva.indexOf(pedido) + 1;
+        _verInfoCliente(pedido, numero);
+      },
       onFeedback: _mostrarFeedback,
     );
   }
@@ -144,6 +253,8 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
       ),
     );
   }
+
+  // ── Dialogs ────────────────────────────────────────────────
 
   void _verInfoCliente(Map<String, dynamic> pedido, int numero) {
     _dialogAbierto = true;
@@ -243,16 +354,12 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
           ),
         ),
       ),
-    ).whenComplete(() {
-      _dialogAbierto = false;
-    });
+    ).whenComplete(() => _dialogAbierto = false);
   }
 
   void _verPedido(Map<String, dynamic> pedido, int numero) {
     _dialogAbierto = true;
     final detalles = pedido['DetallePedidos'] as List? ?? [];
-
-    // Separar en dos listas
     final menus = detalles.where((d) => d['Menu'] != null).toList();
     final ingredientes = detalles
         .where((d) => d['Ingrediente'] != null)
@@ -274,7 +381,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Encabezado ──
+                // Encabezado
                 Row(
                   children: [
                     IconButton(
@@ -296,7 +403,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                 ),
                 const SizedBox(height: 16),
 
-                // ── Sección Menú Predefinido ──
+                // Menú Predefinido
                 if (menus.isNotEmpty) ...[
                   _seccionTitulo(
                     Icons.restaurant_menu_outlined,
@@ -307,98 +414,67 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   const SizedBox(height: 12),
                   ...menus.map((d) {
                     final menu = d['Menu'];
-
                     final cantidad = d['cantidad'] ?? 1;
-
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Nombre + cantidad
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        menu['nombre'] ?? 'Sin nombre',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                    if (cantidad > 1)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFFF3ED),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(
-                                              0xFFE8651A,
-                                            ).withValues(alpha: 0.4),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'x$cantidad',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFFE8651A),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                menu['nombre'] ?? 'Sin nombre',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
                                 ),
-                                // Descripción
-                                if (menu['descripcion'] != null &&
-                                    menu['descripcion']
-                                        .toString()
-                                        .isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    menu['descripcion'],
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                            if (cantidad > 1)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF3ED),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(
+                                      0xFFE8651A,
+                                    ).withValues(alpha: 0.4),
+                                  ),
+                                ),
+                                child: Text(
+                                  'x$cantidad',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFE8651A),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   }),
                 ],
 
-                // Separador si hay ambos tipos
+                // Separador
                 if (menus.isNotEmpty && ingredientes.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   const Divider(),
                   const SizedBox(height: 8),
                 ],
 
-                // ── Sección Menú Personalizado ──
+                // Menú Personalizado
                 if (ingredientes.isNotEmpty) ...[
                   _seccionTitulo(
                     Icons.tune_outlined,
@@ -410,8 +486,6 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   ...ingredientes.map((d) {
                     final ing = d['Ingrediente'];
                     final tipo = ing['tipo'] ?? '';
-                    final icono = _iconoIngrediente(tipo);
-
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.symmetric(
@@ -433,7 +507,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
-                              icono,
+                              _iconoIngrediente(tipo),
                               size: 16,
                               color: Colors.purple.shade400,
                             ),
@@ -459,7 +533,6 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
                   }),
                 ],
 
-                // Si no hay nada
                 if (detalles.isEmpty)
                   Center(
                     child: Padding(
@@ -477,14 +550,11 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
           ),
         ),
       ),
-    ).whenComplete(() {
-      _dialogAbierto = false;
-    });
+    ).whenComplete(() => _dialogAbierto = false);
   }
 
   // ── Helpers ────────────────────────────────────────────────
 
-  // Título de sección con ícono y color
   Widget _seccionTitulo(
     IconData icono,
     String titulo,
@@ -514,7 +584,6 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
     );
   }
 
-  // Ícono según tipo de ingrediente
   IconData _iconoIngrediente(String tipo) {
     switch (tipo) {
       case 'proteina':
@@ -744,7 +813,7 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         itemCount: pedidos.length,
         itemBuilder: (ctx, index) {
           final pedido = pedidos[index];
-          final numero = _pedidos.indexOf(pedido) + 1;
+          final numero = index + 1;
           return PedidoCard(
             pedido: pedido,
             numero: numero,

@@ -68,6 +68,16 @@ exports.create = async (req, res) => {
       }
     }
 
+    if (global.io) {
+      global.io.emit('nuevo_pedido', {
+        id: pedido.id,
+        tipo: pedido.tipo,
+        total: pedido.total,
+        estado: pedido.estado,
+      });
+      console.log('📢 Nuevo pedido emitido:', pedido.id);
+    }
+
     res.status(201).json({ success: true, pedido });
 
   } catch (error) {
@@ -104,7 +114,7 @@ exports.getMisPedidos = async (req, res) => {
           ]
         }
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'ASC']]
     });
 
     res.json(pedidos);
@@ -246,7 +256,16 @@ exports.updateEstadoCocina = async (req, res) => {
     pedido.estado = estado;
     await pedido.save();
 
+    if (global.io) {
+      global.io.emit('estado_actualizado', {
+        id: pedido.id,
+        estado: pedido.estado,
+      });
+      console.log('Estado actualizado emitido:', pedido.id, pedido.estado);
+    }
+
     res.json({ success: true, pedido });
+
   } catch (error) {
     console.error("ERROR UPDATE ESTADO COCINA:", error);
     res.status(500).json({ error: "Error del servidor" });
@@ -364,3 +383,4 @@ exports.editarPedido = async (req, res) => {
     res.status(500).json({ error: 'Error del servidor' });
   }
 };
+

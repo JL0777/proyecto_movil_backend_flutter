@@ -14,7 +14,7 @@ module.exports = {
         rol: 'admin',
         createdAt: new Date(),
         updatedAt: new Date(),
-/*************  ✨ Windsurf Command ⭐  *************/
+/*************  Windsurf Command   *************/
   /**
    * Revert seed commands here.
    *

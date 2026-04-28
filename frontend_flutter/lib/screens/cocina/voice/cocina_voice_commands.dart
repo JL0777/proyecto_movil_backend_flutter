@@ -82,6 +82,7 @@ class CocinaVoiceCommands {
       return;
     }
 
+    // ✅ Buscar por posición en la lista
     final pedido = pedidos[numeroPedido - 1];
 
     if (texto.contains('activo') ||
@@ -101,21 +102,18 @@ class CocinaVoiceCommands {
         texto.contains('despachado')) {
       onCambiarEstado(pedido['id'], 'Enviado');
       onFeedback('Pedido #$numeroPedido → Enviado ✓', Colors.blue);
-    } else if (texto.contains('ver') ||
-        texto.contains('detalle') ||
-        texto.contains('mostrar') ||
-        texto.contains('abrir')) {
-      onVerPedido(pedido, numeroPedido);
-    } else if (texto.contains('ver cliente') ||
-        texto.contains('cliente pedido') ||
-        texto.contains('información cliente') ||
-        texto.contains('info cliente')) {
+    } else if (texto.contains('cliente') ||
+        texto.contains('información') ||
+        texto.contains('informacion') ||
+        texto.contains('info')) {
       onVerCliente(pedido, numeroPedido);
-    } else if (texto.contains('ver pedido') ||
-        texto.contains('detalle') ||
+      onFeedback('Abriendo cliente #$numeroPedido ✓', Colors.teal);
+    } else if (texto.contains('detalle') ||
+        texto.contains('ver') ||
         texto.contains('mostrar') ||
         texto.contains('abrir')) {
       onVerPedido(pedido, numeroPedido);
+      onFeedback('Abriendo pedido #$numeroPedido ✓', Colors.indigo);
     } else {
       onFeedback('Di: "pedido 3 activo", "pedido 5 listo"', Colors.red);
     }

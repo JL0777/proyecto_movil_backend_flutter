@@ -80,7 +80,7 @@ class CocinaVoiceHandler {
           }
         }
       },
-      listenFor: const Duration(seconds: 60),
+      listenFor: const Duration(seconds: 40),
       pauseFor: const Duration(seconds: 60),
     );
   }
