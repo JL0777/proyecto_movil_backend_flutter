@@ -187,7 +187,7 @@ class PedidoCard extends StatelessWidget {
                           width: 70,
                           height: 70,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _miniPlaceholder(),
+                          errorBuilder: (context, error, stackTrace) => _miniPlaceholder(),
                         )
                       : _miniPlaceholder(),
                 ),
