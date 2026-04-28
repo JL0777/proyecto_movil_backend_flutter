@@ -1,20 +1,20 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'dart:developer';
 import '../core/config/app_config.dart';
-
 
 class SocketService {
   static final SocketService _instance = SocketService._internal();
   factory SocketService() => _instance;
   SocketService._internal();
 
-  IO.Socket? _socket;
+  io.Socket? _socket;
 
   static final String _url = AppConfig.baseUrl.replaceAll('/api', '');
 
   void conectar() {
     if (_socket != null && _socket!.connected) return;
 
-    _socket = IO.io(_url, <String, dynamic>{
+    _socket = io.io(_url, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'reconnection': true,
@@ -23,15 +23,15 @@ class SocketService {
     });
 
     _socket!.onConnect((_) {
-      print('Socket conectado');
+      log('Socket conectado');
     });
 
     _socket!.onDisconnect((_) {
-      print('Socket desconectado');
+      log('Socket desconectado');
     });
 
     _socket!.onConnectError((error) {
-      print('Error de conexión: $error');
+      log('Error de conexión: $error');
     });
   }
 
