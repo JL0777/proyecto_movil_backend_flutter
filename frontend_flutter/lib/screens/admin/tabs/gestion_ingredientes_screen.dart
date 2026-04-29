@@ -392,7 +392,9 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
             SizedBox(width: 8),
-            Text('Eliminar ingrediente'),
+            Expanded(
+              child: Text('Eliminar ingrediente'),
+            ),
           ],
         ),
         content: Text('¿Eliminar "${ingrediente['nombre']}"?'),

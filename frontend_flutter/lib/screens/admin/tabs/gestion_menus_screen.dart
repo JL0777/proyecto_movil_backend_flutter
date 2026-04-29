@@ -680,7 +680,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                       Switch(
                         value: esBalanceado,
                         onChanged: (v) => setModalState(() => esBalanceado = v),
-                        activeColor: Colors.green,
+                        activeThumbColor: Colors.green,
                       ),
                     ],
                   ),

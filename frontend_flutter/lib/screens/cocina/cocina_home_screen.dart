@@ -30,8 +30,19 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   List<dynamic> get _enPreparacion =>
       _pedidos.where((p) => p['estado'] == 'Activo').toList();
-  List<dynamic> get _nuevos =>
-      _pedidos.where((p) => p['estado'] == 'Pendiente').toList();
+
+  List<dynamic> get _nuevos {
+    final nuevos = _pedidos.where((p) => p['estado'] == 'Pendiente').toList();
+    nuevos.sort((a, b) {
+      final aDate = DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0);
+      return aDate.compareTo(bDate);
+    });
+    return nuevos;
+  }
+
   List<dynamic> get _realizados =>
       _pedidos.where((p) => p['estado'] == 'Realizado').toList();
 

@@ -16,7 +16,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
   final IngredienteService _service = IngredienteService();
 
   Map<String, List<dynamic>> _ingredientes = {};
-  Map<String, dynamic> _seleccionados = {};
+  Map<String, List<dynamic>> _seleccionados = {};
   bool _loading = true;
 
   Map<String, String> get _labels {
@@ -59,12 +59,23 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
   double get _subtotal {
     double total = 0;
-    for (final item in _seleccionados.values) {
-      if (item != null) {
+    for (final lista in _seleccionados.values) {
+      for (final item in lista) {
         total += double.parse(item['precio'].toString());
       }
     }
     return total;
+  }
+
+  Map<String, dynamic> _flattenSeleccionados() {
+    final result = <String, dynamic>{};
+    for (final lista in _seleccionados.values) {
+      for (final item in lista) {
+        final key = item['id']?.toString() ?? result.length.toString();
+        result[key] = item;
+      }
+    }
+    return result;
   }
 
   @override
@@ -76,11 +87,11 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
   Future<void> _cargar() async {
     try {
       final Map<String, List<dynamic>> ingredientes = {};
-      final Map<String, dynamic> seleccionados = {};
+      final Map<String, List<dynamic>> seleccionados = {};
 
       for (final tipo in _labels.keys) {
         ingredientes[tipo] = await _service.getByTipo(tipo);
-        seleccionados[tipo] = null;
+        seleccionados[tipo] = [];
       }
 
       setState(() {
@@ -95,7 +106,6 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
   void _mostrarOpciones(String tipo) {
     final opciones = _ingredientes[tipo] ?? [];
-    final seleccionado = _seleccionados[tipo];
 
     if (opciones.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +117,6 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
       return;
     }
 
-    // Capturamos el navigator ANTES de entrar al builder
     final nav = Navigator.of(context);
 
     showModalBottomSheet(
@@ -115,68 +124,116 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (sheetOpcionesCtx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _labels[tipo] ?? tipo,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          if (seleccionado != null)
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Eliminar selección'),
-              subtitle: const Text('Eliminar ingrediente'),
-              onTap: () {
-                nav.pop();
-                setState(() => _seleccionados[tipo] = null);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ingrediente eliminado correctamente'),
-                    backgroundColor: Color.fromARGB(255, 76, 175, 80),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    margin: EdgeInsets.all(16),
-                  ),
-                );
-              },
-            ),
-          ...opciones.map(
-            (op) => ListTile(
-              title: Text(op['nombre']),
-              subtitle: Text(
-                op['cantidad'] != null
-                    ? '${double.parse(op['cantidad'].toString()).toStringAsFixed(0)}g/ml'
-                    : '',
-              ),
-              trailing: Text(
-                '\$${double.parse(op['precio'].toString()).toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: _colores[tipo],
-                  fontWeight: FontWeight.w600,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setModalState) {
+          final seleccionados = _seleccionados[tipo] ?? [];
+          final color = _colores[tipo] ?? const Color(0xFFE8651A);
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              onTap: () {
-                nav.pop();
-                _mostrarEditorCantidad(tipo, op);
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
+              const SizedBox(height: 16),
+              Text(
+                _labels[tipo] ?? tipo,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    if (seleccionados.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Text(
+                          'Seleccionados',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ),
+                      ...seleccionados.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final item = entry.value;
+                        return ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: color, size: 20),
+                          title: Text(
+                            '${item['nombre']} (${double.parse(item['cantidad'].toString()).toStringAsFixed(0)}g/ml)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: color,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '\$${double.parse(item['precio'].toString()).toStringAsFixed(0)}',
+                            style: TextStyle(color: color),
+                          ),
+                          trailing: GestureDetector(
+                            onTap: () {
+                              setState(
+                                  () => _seleccionados[tipo]!.removeAt(i));
+                              setModalState(() {});
+                            },
+                            child: const Icon(Icons.delete_outline,
+                                color: Colors.red, size: 20),
+                          ),
+                        );
+                      }),
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                        child: Text(
+                          'Agregar más',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ),
+                    ],
+                    ...opciones.map(
+                      (op) => ListTile(
+                        title: Text(op['nombre']),
+                        subtitle: Text(
+                          op['cantidad'] != null
+                              ? '${double.parse(op['cantidad'].toString()).toStringAsFixed(0)}g/ml'
+                              : '',
+                        ),
+                        trailing: Text(
+                          '\$${double.parse(op['precio'].toString()).toStringAsFixed(0)}',
+                          style: TextStyle(
+                            color: _colores[tipo],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap: () {
+                          nav.pop();
+                          _mostrarEditorCantidad(tipo, op);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        },
       ),
     );
   }
@@ -186,17 +243,16 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
         ? double.parse(op['cantidad'].toString())
         : 0.0;
     final precioBase = double.parse(op['precio'].toString());
-    final precioPorGramo = cantidadBase > 0 ? precioBase / cantidadBase : 0.0;
-
+    final precioPorGramo =
+        cantidadBase > 0 ? precioBase / cantidadBase : 0.0;
     double gramos = cantidadBase;
 
     showDialog(
       context: context,
       builder: (editorDialogCtx) => StatefulBuilder(
         builder: (editorDialogCtx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             op['nombre'],
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
@@ -206,10 +262,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
             children: [
               Text(
                 'Cantidad base sugerida: ${cantidadBase.toStringAsFixed(0)}g/ml',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                style:
+                    TextStyle(fontSize: 13, color: Colors.grey.shade500),
               ),
               const SizedBox(height: 20),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -228,11 +284,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                             : Colors.grey.shade300,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.remove,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.remove,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                   Padding(
@@ -247,17 +300,14 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                             color: Colors.black87,
                           ),
                         ),
-                        const Text(
-                          'g/ml',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
+                        const Text('g/ml',
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      setDialogState(() => gramos += 10);
-                    },
+                    onTap: () => setDialogState(() => gramos += 10),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -265,23 +315,16 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         color: Color(0xFFE8651A),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.add,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 16),
-
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                    horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF3ED),
                   borderRadius: BorderRadius.circular(10),
@@ -289,10 +332,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Precio:',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
+                    const Text('Precio:',
+                        style: TextStyle(fontSize: 14, color: Colors.black87)),
                     Text(
                       '\$${(precioPorGramo * gramos).toStringAsFixed(0)}',
                       style: const TextStyle(
@@ -309,28 +350,25 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(editorDialogCtx),
-              child: Text(
-                'Cancelar',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
+              child: Text('Cancelar',
+                  style: TextStyle(color: Colors.grey.shade600)),
             ),
             ElevatedButton(
               onPressed: () {
                 final opConCantidad = Map<String, dynamic>.from(op);
                 opConCantidad['cantidad'] = gramos;
-                opConCantidad['precio'] = (precioPorGramo * gramos)
-                    .toStringAsFixed(0);
-                setState(() => _seleccionados[tipo] = opConCantidad);
+                opConCantidad['precio'] =
+                    (precioPorGramo * gramos).toStringAsFixed(0);
+                setState(() => _seleccionados[tipo]!.add(opConCantidad));
                 Navigator.pop(editorDialogCtx);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8651A),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                    borderRadius: BorderRadius.circular(8)),
               ),
-              child: const Text('Confirmar'),
+              child: const Text('Agregar'),
             ),
           ],
         ),
@@ -348,7 +386,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                    child: CircularProgressIndicator(
+                        color: Color(0xFFE8651A)),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
@@ -365,12 +404,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          width: 60,
-                          height: 3,
-                          color: const Color(0xFFE8651A),
-                        ),
+                            width: 60, height: 3, color: const Color(0xFFE8651A)),
                         const SizedBox(height: 24),
 
+                        // Círculo visual
                         Center(
                           child: Container(
                             width: 120,
@@ -383,8 +420,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                               ),
                             ),
                             child: Center(
-                              child:
-                                  _seleccionados.values.every((v) => v == null)
+                              child: _seleccionados.values
+                                      .every((lista) => lista.isEmpty)
                                   ? Icon(
                                       Icons.restaurant_menu_outlined,
                                       color: Colors.grey.shade400,
@@ -395,18 +432,19 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
-                                        children: _seleccionados.entries
-                                            .where((e) => e.value != null)
+                                        children: _seleccionados.values
+                                            .expand((lista) => lista)
                                             .map(
-                                              (e) => Text(
-                                                e.value!['nombre'],
+                                              (item) => Text(
+                                                item['nombre'],
                                                 style: const TextStyle(
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                                 textAlign: TextAlign.center,
                                                 maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
                                               ),
                                             )
                                             .toList(),
@@ -418,9 +456,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
                         const SizedBox(height: 24),
 
+                        // Pills por tipo
                         ..._labels.entries.map((entry) {
                           final tipo = entry.key;
-                          final seleccionado = _seleccionados[tipo];
+                          final lista = _seleccionados[tipo] ?? [];
                           final color =
                               _colores[tipo] ?? const Color(0xFFE8651A);
 
@@ -431,16 +470,14 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                               child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 14,
-                                ),
+                                    horizontal: 20, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: seleccionado != null
+                                  color: lista.isNotEmpty
                                       ? color.withValues(alpha: 0.1)
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(
-                                    color: seleccionado != null
+                                    color: lista.isNotEmpty
                                         ? color
                                         : Colors.black87,
                                     width: 1.5,
@@ -452,24 +489,24 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        seleccionado != null
-                                            ? '✓ ${seleccionado['nombre']} (${double.parse(seleccionado['cantidad'].toString()).toStringAsFixed(0)}g)'
+                                        lista.isNotEmpty
+                                            ? '✓ ${lista.map((i) => i['nombre']).join(', ')}'
                                             : entry.value,
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w700,
-                                          color: seleccionado != null
+                                          color: lista.isNotEmpty
                                               ? color
                                               : Colors.black87,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    if (seleccionado != null)
+                                    if (lista.isNotEmpty)
                                       Row(
                                         children: [
                                           Text(
-                                            '\$${double.parse(seleccionado['precio'].toString()).toStringAsFixed(0)}',
+                                            '\$${lista.fold(0.0, (sum, i) => sum + double.parse(i['precio'].toString())).toStringAsFixed(0)}',
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
@@ -477,19 +514,14 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.check_circle,
-                                            color: color,
-                                            size: 20,
-                                          ),
+                                          Icon(Icons.check_circle,
+                                              color: color, size: 20),
                                         ],
                                       )
                                     else
-                                      Icon(
-                                        Icons.edit_outlined,
-                                        color: Colors.grey.shade400,
-                                        size: 18,
-                                      ),
+                                      Icon(Icons.edit_outlined,
+                                          color: Colors.grey.shade400,
+                                          size: 18),
                                   ],
                                 ),
                               ),
@@ -501,6 +533,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   ),
           ),
 
+          // Footer
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -519,10 +552,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Subtotal:',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
+                    const Text('Subtotal:',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
                     Text(
                       '\$${_subtotal.toStringAsFixed(0)}',
                       style: const TextStyle(
@@ -537,20 +568,16 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      final haySeleccionado = _seleccionados.values.any(
-                        (v) => v != null,
-                      );
+                      final haySeleccionado = _seleccionados.values
+                          .any((lista) => lista.isNotEmpty);
 
                       if (!haySeleccionado) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Row(
                               children: [
-                                Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
+                                Icon(Icons.warning_amber_rounded,
+                                    color: Colors.white, size: 18),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -575,7 +602,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         MaterialPageRoute(
                           builder: (_) => Paso2ComplementosScreen(
                             categoria: widget.categoria,
-                            ingredientes: _seleccionados,
+                            ingredientes: _flattenSeleccionados(),
                             subtotal: _subtotal,
                           ),
                         ),
@@ -585,16 +612,13 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                       backgroundColor: const Color(0xFFE8651A),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Text(
                       'Siguiente',
                       style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                          fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -613,7 +637,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
+          colorFilter:
+              ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -662,7 +687,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
             shape: BoxShape.circle,
             color: activo ? const Color(0xFFE8651A) : Colors.grey.shade200,
             border: Border.all(
-              color: activo ? const Color(0xFFE8651A) : Colors.grey.shade300,
+              color:
+                  activo ? const Color(0xFFE8651A) : Colors.grey.shade300,
             ),
           ),
           child: Center(

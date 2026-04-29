@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../services/menu_service.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/cart_provider.dart';
+import 'perfil_nutricional_screen.dart';
 
 class MenusBalanceadosScreen extends StatefulWidget {
   final String? objetivoInicial;
@@ -114,6 +115,48 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        // Reemplaza el IconButton por esto
+                        GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PerfilNutricionalScreen(),
+                            ),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.monitor_weight_outlined,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  'Mi perfil',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -282,7 +325,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _imagenPlaceholder(),
+                errorBuilder: (_, _, _) => _imagenPlaceholder(),
               ),
             )
           else

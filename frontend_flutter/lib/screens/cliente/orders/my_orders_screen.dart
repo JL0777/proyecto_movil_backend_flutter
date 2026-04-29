@@ -18,11 +18,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
   final Set<int> _expandidos = {};
 
   final List<String> _tabs = [
-    'Todos',
-    'Pendiente',
-    'Activo',
-    'Realizado',
-    'Enviado',
+    'Todos', 'Pendiente', 'Activo', 'Realizado', 'Enviado',
   ];
 
   List<dynamic> _filtrados(String tab) {
@@ -57,69 +53,51 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
   Color _colorEstado(String estado) {
     switch (estado) {
-      case 'Pendiente':
-        return Colors.grey;
-      case 'Activo':
-        return Colors.orange;
-      case 'Realizado':
-        return Colors.green;
-      case 'Enviado':
-        return Colors.blue;
-      default:
-        return Colors.grey;
+      case 'Pendiente': return Colors.grey;
+      case 'Activo':    return const Color(0xFFE8651A);
+      case 'Realizado': return Colors.green;
+      case 'Enviado':   return Colors.blue;
+      default:          return Colors.grey;
     }
   }
 
   IconData _iconoEstado(String estado) {
     switch (estado) {
-      case 'Pendiente':
-        return Icons.hourglass_empty_outlined;
-      case 'Activo':
-        return Icons.restaurant_outlined;
-      case 'Realizado':
-        return Icons.check_circle_outline;
-      case 'Enviado':
-        return Icons.delivery_dining_outlined;
-      default:
-        return Icons.receipt_outlined;
+      case 'Pendiente': return Icons.hourglass_empty_outlined;
+      case 'Activo':    return Icons.restaurant_outlined;
+      case 'Realizado': return Icons.check_circle_outline;
+      case 'Enviado':   return Icons.delivery_dining_outlined;
+      default:          return Icons.receipt_outlined;
     }
   }
 
   Future<void> _cancelarPedido(Map<String, dynamic> pedido) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (cancelDialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
             SizedBox(width: 8),
-            Text(
-              '¿Cancelar pedido?',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
+            Text('¿Cancelar pedido?', style: TextStyle(fontWeight: FontWeight.w700)),
           ],
         ),
         content: const Text(
-          'Esta acción no se puede deshacer. ¿Estás seguro que deseas cancelar este pedido?',
+          'Esta acción no se puede deshacer. ¿Estás seguro?',
           style: TextStyle(fontSize: 14, color: Colors.black54),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(cancelDialogCtx, false),
-            child: Text('No, mantener',
-                style: TextStyle(color: Colors.grey.shade600)),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('No, mantener', style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(cancelDialogCtx, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Sí, cancelar'),
           ),
@@ -130,40 +108,27 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     if (confirm != true) return;
 
     final result = await _service.cancelarPedido(pedido['id']);
-
     if (!mounted) return;
 
-    if (result['success']) {
-      _cargar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Pedido cancelado correctamente'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['error'] ?? 'Error al cancelar'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(result['success']
+          ? 'Pedido cancelado correctamente'
+          : result['error'] ?? 'Error al cancelar'),
+      backgroundColor: result['success'] ? Colors.green : Colors.red,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(16),
+    ));
+
+    if (result['success']) _cargar();
   }
 
   Future<void> _editarPedido(Map<String, dynamic> pedido) async {
     final AddressService addressService = AddressService();
     final List<dynamic> direcciones = await addressService.getAddresses();
-
     if (!mounted) return;
 
     final detalles = pedido['DetallePedidos'] as List? ?? [];
-    final tipo = pedido['tipo'] ?? 'predefinido';
 
     Map<String, dynamic>? direccionSeleccionada = direcciones.firstWhere(
       (d) => d['id'] == pedido['direccionId'],
@@ -193,75 +158,78 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (editModalCtx) => StatefulBuilder(
-        builder: (editModalCtx, setModalState) {
-          double calcularTotal() {
-            return items.fold(
-                0, (sum, i) => sum + (i['precio'] * i['cantidad']));
-          }
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setModalState) {
+          double calcularTotal() =>
+              items.fold(0, (sum, i) => sum + (i['precio'] * i['cantidad']));
 
-          return Padding(
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(editModalCtx).viewInsets.bottom + 20,
+              20, 0, 20,
+              MediaQuery.of(sheetCtx).viewInsets.bottom + 20,
             ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Handle
                   Center(
                     child: Container(
-                      width: 40,
-                      height: 4,
+                      margin: const EdgeInsets.only(top: 12, bottom: 16),
+                      width: 40, height: 4,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Editar pedido',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+
+                  // Título
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3ED),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.edit_outlined,
+                            color: Color(0xFFE8651A), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Editar pedido',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Container(
-                      width: 40,
-                      height: 2,
-                      color: const Color(0xFFE8651A)),
                   const SizedBox(height: 20),
 
-                  const Text(
-                    'PRODUCTOS',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black54,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  // Productos
+                  _seccionLabel('PRODUCTOS'),
                   const SizedBox(height: 8),
-
                   ...items.asMap().entries.map((entry) {
                     final index = entry.key;
                     final item = entry.value;
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6, offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -269,83 +237,47 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item['nombre'],
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${item['precio'].toStringAsFixed(0)} c/u',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
+                                Text(item['nombre'],
+                                    style: const TextStyle(
+                                        fontSize: 13, fontWeight: FontWeight.w700)),
+                                Text('\$${item['precio'].toStringAsFixed(0)} c/u',
+                                    style: TextStyle(
+                                        fontSize: 11, color: Colors.grey.shade500)),
                               ],
                             ),
                           ),
                           Row(
                             children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setModalState(() {
-                                    if (item['cantidad'] > 1) {
-                                      items[index]['cantidad']--;
-                                    } else {
-                                      items.removeAt(index);
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFE8651A),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.remove,
-                                      color: Colors.white, size: 16),
-                                ),
+                              _botonCantidad(
+                                icono: Icons.remove,
+                                onTap: () => setModalState(() {
+                                  if (item['cantidad'] > 1) {
+                                    items[index]['cantidad']--;
+                                  } else {
+                                    items.removeAt(index);
+                                  }
+                                }),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10),
-                                child: Text(
-                                  '${item['cantidad']}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text('${item['cantidad']}',
+                                    style: const TextStyle(
+                                        fontSize: 15, fontWeight: FontWeight.w800)),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  setModalState(
-                                      () => items[index]['cantidad']++);
-                                },
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFE8651A),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add,
-                                      color: Colors.white, size: 16),
-                                ),
+                              _botonCantidad(
+                                icono: Icons.add,
+                                onTap: () =>
+                                    setModalState(() => items[index]['cantidad']++),
                               ),
                             ],
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Text(
                             '\$${(item['precio'] * item['cantidad']).toStringAsFixed(0)}',
                             style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFE8651A),
-                            ),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFE8651A)),
                           ),
                         ],
                       ),
@@ -357,96 +289,72 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color: Colors.red.withValues(alpha: 0.3)),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.warning_amber_rounded,
-                              color: Colors.red, size: 16),
+                          Icon(Icons.warning_amber_rounded, color: Colors.red, size: 16),
                           SizedBox(width: 8),
-                          Text(
-                            'Debes tener al menos un producto',
-                            style: TextStyle(
-                                color: Colors.red, fontSize: 12),
-                          ),
+                          Text('Debes tener al menos un producto',
+                              style: TextStyle(color: Colors.red, fontSize: 12)),
                         ],
                       ),
                     ),
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    'DIRECCIÓN DE ENTREGA',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black54,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  // Dirección
+                  _seccionLabel('DIRECCIÓN DE ENTREGA'),
                   const SizedBox(height: 8),
                   if (direcciones.isEmpty)
-                    Text(
-                      'No tienes direcciones guardadas',
-                      style: TextStyle(
-                          color: Colors.grey.shade500, fontSize: 13),
-                    )
+                    Text('No tienes direcciones guardadas',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13))
                   else
                     ...direcciones.map((dir) {
-                      final seleccionada =
-                          direccionSeleccionada?['id'] == dir['id'];
+                      final seleccionada = direccionSeleccionada?['id'] == dir['id'];
                       return GestureDetector(
-                        onTap: () => setModalState(
-                            () => direccionSeleccionada = dir),
+                        onTap: () =>
+                            setModalState(() => direccionSeleccionada = dir),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: seleccionada
                                 ? const Color(0xFFFFF3ED)
-                                : Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(10),
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: seleccionada
                                   ? const Color(0xFFE8651A)
-                                  : Colors.grey.shade300,
+                                  : Colors.grey.shade200,
                               width: seleccionada ? 2 : 1,
                             ),
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: seleccionada
-                                    ? const Color(0xFFE8651A)
-                                    : Colors.grey,
-                                size: 18,
-                              ),
+                              Icon(Icons.location_on_outlined,
+                                  color: seleccionada
+                                      ? const Color(0xFFE8651A)
+                                      : Colors.grey,
+                                  size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      dir['barrio'] ?? '',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: seleccionada
-                                            ? const Color(0xFFE8651A)
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                    Text(
-                                      dir['direccion'] ?? '',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
+                                    Text(dir['barrio'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: seleccionada
+                                              ? const Color(0xFFE8651A)
+                                              : Colors.black87,
+                                        )),
+                                    Text(dir['direccion'] ?? '',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade500)),
                                   ],
                                 ),
                               ),
@@ -461,38 +369,26 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    'MÉTODO DE PAGO',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black54,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  // Método de pago
+                  _seccionLabel('MÉTODO DE PAGO'),
                   const SizedBox(height: 8),
                   Row(
                     children: ['pse', 'contraentrega'].map((m) {
-                      final seleccionado = metodoPago == m;
+                      final sel = metodoPago == m;
                       return Expanded(
                         child: GestureDetector(
-                          onTap: () =>
-                              setModalState(() => metodoPago = m),
+                          onTap: () => setModalState(() => metodoPago = m),
                           child: Container(
-                            margin: EdgeInsets.only(
-                                right: m == 'pse' ? 8 : 0),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12),
+                            margin: EdgeInsets.only(right: m == 'pse' ? 8 : 0),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              color: seleccionado
-                                  ? const Color(0xFFFFF3ED)
-                                  : Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              color: sel ? const Color(0xFFFFF3ED) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: seleccionado
+                                color: sel
                                     ? const Color(0xFFE8651A)
-                                    : Colors.grey.shade300,
-                                width: seleccionado ? 2 : 1,
+                                    : Colors.grey.shade200,
+                                width: sel ? 2 : 1,
                               ),
                             ),
                             child: Column(
@@ -501,10 +397,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                   m == 'pse'
                                       ? Icons.account_balance_outlined
                                       : Icons.payments_outlined,
-                                  color: seleccionado
+                                  color: sel
                                       ? const Color(0xFFE8651A)
                                       : Colors.grey,
-                                  size: 20,
+                                  size: 22,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -512,7 +408,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: seleccionado
+                                    color: sel
                                         ? const Color(0xFFE8651A)
                                         : Colors.grey,
                                   ),
@@ -527,33 +423,31 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
                   const SizedBox(height: 20),
 
+                  // Total
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF3ED),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFE8651A)
-                            .withValues(alpha: 0.3),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Nuevo total:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        const Text('Nuevo total',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white)),
                         Text(
                           '\$${calcularTotal().toStringAsFixed(0)}',
                           style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFE8651A),
-                          ),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white),
                         ),
                       ],
                     ),
@@ -564,84 +458,55 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: items.isEmpty ||
-                              direccionSeleccionada == null
+                      onPressed: items.isEmpty || direccionSeleccionada == null
                           ? null
                           : () async {
                               final data = {
-                                'direccionId':
-                                    direccionSeleccionada!['id'],
+                                'direccionId': direccionSeleccionada!['id'],
                                 'metodoPago': metodoPago,
                                 'items': items.map((i) {
-                                  if (tipo == 'predefinido') {
-                                    return {
-                                      'menuId': i['menuId'],
-                                      'cantidad': i['cantidad'],
-                                    };
-                                  } else {
-                                    return {
-                                      'ingredienteId':
-                                          i['ingredienteId'],
-                                      'cantidad': i['cantidad'],
-                                    };
+                                  if (i['menuId'] != null) {
+                                    return {'menuId': i['menuId'], 'cantidad': i['cantidad']};
                                   }
+                                  return {'ingredienteId': i['ingredienteId'], 'cantidad': i['cantidad']};
                                 }).toList(),
                               };
 
-                              final result = await _service
-                                  .editarPedido(pedido['id'], data);
-
-                              if (!editModalCtx.mounted) return;
-                              Navigator.pop(editModalCtx);
-
+                              final result =
+                                  await _service.editarPedido(pedido['id'], data);
+                              if (!sheetCtx.mounted) return;
+                              Navigator.pop(sheetCtx);
                               if (!mounted) return;
 
-                              if (result['success']) {
-                                _cargar();
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                  SnackBar(
-                                    content: const Text(
-                                        'Pedido actualizado correctamente'),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10),
-                                    ),
-                                    margin: const EdgeInsets.all(16),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                  SnackBar(
-                                    content: Text(result['error'] ??
-                                        'Error al editar'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(result['success']
+                                    ? 'Pedido actualizado correctamente'
+                                    : result['error'] ?? 'Error al editar'),
+                                backgroundColor:
+                                    result['success'] ? Colors.green : Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                margin: const EdgeInsets.all(16),
+                              ));
+
+                              if (result['success']) _cargar();
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE8651A),
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: Colors.grey.shade300,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text(
-                        'Guardar cambios',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      child: const Text('Guardar cambios',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w700)),
                     ),
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -651,109 +516,137 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     );
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
         children: [
-          /// HEADER
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Mis Pedidos',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+          // ── Header con gradiente ──
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.receipt_long_outlined,
+                              color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Mis Ordenes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              'Historial y seguimiento',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 50,
-                  height: 3,
-                  color: const Color(0xFFE8651A),
-                ),
-              ],
+
+                  // Tabs dentro del header
+                  Container(
+                    color: Colors.white.withValues(alpha: 0.0),
+                    child: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      labelPadding:
+                          const EdgeInsets.symmetric(horizontal: 14),
+                      labelColor: Colors.white,
+                      unselectedLabelColor:
+                          Colors.white.withValues(alpha: 0.6),
+                      indicator: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w700),
+                      unselectedLabelStyle:
+                          const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      tabs: _tabs.map((tab) {
+                        final count = tab == 'Todos'
+                            ? _pedidos.length
+                            : _pedidos
+                                .where((p) => p['estado'] == tab)
+                                .length;
+                        return Tab(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(tab),
+                                if (count > 0) ...[
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      '$count',
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
 
-            Material(
-              color: Colors.white,
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                // 1. Quita el espacio extra al inicio para alinear a la izquierda
-                tabAlignment: TabAlignment.start,
-                // 2. Controla el espacio entre pestañas
-                labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                labelColor: const Color(0xFFE8651A),
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: const Color(0xFFE8651A),
-                // 3. Hace que la línea naranja coincida con el ancho del texto/badge
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorWeight: 3,
-                dividerColor: const Color(0xFFEEEEEE),
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-                tabs: _tabs.map((tab) {
-                  final count = tab == 'Todos'
-                      ? _pedidos.length
-                      : _pedidos.where((p) => p['estado'] == tab).length;
-
-                  return Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(tab),
-                        if (count > 0) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                            decoration: BoxDecoration(
-                              // CORRECCIÓN: Uso de withValues para los badges
-                              color: tab == 'Todos'
-                                  ? const Color(0xFFE8651A).withValues(alpha: 0.15)
-                                  : _colorEstado(tab).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '$count',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: tab == 'Todos'
-                                    ? const Color(0xFFE8651A)
-                                    : _colorEstado(tab),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-          /// CONTENIDO
+          // ── Contenido ──
           Expanded(
             child: _loading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                        color: Color(0xFFE8651A)),
                   )
                 : TabBarView(
                     controller: _tabController,
@@ -765,10 +658,16 @@ Widget build(BuildContext context) {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.receipt_long_outlined,
-                                size: 70,
-                                color: Colors.grey.shade400,
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFF3ED),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                    Icons.receipt_long_outlined,
+                                    size: 40,
+                                    color: Color(0xFFE8651A)),
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -776,7 +675,7 @@ Widget build(BuildContext context) {
                                     ? 'No tienes pedidos aún'
                                     : 'No hay pedidos $tab',
                                 style: const TextStyle(
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.black87,
                                 ),
@@ -785,9 +684,8 @@ Widget build(BuildContext context) {
                               Text(
                                 'Haz tu primer pedido desde el menú',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade500,
-                                ),
+                                    fontSize: 13,
+                                    color: Colors.grey.shade500),
                               ),
                             ],
                           ),
@@ -799,7 +697,7 @@ Widget build(BuildContext context) {
                         color: const Color(0xFFE8651A),
                         child: ListView.builder(
                           padding:
-                              const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                              const EdgeInsets.fromLTRB(16, 16, 16, 24),
                           itemCount: lista.length,
                           itemBuilder: (context, index) {
                             return _pedidoCard(
@@ -814,9 +712,8 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _pedidoCard(Map<String, dynamic> pedido, int numero) {
     final estado = pedido['estado'] ?? 'Pendiente';
@@ -841,82 +738,85 @@ Widget build(BuildContext context) {
         expandido ? detalles : detalles.take(3).toList();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: esPendiente
-              ? Colors.grey.withValues(alpha: 0.4)
-              : Colors.grey.shade200,
-        ),
+        border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // ── Header de la card ──
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: colorEstado.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
+              color: colorEstado.withValues(alpha: 0.07),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    Icon(_iconoEstado(estado),
-                        color: colorEstado, size: 18),
+                    Icon(_iconoEstado(estado), color: colorEstado, size: 16),
                     const SizedBox(width: 8),
                     Text(
                       'Pedido #$numero',
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: colorEstado.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colorEstado.withValues(alpha: 0.4),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        size: 11, color: Colors.grey.shade400),
+                    const SizedBox(width: 4),
+                    Text(fecha,
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500)),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colorEstado.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: colorEstado.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        estado,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: colorEstado,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    estado,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: colorEstado,
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Info principal ──
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -925,12 +825,9 @@ Widget build(BuildContext context) {
                       child: imagenUrl != null && imagenUrl.isNotEmpty
                           ? Image.network(
                               imagenUrl,
-                              width: 70,
-                              height: 70,
+                              width: 70, height: 70,
                               fit: BoxFit.cover,
-                              errorBuilder: (ordersErrCtx, ordersErrObj,
-                                      ordersErrStack) =>
-                                  _miniPlaceholder(),
+                              errorBuilder: (_, _, _) => _miniPlaceholder(),
                             )
                           : _miniPlaceholder(),
                     ),
@@ -939,60 +836,31 @@ Widget build(BuildContext context) {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Icon(Icons.calendar_today_outlined,
-                                  size: 13,
-                                  color: Colors.grey.shade500),
-                              const SizedBox(width: 4),
-                              Text(fecha,
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade500)),
-                            ],
+                          _infoChip(
+                            tipo == 'personalizado'
+                                ? Icons.tune_outlined
+                                : Icons.restaurant_menu_outlined,
+                            tipo == 'personalizado'
+                                ? 'Personalizado'
+                                : 'Predefinido',
+                            Colors.purple,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                tipo == 'personalizado'
-                                    ? Icons.tune_outlined
-                                    : Icons.restaurant_menu_outlined,
-                                size: 13,
-                                color: Colors.grey.shade500,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                tipo == 'personalizado'
-                                    ? 'Personalizado'
-                                    : 'Predefinido',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500),
-                              ),
-                            ],
+                          const SizedBox(height: 5),
+                          _infoChip(
+                            metodoPago == 'pse'
+                                ? Icons.account_balance_outlined
+                                : Icons.payments_outlined,
+                            metodoPago == 'pse' ? 'PSE' : 'Contraentrega',
+                            Colors.teal,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                metodoPago == 'pse'
-                                    ? Icons.account_balance_outlined
-                                    : Icons.payments_outlined,
-                                size: 13,
-                                color: Colors.grey.shade500,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                metodoPago == 'pse'
-                                    ? 'PSE'
-                                    : 'Contraentrega',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500),
-                              ),
-                            ],
-                          ),
+                          if (direccion != null) ...[
+                            const SizedBox(height: 5),
+                            _infoChip(
+                              Icons.location_on_outlined,
+                              '${direccion['barrio']}',
+                              const Color(0xFFE8651A),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1002,16 +870,24 @@ Widget build(BuildContext context) {
                         Text(
                           '\$${total.toStringAsFixed(0)}',
                           style: const TextStyle(
-                            fontSize: 17,
+                            fontSize: 18,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFFE8651A),
                           ),
                         ),
+                        Text('total',
+                            style: TextStyle(
+                                fontSize: 10, color: Colors.grey.shade400)),
+                        const SizedBox(height: 4),
                         Text(
-                          'total',
+                          'Sub: \$${subtotal.toStringAsFixed(0)}',
                           style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade400),
+                              fontSize: 10, color: Colors.grey.shade400),
+                        ),
+                        Text(
+                          'IVA: \$${iva.toStringAsFixed(0)}',
+                          style: TextStyle(
+                              fontSize: 10, color: Colors.grey.shade400),
                         ),
                       ],
                     ),
@@ -1019,9 +895,10 @@ Widget build(BuildContext context) {
                 ),
 
                 const SizedBox(height: 12),
-                const Divider(),
+                Divider(color: Colors.grey.shade100),
                 const SizedBox(height: 8),
 
+                // ── Productos ──
                 if (detalles.isNotEmpty) ...[
                   ...productosAMostrar.map((d) {
                     final nombre = d['Menu'] != null
@@ -1030,23 +907,23 @@ Widget build(BuildContext context) {
                             ? d['Ingrediente']['nombre']
                             : 'Producto';
                     final cantidad = d['cantidad'] ?? 1;
-
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 3),
+                      padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
                         children: [
-                          const Text('• ',
-                              style: TextStyle(
-                                color: Color(0xFFE8651A),
-                                fontWeight: FontWeight.w700,
-                              )),
+                          Container(
+                            width: 6, height: 6,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE8651A),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               '$nombre x$cantidad',
                               style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade700,
-                              ),
+                                  fontSize: 12, color: Colors.grey.shade700),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -1057,15 +934,13 @@ Widget build(BuildContext context) {
 
                   if (detalles.length > 3)
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (expandido) {
-                            _expandidos.remove(numero);
-                          } else {
-                            _expandidos.add(numero);
-                          }
-                        });
-                      },
+                      onTap: () => setState(() {
+                        if (expandido) {
+                          _expandidos.remove(numero);
+                        } else {
+                          _expandidos.add(numero);
+                        }
+                      }),
                       child: Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
@@ -1080,7 +955,6 @@ Widget build(BuildContext context) {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(width: 4),
                             Icon(
                               expandido
                                   ? Icons.keyboard_arrow_up
@@ -1094,49 +968,9 @@ Widget build(BuildContext context) {
                     ),
                 ],
 
-                const SizedBox(height: 10),
-
-                if (direccion != null)
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_outlined,
-                          size: 14, color: Colors.grey.shade500),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          '${direccion['barrio']} - ${direccion['direccion']}',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Subtotal: \$${subtotal.toStringAsFixed(0)}',
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
-                    ),
-                    Text(
-                      'IVA: \$${iva.toStringAsFixed(0)}',
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
-                    ),
-                  ],
-                ),
-
+                // ── Botones si está pendiente ──
                 if (esPendiente) ...[
                   const SizedBox(height: 12),
-                  const Divider(),
-                  const SizedBox(height: 8),
-
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8),
@@ -1144,54 +978,43 @@ Widget build(BuildContext context) {
                       color: Colors.orange.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Colors.orange.withValues(alpha: 0.3),
-                      ),
+                          color: Colors.orange.withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.info_outline,
-                            color: Colors.orange, size: 14),
+                        Icon(Icons.info_outline, color: Colors.orange, size: 14),
                         SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             'Puedes editar o cancelar este pedido mientras esté Pendiente.',
                             style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.orange,
-                              fontWeight: FontWeight.w500,
-                            ),
+                                fontSize: 11,
+                                color: Colors.orange,
+                                fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _editarPedido(pedido),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                color: Color(0xFFE8651A)),
+                            side: const BorderSide(color: Color(0xFFE8651A)),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10),
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                           icon: const Icon(Icons.edit_outlined,
                               color: Color(0xFFE8651A), size: 16),
-                          label: const Text(
-                            'Editar',
-                            style: TextStyle(
-                              color: Color(0xFFE8651A),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
+                          label: const Text('Editar',
+                              style: TextStyle(
+                                  color: Color(0xFFE8651A),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1201,21 +1024,16 @@ Widget build(BuildContext context) {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.red),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10),
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                           icon: const Icon(Icons.cancel_outlined,
                               color: Colors.red, size: 16),
-                          label: const Text(
-                            'Cancelar',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
+                          label: const Text('Cancelar',
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
                         ),
                       ),
                     ],
@@ -1229,19 +1047,56 @@ Widget build(BuildContext context) {
     );
   }
 
+  // ── Helpers ────────────────────────────────────────────────
+
+  Widget _infoChip(IconData icono, String texto, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icono, size: 12, color: color),
+        const SizedBox(width: 4),
+        Text(
+          texto,
+          style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+
+  Widget _seccionLabel(String texto) {
+    return Text(
+      texto,
+      style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.black54,
+          letterSpacing: 0.5),
+    );
+  }
+
+  Widget _botonCantidad({required IconData icono, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 28, height: 28,
+        decoration: const BoxDecoration(
+            color: Color(0xFFE8651A), shape: BoxShape.circle),
+        child: Icon(icono, color: Colors.white, size: 16),
+      ),
+    );
+  }
+
   Widget _miniPlaceholder() {
     return Container(
-      width: 70,
-      height: 70,
+      width: 70, height: 70,
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(
-        Icons.fastfood_outlined,
-        color: Colors.grey.shade400,
-        size: 30,
-      ),
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10)),
+      child: Icon(Icons.fastfood_outlined,
+          color: Colors.grey.shade400, size: 30),
     );
   }
 }
