@@ -9,6 +9,7 @@ import '../../../services/user_service.dart';
 import 'edit_profile_screen.dart';
 import 'my_addresses_screen.dart';
 import 'help_screen.dart';
+import 'menuBalanceado/perfil_nutricional_screen.dart';
 
 class MyAccountScreen extends StatefulWidget {
   final String email;
@@ -276,9 +277,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
             // El padding superior incluye la status bar
             padding: EdgeInsets.fromLTRB(20, statusBarHeight + 20, 20, 30),
@@ -317,12 +316,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                               : fotoPerfil != null &&
                                     fotoPerfil.toString().isNotEmpty
                               ? Image.network(
-                                fotoPerfil,
-                                fit: BoxFit.cover,
-                                key: ValueKey(fotoPerfil),
-                                errorBuilder: (errContext, errObj, errStack) =>
-                                    _avatarPlaceholder(),
-                              )
+                                  fotoPerfil,
+                                  fit: BoxFit.cover,
+                                  key: ValueKey(fotoPerfil),
+                                  errorBuilder:
+                                      (errContext, errObj, errStack) =>
+                                          _avatarPlaceholder(),
+                                )
                               : _avatarPlaceholder(),
                         ),
                       ),
@@ -404,6 +404,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                   title: 'Mis direcciones',
                   subtitle: 'Gestiona tus direcciones de entrega',
                   onTap: () => _navigate(context, MyAddressesScreen()),
+                ),
+                _menuItem(
+                  icon: Icons.monitor_weight_outlined,
+                  title: 'Perfil nutricional',
+                  subtitle: 'Tu IMC, calorías y objetivo de salud',
+                  onTap: () =>
+                      _navigate(context, const PerfilNutricionalScreen()),
                 ),
 
                 const SizedBox(height: 16),

@@ -1,4 +1,5 @@
 const { Menu, Categoria } = require('../models');
+const { Op } = require('sequelize');
 
 // ======================
 // LISTAR POR CATEGORIA (cliente)
@@ -62,7 +63,14 @@ exports.getAll = async (req, res) => {
 // ======================
 exports.create = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, imagenUrl, categoriaId } = req.body;
+    const {
+      nombre, descripcion, precio,
+      imagenUrl, categoriaId,
+      // Campos nutricionales opcionales
+      calorias, proteinas, carbohidratos,
+      grasas, objetivo, beneficios,
+      etiquetas, esBalanceado
+    } = req.body;
 
     if (!nombre || !precio || !categoriaId) {
       return res.status(400).json({
@@ -75,7 +83,15 @@ exports.create = async (req, res) => {
       descripcion,
       precio,
       imagenUrl,
-      categoriaId
+      categoriaId,
+      calorias:       calorias      ?? null,
+      proteinas:      proteinas     ?? null,
+      carbohidratos:  carbohidratos ?? null,
+      grasas:         grasas        ?? null,
+      objetivo:       objetivo      ?? null,
+      beneficios:     beneficios    ?? [],
+      etiquetas:      etiquetas     ?? [],
+      esBalanceado:   esBalanceado  ?? false,
     });
 
     res.status(201).json(menu);
@@ -136,21 +152,16 @@ exports.buscar = async (req, res) => {
       return res.status(400).json({ error: "Ingresa un término de búsqueda" });
     }
 
-    const { Op } = require('sequelize');
-
     const menus = await Menu.findAll({
       where: {
         disponible: true,
         [Op.or]: [
-          { nombre: { [Op.like]: `%${q}%` } },
+          { nombre:      { [Op.like]: `%${q}%` } },
           { descripcion: { [Op.like]: `%${q}%` } }
         ]
       },
       include: [
-        {
-          model: Categoria,
-          attributes: ['id', 'nombre', 'tipo']
-        }
+        { model: Categoria, attributes: ['id', 'nombre', 'tipo'] }
       ],
       order: [['nombre', 'ASC']]
     });
@@ -158,6 +169,82 @@ exports.buscar = async (req, res) => {
     res.json(menus);
   } catch (error) {
     console.error("ERROR BUSCAR MENUS:", error);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+};
+
+// ======================
+// MENUS BALANCEADOS (cliente)
+// ======================
+exports.getMenusBalanceados = async (req, res) => {
+  try {
+    const { objetivo } = req.query;
+
+    const where = {
+      disponible:   true,
+      esBalanceado: true,
+    };
+
+    // Filtrar por objetivo si se envía
+    if (objetivo) where.objetivo = objetivo;
+
+    const menus = await Menu.findAll({
+      where,
+      attributes: [
+        'id', 'nombre', 'descripcion', 'precio', 'imagenUrl',
+        'objetivo', 'calorias', 'proteinas', 'carbohidratos',
+        'grasas', 'beneficios', 'etiquetas'
+      ],
+      order: [['nombre', 'ASC']]
+    });
+
+    res.json(menus);
+  } catch (error) {
+    console.error("ERROR GET MENUS BALANCEADOS:", error);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+};
+
+// ======================
+// ACTUALIZAR INFO NUTRICIONAL (admin)
+// ======================
+exports.updateNutricional = async (req, res) => {
+  try {
+    const menu = await Menu.findByPk(req.params.id);
+
+    if (!menu) {
+      return res.status(404).json({ error: "Menú no encontrado" });
+    }
+
+    const {
+      calorias, proteinas, carbohidratos,
+      grasas, objetivo, beneficios,
+      etiquetas, esBalanceado
+    } = req.body;
+
+    // Validar que si esBalanceado es true tenga los campos requeridos
+    if (esBalanceado) {
+      if (!calorias || !proteinas || !carbohidratos || !grasas || !objetivo) {
+        return res.status(400).json({
+          error: "Para activar como balanceado necesitas: calorías, proteínas, carbohidratos, grasas y objetivo"
+        });
+      }
+    }
+
+    await menu.update({
+      calorias,
+      proteinas,
+      carbohidratos,
+      grasas,
+      objetivo,
+      beneficios:   beneficios  ?? [],
+      etiquetas:    etiquetas   ?? [],
+      esBalanceado: esBalanceado ?? false,
+    });
+
+    res.json({ success: true, menu });
+  } catch (error) {
+    console.error("ERROR UPDATE NUTRICIONAL:", error);
     res.status(500).json({ error: "Error del servidor" });
   }
 };

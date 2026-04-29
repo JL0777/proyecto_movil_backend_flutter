@@ -14,7 +14,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
   bool showPersonalizado = false;
   bool showPredeterminado = false;
 
-  // Agregamos controladores para mantener el estilo visual de las anteriores
+  // Agregamos controladores para mantener el estilo visual
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -63,7 +63,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           children: [
-            /// NUEVO HEADER (Diseño UX mejorado)
+            /// HEADER
             _buildHeader(),
 
             const SizedBox(height: 35),

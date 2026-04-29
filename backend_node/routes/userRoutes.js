@@ -10,6 +10,8 @@ router.put('/email', verifyToken, userController.updateEmail);
 router.put('/phone', verifyToken, userController.updatePhone);
 router.put('/password', verifyToken, userController.updatePassword);
 router.put('/foto-perfil', verifyToken, userController.updateFotoPerfil);
+router.put('/perfil-nutricional', verifyToken, userController.updatePerfilNutricional);
+router.get('/perfil-nutricional', verifyToken, userController.getPerfilNutricional);
 
 
 // Admin

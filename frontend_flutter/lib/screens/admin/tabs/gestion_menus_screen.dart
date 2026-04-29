@@ -136,8 +136,9 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           height: 160,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (previewErrCtx, previewErrObj, previewErrStack) =>
-                              _previewPlaceholder(),
+                          errorBuilder:
+                              (previewErrCtx, previewErrObj, previewErrStack) =>
+                                  _previewPlaceholder(),
                         )
                       : _previewPlaceholder(),
                 ),
@@ -375,6 +376,462 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _mostrarFormularioNutricional({required Map<String, dynamic> menu}) {
+    final caloriasController = TextEditingController(
+      text: menu['calorias']?.toString() ?? '',
+    );
+    final proteinasController = TextEditingController(
+      text: menu['proteinas']?.toString() ?? '',
+    );
+    final carbosController = TextEditingController(
+      text: menu['carbohidratos']?.toString() ?? '',
+    );
+    final grasasController = TextEditingController(
+      text: menu['grasas']?.toString() ?? '',
+    );
+
+    String? objetivo = menu['objetivo'];
+    bool esBalanceado = menu['esBalanceado'] ?? false;
+    bool guardando = false;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    final List<Map<String, dynamic>> objetivos = [
+      {
+        'valor': 'bajar_peso',
+        'label': 'Bajar peso',
+        'icono': Icons.trending_down_rounded,
+        'color': Colors.blue,
+      },
+      {
+        'valor': 'subir_musculo',
+        'label': 'Subir músculo',
+        'icono': Icons.fitness_center_rounded,
+        'color': Colors.orange,
+      },
+      {
+        'valor': 'mantenimiento',
+        'label': 'Mantenimiento',
+        'icono': Icons.balance_rounded,
+        'color': Colors.green,
+      },
+      {
+        'valor': 'energia',
+        'label': 'Energía',
+        'icono': Icons.bolt_rounded,
+        'color': Colors.amber,
+      },
+      {
+        'valor': 'digestivo',
+        'label': 'Digestivo',
+        'icono': Icons.spa_rounded,
+        'color': Colors.teal,
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setModalState) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(sheetCtx).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Título
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3ED),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.monitor_weight_outlined,
+                        color: Color(0xFFE8651A),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Info nutricional',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            menu['nombre'] ?? '',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Macros
+                const Text(
+                  'Macronutrientes (por porción)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _campoNutricional(
+                        caloriasController,
+                        'Calorías',
+                        'kcal',
+                        Icons.local_fire_department_outlined,
+                        Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _campoNutricional(
+                        proteinasController,
+                        'Proteínas',
+                        'g',
+                        Icons.fitness_center_outlined,
+                        Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _campoNutricional(
+                        carbosController,
+                        'Carbohidratos',
+                        'g',
+                        Icons.grain_outlined,
+                        Colors.amber.shade700,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _campoNutricional(
+                        grasasController,
+                        'Grasas',
+                        'g',
+                        Icons.water_drop_outlined,
+                        Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Objetivo
+                const Text(
+                  'Objetivo del menú',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: objetivos.map((o) {
+                    final seleccionado = objetivo == o['valor'];
+                    final color = o['color'] as Color;
+                    return GestureDetector(
+                      onTap: () =>
+                          setModalState(() => objetivo = o['valor'] as String),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: seleccionado
+                              ? color
+                              : color.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: seleccionado
+                                ? color
+                                : color.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              o['icono'] as IconData,
+                              size: 14,
+                              color: seleccionado ? Colors.white : color,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              o['label'] as String,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: seleccionado ? Colors.white : color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+
+                // Toggle esBalanceado
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: esBalanceado
+                        ? Colors.green.shade50
+                        : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: esBalanceado
+                          ? Colors.green.shade200
+                          : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.verified_outlined,
+                        color: esBalanceado ? Colors.green : Colors.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Activar como menú balanceado',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: esBalanceado
+                                    ? Colors.green.shade700
+                                    : Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              'Aparecerá en la sección de menús saludables',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: esBalanceado,
+                        onChanged: (v) => setModalState(() => esBalanceado = v),
+                        activeColor: Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Botón guardar
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: guardando
+                        ? null
+                        : () async {
+                            if (esBalanceado) {
+                              if (caloriasController.text.isEmpty ||
+                                  proteinasController.text.isEmpty ||
+                                  carbosController.text.isEmpty ||
+                                  grasasController.text.isEmpty ||
+                                  objetivo == null) {
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Para activar como balanceado completa todos los campos y selecciona un objetivo',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+
+                            setModalState(() => guardando = true);
+
+                            final ok = await _menuService
+                                .updateNutricional(menu['id'], {
+                                  'calorias': int.tryParse(
+                                    caloriasController.text,
+                                  ),
+                                  'proteinas': double.tryParse(
+                                    proteinasController.text,
+                                  ),
+                                  'carbohidratos': double.tryParse(
+                                    carbosController.text,
+                                  ),
+                                  'grasas': double.tryParse(
+                                    grasasController.text,
+                                  ),
+                                  'objetivo': objetivo,
+                                  'esBalanceado': esBalanceado,
+                                });
+
+                            setModalState(() => guardando = false);
+
+                            if (sheetCtx.mounted) {
+                              Navigator.of(sheetCtx).pop();
+                            }
+
+                            if (ok) {
+                              _cargar();
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Info nutricional guardada ✓',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  margin: const EdgeInsets.all(16),
+                                ),
+                              );
+                            } else {
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Error al guardar'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8651A),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: guardando
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Guardar info nutricional',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _campoNutricional(
+    TextEditingController controller,
+    String label,
+    String sufijo,
+    IconData icono,
+    Color color,
+  ) {
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(fontSize: 13),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: sufijo,
+        prefixIcon: Icon(icono, color: color, size: 18),
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        floatingLabelStyle: TextStyle(color: color, fontSize: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color, width: 1.8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 10,
         ),
       ),
     );
@@ -687,7 +1144,8 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                   ),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: menu['imagenUrl'] != null &&
+                                    child:
+                                        menu['imagenUrl'] != null &&
                                             menu['imagenUrl']
                                                 .toString()
                                                 .isNotEmpty
@@ -696,10 +1154,12 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                             width: 56,
                                             height: 56,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (menuImgErrCtx,
-                                                    menuImgErrObj,
-                                                    menuImgErrStack) =>
-                                                _imagenPlaceholder(),
+                                            errorBuilder:
+                                                (
+                                                  menuImgErrCtx,
+                                                  menuImgErrObj,
+                                                  menuImgErrStack,
+                                                ) => _imagenPlaceholder(),
                                           )
                                         : _imagenPlaceholder(),
                                   ),
@@ -752,6 +1212,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
+                                      // ── Editar info básica ──
                                       GestureDetector(
                                         onTap: () =>
                                             _mostrarFormulario(menu: menu),
@@ -772,6 +1233,36 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
+
+                                      // ── Info nutricional ──
+                                      GestureDetector(
+                                        onTap: () =>
+                                            _mostrarFormularioNutricional(
+                                              menu: menu,
+                                            ),
+                                        child: Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: menu['esBalanceado'] == true
+                                                ? Colors.green.shade50
+                                                : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.monitor_weight_outlined,
+                                            color: menu['esBalanceado'] == true
+                                                ? Colors.green
+                                                : Colors.grey.shade400,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+
+                                      // ── Eliminar ──
                                       GestureDetector(
                                         onTap: () => _eliminar(menu),
                                         child: Container(

@@ -144,26 +144,84 @@ class UserService {
     return {"success": false, "error": data["error"]};
   }
 
+  Future<Map<String, dynamic>> updateFotoPerfil(String fotoPerfil) async {
+    final token = await _getToken();
 
-Future<Map<String, dynamic>> updateFotoPerfil(String fotoPerfil) async {
-  final token = await _getToken();
+    final response = await http.put(
+      Uri.parse("$baseUrl/foto-perfil"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({"fotoPerfil": fotoPerfil}),
+    );
 
-  final response = await http.put(
-    Uri.parse("$baseUrl/foto-perfil"),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    },
-    body: jsonEncode({"fotoPerfil": fotoPerfil}),
-  );
+    final data = jsonDecode(response.body);
 
-  final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      await SessionManager.saveSession(token: token!, user: data['user']);
+      return {"success": true, "user": data['user']};
+    }
 
-  if (response.statusCode == 200) {
-    await SessionManager.saveSession(token: token!, user: data['user']);
-    return {"success": true, "user": data['user']};
+    return {"success": false, "error": data["error"]};
   }
 
-  return {"success": false, "error": data["error"]};
-}
+  // ======================
+  // OBTENER PERFIL NUTRICIONAL
+  // ======================
+  Future<Map<String, dynamic>> getPerfilNutricional() async {
+    final token = await _getToken();
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/perfil-nutricional"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {"success": true, ...data};
+    }
+
+    return {"success": false, "error": data["error"]};
+  }
+
+  // ======================
+  // GUARDAR/ACTUALIZAR PERFIL NUTRICIONAL
+  // ======================
+  Future<Map<String, dynamic>> updatePerfilNutricional({
+    required double peso,
+    required double altura,
+    required int edad,
+    required String sexo,
+    required String nivelActividad,
+  }) async {
+    final token = await _getToken();
+
+    final response = await http.put(
+      Uri.parse("$baseUrl/perfil-nutricional"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "peso": peso,
+        "altura": altura,
+        "edad": edad,
+        "sexo": sexo,
+        "nivelActividad": nivelActividad,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {"success": true, ...data};
+    }
+
+    return {"success": false, "error": data["error"]};
+  }
 }

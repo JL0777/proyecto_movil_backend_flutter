@@ -11,6 +11,7 @@ import 'orders/my_orders_screen.dart';
 import 'account/my_account_screen.dart';
 import 'home/widgets/cart_modal.dart';
 import 'home/busqueda_screen.dart';
+import 'account/menuBalanceado/menus_balanceados_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -133,6 +134,52 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
       ),
+      floatingActionButton: _currentIndex == 0
+          ? GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MenusBalanceadosScreen(),
+                ),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8651A),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.restaurant_menu_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'Menús saludables',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

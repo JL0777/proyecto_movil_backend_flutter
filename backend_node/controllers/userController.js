@@ -357,3 +357,126 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: "Error del servidor" });
   }
 };
+
+// ======================
+// OBTENER PERFIL NUTRICIONAL (cliente)
+// ======================
+exports.getPerfilNutricional = async (req, res) => {
+  try {
+    const user = await Usuario.findByPk(req.user.id, {
+      attributes: [
+        'id', 'nombre', 'peso', 'altura', 'edad',
+        'sexo', 'nivelActividad', 'imc', 'tdee',
+        'objetivoRecomendado'
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Si no tiene datos físicos aún
+    if (!user.peso || !user.altura) {
+      return res.json({
+        success: true,
+        tieneDatos: false,
+        user: null
+      });
+    }
+
+    // Descripción del IMC
+    let categoriaImc = '';
+    let descripcionImc = '';
+    if (user.imc < 18.5) {
+      categoriaImc = 'Bajo peso';
+      descripcionImc = 'Tu peso está por debajo del rango saludable';
+    } else if (user.imc <= 24.9) {
+      categoriaImc = 'Peso normal';
+      descripcionImc = 'Tu peso está en el rango saludable';
+    } else if (user.imc <= 29.9) {
+      categoriaImc = 'Sobrepeso';
+      descripcionImc = 'Tu peso está ligeramente por encima del rango saludable';
+    } else {
+      categoriaImc = 'Obesidad';
+      descripcionImc = 'Te recomendamos consultar con un profesional de salud';
+    }
+
+    res.json({
+      success: true,
+      tieneDatos: true,
+      user: {
+        nombre:               user.nombre,
+        peso:                 user.peso,
+        altura:               user.altura,
+        edad:                 user.edad,
+        sexo:                 user.sexo,
+        nivelActividad:       user.nivelActividad,
+        imc:                  user.imc,
+        tdee:                 user.tdee,
+        objetivoRecomendado:  user.objetivoRecomendado,
+        categoriaImc,
+        descripcionImc,
+      }
+    });
+  } catch (error) {
+    console.error('ERROR GET PERFIL NUTRICIONAL:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+// ======================
+// GUARDAR/ACTUALIZAR PERFIL NUTRICIONAL (cliente)
+// ======================
+exports.updatePerfilNutricional = async (req, res) => {
+  try {
+    const { peso, altura, edad, sexo, nivelActividad } = req.body;
+
+    // Validar campos requeridos
+    if (!peso || !altura || !edad || !sexo || !nivelActividad) {
+      return res.status(400).json({
+        error: 'Todos los campos son requeridos: peso, altura, edad, sexo y nivel de actividad'
+      });
+    }
+
+    // Validar rangos
+    if (peso < 20 || peso > 300) {
+      return res.status(400).json({ error: 'El peso debe estar entre 20 y 300 kg' });
+    }
+    if (altura < 100 || altura > 250) {
+      return res.status(400).json({ error: 'La altura debe estar entre 100 y 250 cm' });
+    }
+    if (edad < 10 || edad > 100) {
+      return res.status(400).json({ error: 'La edad debe estar entre 10 y 100 años' });
+    }
+
+    const user = await Usuario.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // El hook beforeSave calcula IMC, TDEE y objetivoRecomendado automáticamente
+    await user.update({ peso, altura, edad, sexo, nivelActividad });
+
+    // Recargar para obtener los valores calculados
+    await user.reload();
+
+    res.json({
+      success: true,
+      message: 'Perfil nutricional actualizado correctamente',
+      data: {
+        peso:                user.peso,
+        altura:              user.altura,
+        edad:                user.edad,
+        sexo:                user.sexo,
+        nivelActividad:      user.nivelActividad,
+        imc:                 user.imc,
+        tdee:                user.tdee,
+        objetivoRecomendado: user.objetivoRecomendado,
+      }
+    });
+  } catch (error) {
+    console.error('ERROR UPDATE PERFIL NUTRICIONAL:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
