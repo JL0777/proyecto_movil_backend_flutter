@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
-import '../account/my_addresses_screen.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../my_addresses_screen.dart';
 
 class DeliveryHelpScreen extends StatefulWidget {
   const DeliveryHelpScreen({super.key});

@@ -2,20 +2,13 @@ import 'package:flutter/material.dart';
 import 'gestion_menus_screen.dart';
 import 'gestion_ingredientes_screen.dart';
 
-class ProductosTab extends StatefulWidget {
+class ProductosTab extends StatelessWidget {
   const ProductosTab({super.key});
 
   @override
-  State<ProductosTab> createState() => _ProductosTabState();
-}
-
-class _ProductosTabState extends State<ProductosTab> {
-  String? _opcionSeleccionada;
-
-  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,79 +20,123 @@ class _ProductosTabState extends State<ProductosTab> {
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade400),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _opcionSeleccionada,
-                hint: const Text(
-                  'Selecciona una opción',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                isExpanded: true,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Color(0xFFE8651A),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'menus',
-                    child: Text('Gestión de menú'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'ingredientes',
-                    child: Text('Gestión de ingredientes'),
-                  ),
-                ],
-                onChanged: (valor) {
-                  setState(() => _opcionSeleccionada = valor);
-                  if (valor == 'menus') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const GestionMenusScreen(),
-                      ),
-                    );
-                  } else if (valor == 'ingredientes') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const GestionIngredientesScreen(),
-                      ),
-                    );
-                  }
-                },
-              ),
+          const SizedBox(height: 4),
+          Text(
+            'Selecciona una opción para continuar',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+          ),
+          const SizedBox(height: 20),
+
+          _OpcionCard(
+            icono: Icons.restaurant_menu_rounded,
+            titulo: 'Gestión de menús',
+            descripcion: 'Crea, edita y organiza los menús disponibles',
+            color: const Color(0xFFE8651A),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const GestionMenusScreen()),
             ),
           ),
-          const SizedBox(height: 40),
-          Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.touch_app_outlined,
-                  size: 60,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Selecciona una opción para continuar',
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 14),
+
+          _OpcionCard(
+            icono: Icons.egg_alt_rounded,
+            titulo: 'Gestión de ingredientes',
+            descripcion: 'Administra los ingredientes y sus precios base',
+            color: Colors.green.shade600,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const GestionIngredientesScreen()),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OpcionCard extends StatelessWidget {
+  final IconData icono;
+  final String titulo;
+  final String descripcion;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _OpcionCard({
+    required this.icono,
+    required this.titulo,
+    required this.descripcion,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icono, color: color, size: 26),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    descripcion,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.arrow_forward_ios_rounded,
+                  color: color, size: 14),
+            ),
+          ],
+        ),
       ),
     );
   }

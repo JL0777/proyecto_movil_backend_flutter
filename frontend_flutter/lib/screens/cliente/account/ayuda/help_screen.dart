@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_theme.dart';
 import 'orders_help_screen.dart';
 import 'payments_help_screen.dart';
 import 'delivery_help_screen.dart';
-import 'support_screen.dart';
+import '../support_screen.dart';
 
 class HelpScreen extends StatefulWidget {
   const HelpScreen({super.key});

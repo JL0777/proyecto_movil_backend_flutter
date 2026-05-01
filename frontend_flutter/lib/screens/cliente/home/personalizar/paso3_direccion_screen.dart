@@ -55,156 +55,393 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
     final instruccionesController = TextEditingController();
     String tipoVivienda = 'Casa';
 
+    final tipos = [
+      ('Casa', Icons.home_outlined),
+      ('Apartamento', Icons.apartment_outlined),
+      ('Oficina/Local comercial', Icons.business_center_outlined),
+      ('Hotel', Icons.hotel_outlined),
+    ];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (nuevaDirSheetCtx) => StatefulBuilder(
-        builder: (nuevaDirSheetCtx, setModalState) => Container(
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setModalState) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFF5F5F5),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(nuevaDirSheetCtx).viewInsets.bottom + 20,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
           ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Título con ícono
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8651A).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.add_location_alt_outlined,
-                        color: Color(0xFFE8651A),
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Nueva dirección',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                _campo(barrioController, 'Barrio'),
-                const SizedBox(height: 12),
-                _campo(direccionController, 'Dirección'),
-                const SizedBox(height: 12),
-                _campo(
-                  instruccionesController,
-                  'Instrucciones (opcional)',
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-
+                // ── Mini header naranja ──
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: tipoVivienda,
-                      isExpanded: true,
-                      items: ['Casa', 'Apartamento', 'Oficina/Local comercial', 'Hotel']
-                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                          .toList(),
-                      onChanged: (v) =>
-                          setModalState(() => tipoVivienda = v ?? tipoVivienda),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Row(
+                        children: [
+                          Icon(Icons.add_location_alt_outlined,
+                              color: Colors.white, size: 20),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Nueva dirección',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800),
+                              ),
+                              Text(
+                                'Completa los datos de entrega',
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
 
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (barrioController.text.trim().isEmpty ||
-                          direccionController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(nuevaDirSheetCtx).showSnackBar(
-                          SnackBar(
-                            content: const Text('Barrio y dirección son requeridos'),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            margin: const EdgeInsets.all(16),
-                          ),
-                        );
-                        return;
-                      }
-
-                      final nav = Navigator.of(nuevaDirSheetCtx);
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      final ok = await _service.createAddress({
-                        'barrio': barrioController.text.trim(),
-                        'direccion': direccionController.text.trim(),
-                        'instrucciones': instruccionesController.text.trim(),
-                        'tipoVivienda': tipoVivienda,
-                      });
-
-                      nav.pop();
-
-                      if (ok) {
-                        await _cargar();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: const Text('Dirección agregada correctamente'),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              margin: const EdgeInsets.all(16),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // ── Selector tipo vivienda ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          );
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8651A),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Guardar dirección',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8651A)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.home_outlined,
+                                      color: Color(0xFFE8651A), size: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Tipo de vivienda',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: tipos.map((t) {
+                                final (label, icono) = t;
+                                final seleccionado = tipoVivienda == label;
+                                final labelCorto =
+                                    label == 'Oficina/Local comercial'
+                                        ? 'Oficina'
+                                        : label;
+                                final isLast = label == 'Hotel';
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setModalState(
+                                        () => tipoVivienda = label),
+                                    child: Container(
+                                      margin: EdgeInsets.only(
+                                          right: isLast ? 0 : 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: seleccionado
+                                            ? const Color(0xFFE8651A)
+                                                .withValues(alpha: 0.08)
+                                            : Colors.grey.shade50,
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: seleccionado
+                                              ? const Color(0xFFE8651A)
+                                                  .withValues(alpha: 0.5)
+                                              : Colors.grey.shade200,
+                                          width: seleccionado ? 1.5 : 1,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            icono,
+                                            size: 20,
+                                            color: seleccionado
+                                                ? const Color(0xFFE8651A)
+                                                : Colors.grey.shade400,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            labelCorto,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w700,
+                                              color: seleccionado
+                                                  ? const Color(0xFFE8651A)
+                                                  : Colors.grey.shade500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Campos ubicación ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8651A)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                      Icons.location_on_outlined,
+                                      color: Color(0xFFE8651A),
+                                      size: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Ubicación',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            _campo(barrioController, 'Barrio / Conjunto',
+                                icono: Icons.map_outlined),
+                            const SizedBox(height: 12),
+                            _campo(direccionController, 'Dirección',
+                                icono: Icons.signpost_outlined),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Instrucciones ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Colors.blue.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.notes_outlined,
+                                      color: Colors.blue, size: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Detalles adicionales',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Opcional',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade500,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            _campo(
+                              instruccionesController,
+                              'Instrucciones para el domiciliario',
+                              icono: Icons.info_outline,
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // ── Botón guardar ──
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (barrioController.text.trim().isEmpty ||
+                                direccionController.text.trim().isEmpty) {
+                              ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                      'Barrio y dirección son requeridos'),
+                                  backgroundColor: Colors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
+                                  margin: const EdgeInsets.all(16),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final nav = Navigator.of(sheetCtx);
+                            final messenger = ScaffoldMessenger.of(context);
+
+                            final ok = await _service.createAddress({
+                              'barrio': barrioController.text.trim(),
+                              'direccion': direccionController.text.trim(),
+                              'instrucciones':
+                                  instruccionesController.text.trim(),
+                              'tipoVivienda': tipoVivienda,
+                            });
+
+                            nav.pop();
+
+                            if (ok) {
+                              await _cargar();
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                        'Dirección agregada correctamente'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE8651A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.save_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Guardar dirección',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
                 ),
               ],
@@ -222,7 +459,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
           content: const Text('Selecciona una dirección primero'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -249,7 +487,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         content: const Text('¡Combo agregado al carrito!'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -261,14 +500,27 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
     TextEditingController controller,
     String label, {
     int maxLines = 1,
+    IconData? icono,
   }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        floatingLabelStyle: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFFE8651A),
+            fontWeight: FontWeight.w600),
         filled: true,
         fillColor: Colors.grey.shade50,
+        prefixIcon: icono != null
+            ? Icon(icono, color: Colors.grey.shade400, size: 18)
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -279,9 +531,11 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide:
+              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
-        labelStyle: const TextStyle(color: Colors.grey),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
       ),
     );
   }
@@ -297,18 +551,16 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                    child: CircularProgressIndicator(
+                        color: Color(0xFFE8651A)),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Resumen del paso 2 ──
                         _buildResumenAnterior(),
                         const SizedBox(height: 16),
-
-                        // ── Sección dirección ──
                         _buildSeccionDireccion(),
                         const SizedBox(height: 100),
                       ],
@@ -332,16 +584,16 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Botón Añadir al carrito
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: _direccionSeleccionada != null ? _agregarAlCarrito : null,
+                    onPressed: _direccionSeleccionada != null
+                        ? _agregarAlCarrito
+                        : null,
                     icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                    label: const Text(
-                      'Añadir al carrito',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
+                    label: const Text('Añadir al carrito',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFE8651A),
                       disabledForegroundColor: Colors.grey.shade400,
@@ -358,7 +610,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Botón Confirmar
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -391,10 +642,9 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Siguiente',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
+                        Text('Siguiente',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w700)),
                         SizedBox(width: 6),
                         Icon(Icons.arrow_forward, size: 18),
                       ],
@@ -428,7 +678,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF3ED),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
+        border: Border.all(
+            color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,19 +692,17 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
               const Text(
                 'Tu pedido hasta ahora',
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFE8651A),
-                ),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFE8651A)),
               ),
               const Spacer(),
               Text(
                 '\$${widget.subtotal.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFFE8651A),
-                ),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFE8651A)),
               ),
             ],
           ),
@@ -462,9 +711,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             Text(
               ingredientesNombres,
               style: TextStyle(
-                fontSize: 11,
-                color: const Color(0xFFE8651A).withValues(alpha: 0.8),
-              ),
+                  fontSize: 11,
+                  color: const Color(0xFFE8651A).withValues(alpha: 0.8)),
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
             ),
@@ -474,19 +722,13 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             Row(
               children: [
                 if (tieneBebida)
-                  _chipResumen(
-                    Icons.local_drink_outlined,
-                    widget.bebida['nombre'] ?? 'Bebida',
-                    Colors.blue,
-                  ),
+                  _chipResumen(Icons.local_drink_outlined,
+                      widget.bebida['nombre'] ?? 'Bebida', Colors.blue),
                 if (tieneBebida && totalComplementos > 0)
                   const SizedBox(width: 6),
                 if (totalComplementos > 0)
-                  _chipResumen(
-                    Icons.add_circle_outline,
-                    '$totalComplementos complemento(s)',
-                    Colors.green,
-                  ),
+                  _chipResumen(Icons.add_circle_outline,
+                      '$totalComplementos complemento(s)', Colors.green),
               ],
             ),
           ],
@@ -508,11 +750,9 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         children: [
           Icon(icono, size: 11, color: color),
           const SizedBox(width: 4),
-          Text(
-            texto,
-            style: TextStyle(
-                fontSize: 10, fontWeight: FontWeight.w700, color: color),
-          ),
+          Text(texto,
+              style: TextStyle(
+                  fontSize: 10, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -537,7 +777,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado sección
           Row(
             children: [
               Container(
@@ -550,18 +789,16 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                     color: Color(0xFFE8651A), size: 16),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Dirección de envío',
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
-              ),
+              const Text('Dirección de envío',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87)),
               const Spacer(),
               if (_direcciones.isNotEmpty)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _direccionSeleccionada != null
                         ? const Color(0xFFE8651A).withValues(alpha: 0.1)
@@ -585,12 +822,12 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Botón agregar nueva dirección
           GestureDetector(
             onTap: _mostrarFormularioNuevaDireccion,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFE8651A).withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(12),
@@ -605,14 +842,11 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                       color: Color(0xFFE8651A), size: 20),
                   SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      'Agregar nueva dirección',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFE8651A),
-                      ),
-                    ),
+                    child: Text('Agregar nueva dirección',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A))),
                   ),
                   Icon(Icons.chevron_right,
                       color: Color(0xFFE8651A), size: 20),
@@ -621,7 +855,6 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             ),
           ),
 
-          // Lista de direcciones o estado vacío
           if (_direcciones.isEmpty) ...[
             const SizedBox(height: 20),
             Center(
@@ -638,19 +871,15 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                         size: 30, color: Colors.grey.shade400),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    'No tienes direcciones guardadas',
-                    style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600),
-                  ),
+                  Text('No tienes direcciones guardadas',
+                      style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(
-                    'Toca el botón de arriba para agregar una',
-                    style:
-                        TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                  ),
+                  Text('Toca el botón de arriba para agregar una',
+                      style: TextStyle(
+                          color: Colors.grey.shade400, fontSize: 12)),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -659,21 +888,18 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             const SizedBox(height: 14),
             Divider(color: Colors.grey.shade100),
             const SizedBox(height: 10),
-
             Text(
               'MIS DIRECCIONES',
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey.shade500,
-                letterSpacing: 0.5,
-              ),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade500,
+                  letterSpacing: 0.5),
             ),
             const SizedBox(height: 10),
-
             ..._direcciones.map((dir) {
-              final seleccionada = _direccionSeleccionada?['id'] == dir['id'];
-
+              final seleccionada =
+                  _direccionSeleccionada?['id'] == dir['id'];
               return GestureDetector(
                 onTap: () => setState(() => _direccionSeleccionada = dir),
                 child: Container(
@@ -699,17 +925,16 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: seleccionada
-                              ? const Color(0xFFE8651A).withValues(alpha: 0.1)
+                              ? const Color(0xFFE8651A)
+                                  .withValues(alpha: 0.1)
                               : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          Icons.location_on_outlined,
-                          color: seleccionada
-                              ? const Color(0xFFE8651A)
-                              : Colors.grey.shade400,
-                          size: 18,
-                        ),
+                        child: Icon(Icons.location_on_outlined,
+                            color: seleccionada
+                                ? const Color(0xFFE8651A)
+                                : Colors.grey.shade400,
+                            size: 18),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -719,18 +944,16 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                             Text(
                               dir['barrio'] ?? '',
                               style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: seleccionada
-                                    ? const Color(0xFFE8651A)
-                                    : Colors.black87,
-                              ),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: seleccionada
+                                      ? const Color(0xFFE8651A)
+                                      : Colors.black87),
                             ),
-                            Text(
-                              dir['direccion'] ?? '',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade500),
-                            ),
+                            Text(dir['direccion'] ?? '',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500)),
                           ],
                         ),
                       ),
@@ -764,11 +987,7 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
         ),
       ),
       padding: EdgeInsets.fromLTRB(
-        16,
-        MediaQuery.of(context).padding.top + 12,
-        16,
-        16,
-      ),
+          16, MediaQuery.of(context).padding.top + 12, 16, 16),
       child: Row(
         children: [
           GestureDetector(
@@ -780,8 +999,8 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child:
-                  const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(Icons.arrow_back,
+                  color: Colors.white, size: 20),
             ),
           ),
           const SizedBox(width: 12),
@@ -789,18 +1008,14 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Personaliza tu menú',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  'Paso 3 de 4',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
+                Text('Personaliza tu menú',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800)),
+                Text('Paso 3 de 4',
+                    style:
+                        TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
@@ -855,30 +1070,25 @@ class _Paso3DireccionScreenState extends State<Paso3DireccionScreen> {
           child: Center(
             child: completado
                 ? const Icon(Icons.check, color: Colors.white, size: 14)
-                : Text(
-                    '$numero',
+                : Text('$numero',
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: activo ? Colors.white : Colors.grey,
-                    ),
-                  ),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: activo ? Colors.white : Colors.grey)),
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 9,
-            color: activo
-                ? const Color(0xFFE8651A)
-                : completado
-                    ? Colors.green
-                    : Colors.grey,
-            fontWeight:
-                activo || completado ? FontWeight.w700 : FontWeight.normal,
-          ),
-        ),
+        Text(label,
+            style: TextStyle(
+                fontSize: 9,
+                color: activo
+                    ? const Color(0xFFE8651A)
+                    : completado
+                        ? Colors.green
+                        : Colors.grey,
+                fontWeight: activo || completado
+                    ? FontWeight.w700
+                    : FontWeight.normal)),
       ],
     );
   }

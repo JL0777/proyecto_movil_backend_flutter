@@ -8,7 +8,7 @@ import '../../../services/upload_service.dart';
 import '../../../services/user_service.dart';
 import 'edit_profile_screen.dart';
 import 'my_addresses_screen.dart';
-import 'help_screen.dart';
+import 'ayuda/help_screen.dart';
 import 'menuBalanceado/perfil_nutricional_screen.dart';
 
 class MyAccountScreen extends StatefulWidget {

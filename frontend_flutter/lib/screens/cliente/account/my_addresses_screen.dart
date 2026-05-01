@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../services/address_service.dart';
-import '../../../core/theme/app_theme.dart';
 import 'add_edit_address_screen.dart';
 
 class MyAddressesScreen extends StatefulWidget {
@@ -19,11 +18,21 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   void mensaje(String texto, bool ok) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(texto),
+        content: Row(
+          children: [
+            Icon(
+              ok ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text(texto)),
+          ],
+        ),
         backgroundColor: ok ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(15),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -61,7 +70,8 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   Future<void> editar(Map address) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => AddEditAddressScreen(address: address)),
+      MaterialPageRoute(
+          builder: (_) => AddEditAddressScreen(address: address)),
     );
     if (result == true) {
       mensaje("Dirección actualizada correctamente", true);
@@ -70,58 +80,84 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   }
 
   Future<void> eliminar(int id) async {
-    final confirm = await showDialog(
+    final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: Row(
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                child: const Icon(Icons.delete_outline_rounded,
+                    color: Colors.red, size: 28),
               ),
-              const SizedBox(width: 12),
-              const Text("¿Eliminar?", style: TextStyle(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 16),
+              const Text(
+                '¿Eliminar dirección?',
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Esta dirección se eliminará permanentemente de tu cuenta.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade500,
+                    height: 1.4),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text('Cancelar',
+                          style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Eliminar',
+                          style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          content: const Text(
-            "Esta dirección se eliminará permanentemente de tu cuenta.",
-            style: TextStyle(color: Colors.black54),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(
-                "Cancelar",
-                style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8, bottom: 8),
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade400,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text("Eliminar", style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        );
-      },
+        ),
+      ),
     );
 
     if (confirm == true) {
@@ -137,219 +173,338 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
 
   IconData _iconForTipo(String tipo) {
     switch (tipo) {
-      case "Apartamento":
+      case 'Apartamento':
         return Icons.apartment_rounded;
-      case "Oficina/Local comercial":
+      case 'Oficina/Local comercial':
         return Icons.business_center_rounded;
-      case "Hotel":
+      case 'Hotel':
         return Icons.hotel_rounded;
       default:
         return Icons.home_rounded;
     }
   }
 
-  Widget tarjetaDireccion(Map a) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFF2F2F2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryOrange.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Icon(
-            _iconForTipo(a["tipoVivienda"]),
-            color: AppTheme.primaryOrange,
-            size: 28,
-          ),
-        ),
-        title: Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            a["direccion"],
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 17,
-              color: Color(0xFF1E1E1E),
-            ),
-          ),
-        ),
-        subtitle: Text(
-          "${a["barrio"]} • ${a["tipoVivienda"]}",
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        trailing: PopupMenuButton(
-          icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
-          elevation: 4,
-          offset: const Offset(0, 45),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: "editar",
-              child: Row(
-                children: [
-                  Icon(Icons.edit_rounded, size: 20, color: Colors.blue.shade600),
-                  const SizedBox(width: 12),
-                  const Text("Editar", style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: "eliminar",
-              child: Row(
-                children: [
-                  Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red.shade400),
-                  const SizedBox(width: 12),
-                  Text("Eliminar", 
-                    style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (value) {
-            if (value == "editar") editar(a);
-            if (value == "eliminar") eliminar(a["id"]);
-          },
-        ),
-      ),
-    );
+  String _labelForTipo(String tipo) {
+    switch (tipo) {
+      case 'Apartamento':
+        return 'Apartamento';
+      case 'Oficina/Local comercial':
+        return 'Oficina / Local';
+      case 'Hotel':
+        return 'Hotel';
+      default:
+        return 'Casa';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: loading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        color: Color(0xFFE8651A)),
+                  )
+                : addresses.isEmpty
+                    ? _buildVacio()
+                    : _buildLista(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: agregar,
+        backgroundColor: const Color(0xFFE8651A),
+        elevation: 4,
+        icon: const Icon(Icons.add_location_alt_outlined,
+            color: Colors.white, size: 20),
+        label: const Text(
+          'Nueva dirección',
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 14),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
+      ),
+    );
+  }
+
+  // ── Header ──────────────────────────────────────────────────
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 12,
+        16,
+        20,
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.arrow_back,
+                  color: Colors.white, size: 20),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Mis direcciones',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (!loading)
+                Text(
+                  addresses.isEmpty
+                      ? 'Ninguna guardada aún'
+                      : '${addresses.length} dirección${addresses.length == 1 ? '' : 'es'} guardada${addresses.length == 1 ? '' : 's'}',
+                  style: const TextStyle(
+                      color: Colors.white70, fontSize: 12),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Estado vacío ───────────────────────────────────────────
+
+  Widget _buildVacio() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              width: 90,
+              height: 90,
               decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withValues(alpha: 0.15),
+                color: const Color(0xFFE8651A).withValues(alpha: 0.08),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFE8651A).withValues(alpha: 0.2),
+                  width: 2,
+                ),
               ),
-              child: const Icon(Icons.location_on_rounded, color: AppTheme.primaryOrange, size: 16),
+              child: const Icon(Icons.location_off_outlined,
+                  size: 38, color: Color(0xFFE8651A)),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(height: 20),
             const Text(
-              "Mis direcciones",
+              'Sin direcciones guardadas',
               style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w900,
-                fontSize: 20,
-              ),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Agrega una dirección para que\npodamos llevarte tu comida favorita.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  height: 1.5),
+            ),
+            const SizedBox(height: 28),
           ],
         ),
       ),
+    );
+  }
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: agregar,
-        backgroundColor: AppTheme.primaryOrange,
-        elevation: 6,
-        icon: const Icon(Icons.add_location_alt_rounded, color: Colors.white),
-        label: const Text(
-          "",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-        ),
+  // ── Lista ──────────────────────────────────────────────────
+
+  Widget _buildLista() {
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+      itemCount: addresses.length,
+      itemBuilder: (context, index) =>
+          _tarjetaDireccion(addresses[index]),
+    );
+  }
+
+  Widget _tarjetaDireccion(Map a) {
+    final tipo = a['tipoVivienda'] ?? 'Casa';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ícono tipo vivienda
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8651A).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _iconForTipo(tipo),
+                color: const Color(0xFFE8651A),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
 
-      body: loading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryOrange))
-          : addresses.isEmpty
-              ? Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            // Info dirección
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    a['direccion'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    a['barrio'] ?? '',
+                    style: TextStyle(
+                        fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 6),
+                  // Chip tipo
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8651A)
+                          .withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFE8651A)
+                            .withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withValues(alpha: 0.08),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.map_rounded,
-                            size: 60,
-                            color: AppTheme.primaryOrange,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          "¡No has agregado ninguna dirección!",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF1A1A1A),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Agrega una para que podamos\nllevarte tu comida favorita.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.black45,
-                            fontWeight: FontWeight.w500,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 35),
-                        ElevatedButton.icon(
-                          onPressed: agregar,
-                          icon: const Icon(Icons.add_rounded, size: 22),
-                          label: const Text("AGREGAR DIRECCIÓN", style: TextStyle(fontWeight: FontWeight.w900)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryOrange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 4,
-                            shadowColor: AppTheme.primaryOrange.withValues(alpha: 0.4),
+                        Icon(_iconForTipo(tipo),
+                            size: 11, color: const Color(0xFFE8651A)),
+                        const SizedBox(width: 4),
+                        Text(
+                          _labelForTipo(tipo),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A),
                           ),
                         ),
                       ],
                     ),
                   ),
-                )
-              : ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 15, 20, 110),
-                  itemCount: addresses.length,
-                  itemBuilder: (context, index) {
-                    return tarjetaDireccion(addresses[index]);
-                  },
+                  if (a['instrucciones'] != null &&
+                      (a['instrucciones'] as String).isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 11, color: Colors.grey.shade400),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            a['instrucciones'],
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Acciones
+            Column(
+              children: [
+                _accionBtn(
+                  icono: Icons.edit_outlined,
+                  color: Colors.blue,
+                  onTap: () => editar(a),
                 ),
+                const SizedBox(height: 6),
+                _accionBtn(
+                  icono: Icons.delete_outline_rounded,
+                  color: Colors.red,
+                  onTap: () => eliminar(a['id']),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _accionBtn({
+    required IconData icono,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+          border:
+              Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Icon(icono, color: color, size: 16),
+      ),
     );
   }
 }

@@ -49,337 +49,24 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     }
   }
 
+  // ── Formulario de crear / editar menú ──────────────────────────────────────
+
   void _mostrarFormulario({Map<String, dynamic>? menu}) {
-    final nombreController = TextEditingController(text: menu?['nombre'] ?? '');
-    final descripcionController = TextEditingController(
-      text: menu?['descripcion'] ?? '',
-    );
-    final precioController = TextEditingController(
-      text: menu?['precio']?.toString() ?? '',
-    );
-    final imagenUrlController = TextEditingController(
-      text: menu?['imagenUrl'] ?? '',
-    );
-    int? categoriaId = menu?['categoriaId'];
-    File? imagenSeleccionada;
-    bool subiendoImagen = false;
-
-    final messenger = ScaffoldMessenger.of(context);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setModalState) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  menu == null ? 'Nuevo menú' : 'Editar menú',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _campo(nombreController, 'Nombre del menú'),
-                const SizedBox(height: 12),
-                _campo(descripcionController, 'Descripción', maxLines: 3),
-                const SizedBox(height: 12),
-                _campo(precioController, 'Precio', tipo: TextInputType.number),
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Imagen del menú',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: imagenSeleccionada != null
-                      ? Image.file(
-                          imagenSeleccionada!,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : imagenUrlController.text.isNotEmpty
-                      ? Image.network(
-                          imagenUrlController.text,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (previewErrCtx, previewErrObj, previewErrStack) =>
-                                  _previewPlaceholder(),
-                        )
-                      : _previewPlaceholder(),
-                ),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: subiendoImagen
-                            ? null
-                            : () async {
-                                final XFile? img = await _picker.pickImage(
-                                  source: ImageSource.gallery,
-                                  imageQuality: 80,
-                                );
-                                if (img != null) {
-                                  setModalState(() {
-                                    imagenSeleccionada = File(img.path);
-                                  });
-                                }
-                              },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFE8651A)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        icon: const Icon(
-                          Icons.photo_library_outlined,
-                          color: Color(0xFFE8651A),
-                          size: 18,
-                        ),
-                        label: const Text(
-                          'Galería',
-                          style: TextStyle(
-                            color: Color(0xFFE8651A),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: subiendoImagen
-                            ? null
-                            : () async {
-                                final XFile? img = await _picker.pickImage(
-                                  source: ImageSource.camera,
-                                  imageQuality: 80,
-                                );
-                                if (img != null) {
-                                  setModalState(() {
-                                    imagenSeleccionada = File(img.path);
-                                  });
-                                }
-                              },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFE8651A)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        icon: const Icon(
-                          Icons.camera_alt_outlined,
-                          color: Color(0xFFE8651A),
-                          size: 18,
-                        ),
-                        label: const Text(
-                          'Cámara',
-                          style: TextStyle(
-                            color: Color(0xFFE8651A),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<int>(
-                      value: categoriaId,
-                      hint: const Text('Selecciona categoría'),
-                      isExpanded: true,
-                      items: _categorias
-                          .map(
-                            (c) => DropdownMenuItem<int>(
-                              value: c['id'],
-                              child: Text(c['nombre']),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setModalState(() => categoriaId = v),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: subiendoImagen
-                        ? null
-                        : () async {
-                            if (nombreController.text.trim().isEmpty ||
-                                precioController.text.trim().isEmpty ||
-                                categoriaId == null) {
-                              messenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Completa todos los campos'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            }
-
-                            String imagenUrl = imagenUrlController.text.trim();
-
-                            if (imagenSeleccionada != null) {
-                              setModalState(() => subiendoImagen = true);
-
-                              final url = await _uploadService.subirImagen(
-                                imagenSeleccionada!,
-                              );
-
-                              setModalState(() => subiendoImagen = false);
-
-                              if (url != null) {
-                                imagenUrl = url;
-                              } else {
-                                messenger.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Error al subir la imagen'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                                return;
-                              }
-                            }
-
-                            if (imagenSeleccionada != null &&
-                                menu != null &&
-                                menu['imagenUrl'] != null &&
-                                menu['imagenUrl'].toString().isNotEmpty &&
-                                menu['imagenUrl'].toString().contains(
-                                  '/uploads/',
-                                )) {
-                              await _uploadService.eliminarImagen(
-                                menu['imagenUrl'],
-                              );
-                            }
-
-                            final data = {
-                              'nombre': nombreController.text.trim(),
-                              'descripcion': descripcionController.text.trim(),
-                              'precio': double.parse(
-                                precioController.text.trim(),
-                              ),
-                              'imagenUrl': imagenUrl,
-                              'categoriaId': categoriaId,
-                            };
-
-                            bool ok;
-                            if (menu == null) {
-                              ok = await _menuService.create(data);
-                            } else {
-                              ok = await _menuService.update(menu['id'], data);
-                            }
-
-                            if (sheetContext.mounted) {
-                              Navigator.of(sheetContext).pop();
-                            }
-
-                            if (ok) {
-                              _cargar();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    menu == null
-                                        ? 'Menú creado correctamente'
-                                        : 'Menú actualizado correctamente',
-                                  ),
-                                  backgroundColor: Colors.green,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  margin: const EdgeInsets.all(16),
-                                ),
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8651A),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(
-                        0xFFE8651A,
-                      ).withValues(alpha: 0.6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: subiendoImagen
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : Text(
-                            menu == null ? 'Crear menú' : 'Guardar cambios',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _MenuFormPage(
+          menu: menu,
+          categorias: _categorias,
+          menuService: _menuService,
+          uploadService: _uploadService,
+          picker: _picker,
+          onSaved: _cargar,
         ),
       ),
     );
   }
+
+  // ── Formulario nutricional (sin cambios de diseño) ─────────────────────────
 
   void _mostrarFormularioNutricional({required Map<String, dynamic> menu}) {
     final caloriasController = TextEditingController(
@@ -453,7 +140,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Handle
                 Center(
                   child: Container(
                     width: 40,
@@ -465,8 +151,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // Título
                 Row(
                   children: [
                     Container(
@@ -506,8 +190,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Macros
                 const Text(
                   'Macronutrientes (por porción)',
                   style: TextStyle(
@@ -517,7 +199,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 Row(
                   children: [
                     Expanded(
@@ -566,8 +247,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Objetivo
                 const Text(
                   'Objetivo del menú',
                   style: TextStyle(
@@ -627,8 +306,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
-
-                // Toggle esBalanceado
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -686,8 +363,6 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Botón guardar
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -716,18 +391,14 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
 
                             final ok = await _menuService
                                 .updateNutricional(menu['id'], {
-                                  'calorias': int.tryParse(
-                                    caloriasController.text,
-                                  ),
-                                  'proteinas': double.tryParse(
-                                    proteinasController.text,
-                                  ),
-                                  'carbohidratos': double.tryParse(
-                                    carbosController.text,
-                                  ),
-                                  'grasas': double.tryParse(
-                                    grasasController.text,
-                                  ),
+                                  'calorias':
+                                      int.tryParse(caloriasController.text),
+                                  'proteinas':
+                                      double.tryParse(proteinasController.text),
+                                  'carbohidratos':
+                                      double.tryParse(carbosController.text),
+                                  'grasas':
+                                      double.tryParse(grasasController.text),
                                   'objetivo': objetivo,
                                   'esBalanceado': esBalanceado,
                                 });
@@ -742,9 +413,8 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                               _cargar();
                               messenger.showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'Info nutricional guardada ✓',
-                                  ),
+                                  content:
+                                      const Text('Info nutricional guardada ✓'),
                                   backgroundColor: Colors.green,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
@@ -829,44 +499,18 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: color, width: 1.8),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 10,
-        ),
-      ),
-    );
-  }
-
-  Widget _previewPlaceholder() {
-    return Container(
-      height: 160,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.image_outlined, size: 40, color: Colors.grey.shade400),
-          const SizedBox(height: 8),
-          Text(
-            'Sin imagen',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-          ),
-        ],
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       ),
     );
   }
 
   Future<void> _eliminar(Map<String, dynamic> menu) async {
-    // Capturamos messenger ANTES de cualquier await
     final messenger = ScaffoldMessenger.of(context);
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (eliminarMenuDialogCtx) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
@@ -878,20 +522,17 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
         content: Text('¿Eliminar "${menu['nombre']}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(eliminarMenuDialogCtx, false),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child:
+                Text('Cancelar', style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(eliminarMenuDialogCtx, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Eliminar'),
           ),
@@ -911,38 +552,13 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
             content: const Text('Menú eliminado correctamente'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             margin: const EdgeInsets.all(16),
           ),
         );
       }
     }
-  }
-
-  Widget _campo(
-    TextEditingController controller,
-    String label, {
-    int maxLines = 1,
-    TextInputType tipo = TextInputType.text,
-  }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: tipo,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
-        ),
-        labelStyle: const TextStyle(color: Colors.grey),
-      ),
-    );
   }
 
   @override
@@ -960,8 +576,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFE8651A)),
-            )
+              child: CircularProgressIndicator(color: Color(0xFFE8651A)))
           : Column(
               children: [
                 Padding(
@@ -985,10 +600,8 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                       child: DropdownButton<int?>(
                         value: _categoriaSeleccionada,
                         isExpanded: true,
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Color(0xFFE8651A),
-                        ),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Color(0xFFE8651A)),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
@@ -1039,13 +652,10 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                               setState(() => _categoriaSeleccionada = null),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFE8651A,
-                              ).withValues(alpha: 0.1),
+                              color: const Color(0xFFE8651A)
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Row(
@@ -1060,11 +670,8 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 4),
-                                Icon(
-                                  Icons.close,
-                                  size: 12,
-                                  color: Color(0xFFE8651A),
-                                ),
+                                Icon(Icons.close,
+                                    size: 12, color: Color(0xFFE8651A)),
                               ],
                             ),
                           ),
@@ -1080,28 +687,21 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.restaurant_menu_outlined,
-                                size: 60,
-                                color: Colors.grey.shade400,
-                              ),
+                              Icon(Icons.restaurant_menu_outlined,
+                                  size: 60, color: Colors.grey.shade400),
                               const SizedBox(height: 12),
                               Text(
                                 _categoriaSeleccionada != null
                                     ? 'No hay menús en esta categoría'
                                     : 'No hay menús creados',
                                 style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 15,
-                                ),
+                                    color: Colors.grey.shade500, fontSize: 15),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Toca + para agregar uno',
                                 style: TextStyle(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 13,
-                                ),
+                                    color: Colors.grey.shade400, fontSize: 13),
                               ),
                             ],
                           ),
@@ -1110,28 +710,26 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           onRefresh: _cargar,
                           color: const Color(0xFFE8651A),
                           child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 0, 16, 100),
                             itemCount: _menusFiltrados.length,
-                            itemBuilder: (menuListCtx, index) {
+                            itemBuilder: (ctx, index) {
                               final menu = _menusFiltrados[index];
                               final categoria = menu['Categoria'];
-                              final precio = double.parse(
-                                menu['precio'].toString(),
-                              );
+                              final precio =
+                                  double.parse(menu['precio'].toString());
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
-                                  ),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.05,
-                                      ),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.05),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -1139,13 +737,10 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                 ),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
+                                      horizontal: 16, vertical: 8),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child:
-                                        menu['imagenUrl'] != null &&
+                                    child: menu['imagenUrl'] != null &&
                                             menu['imagenUrl']
                                                 .toString()
                                                 .isNotEmpty
@@ -1154,21 +749,16 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                             width: 56,
                                             height: 56,
                                             fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (
-                                                  menuImgErrCtx,
-                                                  menuImgErrObj,
-                                                  menuImgErrStack,
-                                                ) => _imagenPlaceholder(),
+                                            errorBuilder: (c, o, s) =>
+                                                _imagenPlaceholder(),
                                           )
                                         : _imagenPlaceholder(),
                                   ),
                                   title: Text(
                                     menu['nombre'],
                                     style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700),
                                   ),
                                   subtitle: Column(
                                     crossAxisAlignment:
@@ -1176,18 +766,15 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                     children: [
                                       if (categoria != null)
                                         Container(
-                                          margin: const EdgeInsets.only(top: 4),
+                                          margin:
+                                              const EdgeInsets.only(top: 4),
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
+                                              horizontal: 8, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: const Color(
-                                              0xFFE8651A,
-                                            ).withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
+                                            color: const Color(0xFFE8651A)
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
                                           ),
                                           child: Text(
                                             categoria['nombre'],
@@ -1212,74 +799,32 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      // ── Editar info básica ──
-                                      GestureDetector(
+                                      _iconBtn(
+                                        icon: Icons.edit_outlined,
+                                        color: const Color(0xFFE8651A),
+                                        bg: const Color(0xFFFFF3ED),
                                         onTap: () =>
                                             _mostrarFormulario(menu: menu),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFF3ED),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.edit_outlined,
-                                            color: Color(0xFFE8651A),
-                                            size: 18,
-                                          ),
-                                        ),
                                       ),
                                       const SizedBox(width: 8),
-
-                                      // ── Info nutricional ──
-                                      GestureDetector(
+                                      _iconBtn(
+                                        icon: Icons.monitor_weight_outlined,
+                                        color: menu['esBalanceado'] == true
+                                            ? Colors.green
+                                            : Colors.grey.shade400,
+                                        bg: menu['esBalanceado'] == true
+                                            ? Colors.green.shade50
+                                            : Colors.grey.shade100,
                                         onTap: () =>
                                             _mostrarFormularioNutricional(
-                                              menu: menu,
-                                            ),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: menu['esBalanceado'] == true
-                                                ? Colors.green.shade50
-                                                : Colors.grey.shade100,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            Icons.monitor_weight_outlined,
-                                            color: menu['esBalanceado'] == true
-                                                ? Colors.green
-                                                : Colors.grey.shade400,
-                                            size: 18,
-                                          ),
-                                        ),
+                                                menu: menu),
                                       ),
                                       const SizedBox(width: 8),
-
-                                      // ── Eliminar ──
-                                      GestureDetector(
+                                      _iconBtn(
+                                        icon: Icons.delete_outline,
+                                        color: Colors.red,
+                                        bg: const Color(0xFFFEF2F2),
                                         onTap: () => _eliminar(menu),
-                                        child: Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFEF2F2),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.delete_outline,
-                                            color: Colors.red,
-                                            size: 18,
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -1294,12 +839,651 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     );
   }
 
+  Widget _iconBtn({
+    required IconData icon,
+    required Color color,
+    required Color bg,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: color, size: 18),
+      ),
+    );
+  }
+
   Widget _imagenPlaceholder() {
     return Container(
       width: 56,
       height: 56,
       color: Colors.grey.shade100,
-      child: const Icon(Icons.fastfood_outlined, color: Colors.grey, size: 28),
+      child:
+          const Icon(Icons.fastfood_outlined, color: Colors.grey, size: 28),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Página completa para crear / editar menú
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _MenuFormPage extends StatefulWidget {
+  final Map<String, dynamic>? menu;
+  final List<dynamic> categorias;
+  final MenuService menuService;
+  final UploadService uploadService;
+  final ImagePicker picker;
+  final VoidCallback onSaved;
+
+  const _MenuFormPage({
+    required this.menu,
+    required this.categorias,
+    required this.menuService,
+    required this.uploadService,
+    required this.picker,
+    required this.onSaved,
+  });
+
+  @override
+  State<_MenuFormPage> createState() => _MenuFormPageState();
+}
+
+class _MenuFormPageState extends State<_MenuFormPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  late final TextEditingController _nombreController;
+  late final TextEditingController _descripcionController;
+  late final TextEditingController _precioController;
+
+  int? _categoriaId;
+  File? _imagenSeleccionada;
+  String _imagenUrl = '';
+  bool _guardando = false;
+
+  bool get _editMode => widget.menu != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreController =
+        TextEditingController(text: widget.menu?['nombre'] ?? '');
+    _descripcionController =
+        TextEditingController(text: widget.menu?['descripcion'] ?? '');
+    _precioController =
+        TextEditingController(text: widget.menu?['precio']?.toString() ?? '');
+    _categoriaId = widget.menu?['categoriaId'];
+    _imagenUrl = widget.menu?['imagenUrl'] ?? '';
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _descripcionController.dispose();
+    _precioController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? img = await widget.picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
+    if (img != null) {
+      setState(() => _imagenSeleccionada = File(img.path));
+    }
+  }
+
+  String? _validar(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    return null;
+  }
+
+  String? _validarPrecio(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    if (double.tryParse(v.trim()) == null) return 'Ingresa un número válido';
+    return null;
+  }
+
+  Future<void> _guardar() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_categoriaId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona una categoría'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _guardando = true);
+
+    String imagenFinal = _imagenUrl;
+
+    if (_imagenSeleccionada != null) {
+      final url =
+          await widget.uploadService.subirImagen(_imagenSeleccionada!);
+      if (url == null) {
+        setState(() => _guardando = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error al subir la imagen'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Eliminar imagen anterior si la hay
+      if (widget.menu != null &&
+          widget.menu!['imagenUrl'] != null &&
+          widget.menu!['imagenUrl'].toString().contains('/uploads/')) {
+        await widget.uploadService.eliminarImagen(widget.menu!['imagenUrl']);
+      }
+
+      imagenFinal = url;
+    }
+
+    final data = {
+      'nombre': _nombreController.text.trim(),
+      'descripcion': _descripcionController.text.trim(),
+      'precio': double.parse(_precioController.text.trim()),
+      'imagenUrl': imagenFinal,
+      'categoriaId': _categoriaId,
+    };
+
+    final bool ok = _editMode
+        ? await widget.menuService.update(widget.menu!['id'], data)
+        : await widget.menuService.create(data);
+
+    setState(() => _guardando = false);
+
+    if (!mounted) return;
+
+    if (ok) {
+      widget.onSaved();
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _editMode
+                ? 'Menú actualizado correctamente'
+                : 'Menú creado correctamente',
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Imagen ──
+                    _buildTarjeta(
+                      icono: Icons.image_outlined,
+                      color: const Color(0xFFE8651A),
+                      titulo: 'Imagen del menú',
+                      child: Column(
+                        children: [
+                          // Preview
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _imagenSeleccionada != null
+                                ? Image.file(
+                                    _imagenSeleccionada!,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                : _imagenUrl.isNotEmpty
+                                    ? Image.network(
+                                        _imagenUrl,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, o, s) =>
+                                            _previewPlaceholder(),
+                                      )
+                                    : _previewPlaceholder(),
+                          ),
+                          const SizedBox(height: 12),
+                          // Botones de imagen
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _guardando
+                                      ? null
+                                      : () => _pickImage(ImageSource.gallery),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                        color: Color(0xFFE8651A)),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 11),
+                                  ),
+                                  icon: const Icon(
+                                      Icons.photo_library_outlined,
+                                      color: Color(0xFFE8651A),
+                                      size: 18),
+                                  label: const Text(
+                                    'Galería',
+                                    style: TextStyle(
+                                        color: Color(0xFFE8651A),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _guardando
+                                      ? null
+                                      : () => _pickImage(ImageSource.camera),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                        color: Color(0xFFE8651A)),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 11),
+                                  ),
+                                  icon: const Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: Color(0xFFE8651A),
+                                      size: 18),
+                                  label: const Text(
+                                    'Cámara',
+                                    style: TextStyle(
+                                        color: Color(0xFFE8651A),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // ── Información básica ──
+                    _buildTarjeta(
+                      icono: Icons.restaurant_outlined,
+                      color: const Color(0xFFE8651A),
+                      titulo: 'Información del menú',
+                      child: Column(
+                        children: [
+                          _campo(
+                            controller: _nombreController,
+                            label: 'Nombre del menú',
+                            icono: Icons.label_outline,
+                            validator: _validar,
+                          ),
+                          const SizedBox(height: 12),
+                          _campo(
+                            controller: _descripcionController,
+                            label: 'Descripción',
+                            icono: Icons.notes_outlined,
+                            maxLines: 3,
+                          ),
+                          const SizedBox(height: 12),
+                          _campo(
+                            controller: _precioController,
+                            label: 'Precio',
+                            icono: Icons.attach_money_outlined,
+                            tipo: TextInputType.number,
+                            validator: _validarPrecio,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // ── Categoría ──
+                    _buildTarjeta(
+                      icono: Icons.category_outlined,
+                      color: Colors.blue,
+                      titulo: 'Categoría',
+                      child: Container(
+                        width: double.infinity,
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          border:
+                              Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: _categoriaId,
+                            hint: Row(
+                              children: [
+                                Icon(Icons.grid_view_outlined,
+                                    color: Colors.grey.shade400, size: 18),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Selecciona una categoría',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade500),
+                                ),
+                              ],
+                            ),
+                            isExpanded: true,
+                            icon: Icon(Icons.keyboard_arrow_down,
+                                color: Colors.grey.shade400),
+                            items: widget.categorias
+                                .map(
+                                  (c) => DropdownMenuItem<int>(
+                                    value: c['id'],
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFE8651A),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(c['nombre'],
+                                            style: const TextStyle(
+                                                fontSize: 14)),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _categoriaId = v),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ── Botón guardar ──
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _guardando ? null : _guardar,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE8651A),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              const Color(0xFFE8651A).withValues(alpha: 0.6),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 15),
+                        ),
+                        child: _guardando
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2.5),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _editMode
+                                        ? Icons.check_circle_outline
+                                        : Icons.save_outlined,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _editMode
+                                        ? 'Guardar cambios'
+                                        : 'Crear menú',
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Header con gradiente ──────────────────────────────────────────────────
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 12,
+        16,
+        20,
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.arrow_back,
+                  color: Colors.white, size: 20),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _editMode ? 'Editar menú' : 'Nuevo menú',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                _editMode
+                    ? 'Modifica la información del menú'
+                    : 'Completa los datos del nuevo menú',
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Tarjeta de sección ────────────────────────────────────────────────────
+
+  Widget _buildTarjeta({
+    required IconData icono,
+    required Color color,
+    required String titulo,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icono, color: color, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                titulo,
+                style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+
+  // ── Campo de texto ────────────────────────────────────────────────────────
+
+  Widget _campo({
+    required TextEditingController controller,
+    required String label,
+    required IconData icono,
+    String? Function(String?)? validator,
+    int maxLines = 1,
+    TextInputType tipo = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: tipo,
+      validator: validator,
+      style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle:
+            TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        floatingLabelStyle: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFFE8651A),
+            fontWeight: FontWeight.w600),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        prefixIcon:
+            Icon(icono, color: Colors.grey.shade400, size: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide:
+              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red, width: 1.8),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      ),
+    );
+  }
+
+  // ── Preview imagen ────────────────────────────────────────────────────────
+
+  Widget _previewPlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.image_outlined,
+              size: 44, color: Colors.grey.shade400),
+          const SizedBox(height: 8),
+          Text(
+            'Sin imagen',
+            style:
+                TextStyle(fontSize: 13, color: Colors.grey.shade400),
+          ),
+        ],
+      ),
     );
   }
 }

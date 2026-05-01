@@ -19,6 +19,9 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final _formKeyInfo = GlobalKey<FormState>();
+  final _formKeyPass = GlobalKey<FormState>();
+
   bool _loading = false;
   bool _cambiarPassword = false;
   bool _verPassword = false;
@@ -59,16 +62,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
   }
 
   Future<void> _guardarCambios() async {
-    if (_nombreController.text.trim().isEmpty) {
-      _mostrarMensaje("El nombre no puede estar vacío");
-      return;
-    }
-
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(_emailController.text.trim())) {
-      _mostrarMensaje("Correo inválido");
-      return;
-    }
+    if (!_formKeyInfo.currentState!.validate()) return;
 
     setState(() => _loading = true);
 
@@ -92,15 +86,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
   }
 
   Future<void> _cambiarContrasena() async {
-    if (_passwordController.text.length < 6) {
-      _mostrarMensaje("La contraseña debe tener mínimo 6 caracteres");
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      _mostrarMensaje("Las contraseñas no coinciden");
-      return;
-    }
+    if (!_formKeyPass.currentState!.validate()) return;
 
     setState(() => _loading = true);
 
@@ -122,303 +108,563 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
     }
   }
 
-  InputDecoration _inputDecoration(String label, {IconData? icon}) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon:
-          icon != null ? Icon(icon, color: Colors.grey.shade600) : null,
-      filled: true,
-      fillColor: _loading ? Colors.grey.shade100 : Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      labelStyle: const TextStyle(color: Colors.grey),
-    );
+  String? _validarNombre(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    if (v.trim().length < 2) return 'Mínimo 2 caracteres';
+    return null;
+  }
+
+  String? _validarEmail(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(v.trim())) return 'Correo inválido';
+    return null;
+  }
+
+  String? _validarPassword(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    if (v.length < 6) return 'Mínimo 6 caracteres';
+    return null;
+  }
+
+  String? _validarConfirm(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Campo obligatorio';
+    if (v != _passwordController.text) return 'Las contraseñas no coinciden';
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final inicialNombre =
+        (widget.usuario['nombre'] ?? '?')[0].toUpperCase();
+    final fechaRegistro =
+        widget.usuario['createdAt']?.toString().substring(0, 10) ?? '';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Editar usuario"),
-        backgroundColor: const Color(0xFFE8651A),
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: const Color(0xFFE8651A),
-                    child: Text(
-                      (widget.usuario['nombre'] ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Cliente desde ${widget.usuario['createdAt']?.toString().substring(0, 10) ?? ''}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
+        children: [
+          // ── Header con gradiente ──────────────────────────────────────
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            const Text(
-              'Información personal',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              MediaQuery.of(context).padding.top + 12,
+              16,
+              24,
             ),
-
-            const SizedBox(height: 16),
-
-            // Campos congelados cuando _loading es true
-            TextField(
-              controller: _nombreController,
-              enabled: !_loading,
-              decoration: _inputDecoration(
-                "Nombre",
-                icon: Icons.person_outline,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _emailController,
-              enabled: !_loading,
-              keyboardType: TextInputType.emailAddress,
-              decoration: _inputDecoration(
-                "Correo",
-                icon: Icons.email_outlined,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _telefonoController,
-              enabled: !_loading,
-              keyboardType: TextInputType.phone,
-              decoration: _inputDecoration(
-                "Teléfono",
-                icon: Icons.phone_outlined,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _guardarCambios,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8651A),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFFE8651A).withValues(alpha: 0.6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: _loading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : const Text(
-                        'Guardar cambios',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                const Text(
-                  'Cambiar contraseña',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+                // Botón atrás + título
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Editar usuario',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          'Modifica la información del usuario',
+                          style: TextStyle(
+                              color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                IconButton(
-                  onPressed: _loading
-                      ? null
-                      : () => setState(
-                          () => _cambiarPassword = !_cambiarPassword),
-                  icon: Icon(
-                    _cambiarPassword ? Icons.close : Icons.edit,
-                    color: _cambiarPassword
-                        ? Colors.grey
-                        : const Color(0xFFE8651A),
+                const SizedBox(height: 20),
+
+                // Avatar + nombre + fecha
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 2),
+                        ),
+                        child: Center(
+                          child: Text(
+                            inicialNombre,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.usuario['nombre'] ?? 'Usuario',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Cliente desde $fechaRegistro',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
+          ),
 
-            if (_cambiarPassword) ...[
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: _passwordController,
-                enabled: !_loading,
-                obscureText: !_verPassword,
-                decoration: InputDecoration(
-                  labelText: "Nueva contraseña",
-                  prefixIcon: Icon(
-                    Icons.lock_outline,
-                    color: Colors.grey.shade600,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () =>
-                        setState(() => _verPassword = !_verPassword),
-                    icon: Icon(
-                      _verPassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: _loading ? Colors.grey.shade100 : Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE8651A),
-                      width: 1.8,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  labelStyle: const TextStyle(color: Colors.grey),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: _confirmPasswordController,
-                enabled: !_loading,
-                obscureText: !_verConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: "Confirmar contraseña",
-                  prefixIcon: Icon(
-                    Icons.lock_outline,
-                    color: Colors.grey.shade600,
-                  ),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(
-                        () => _verConfirmPassword = !_verConfirmPassword),
-                    icon: Icon(
-                      _verConfirmPassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: _loading ? Colors.grey.shade100 : Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE8651A),
-                      width: 1.8,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  labelStyle: const TextStyle(color: Colors.grey),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _cambiarContrasena,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8651A),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        const Color(0xFFE8651A).withValues(alpha: 0.6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
+          // ── Contenido scrollable ──────────────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: Column(
+                children: [
+                  // ── Tarjeta: Información personal ──
+                  _buildTarjeta(
+                    icono: Icons.person_outline,
+                    color: const Color(0xFFE8651A),
+                    titulo: 'Información personal',
+                    child: Form(
+                      key: _formKeyInfo,
+                      child: Column(
+                        children: [
+                          _campo(
+                            controller: _nombreController,
+                            label: 'Nombre completo',
+                            icono: Icons.badge_outlined,
+                            validator: _validarNombre,
                           ),
-                        )
-                      : const Text(
-                          'Actualizar contraseña',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                          const SizedBox(height: 12),
+                          _campo(
+                            controller: _emailController,
+                            label: 'Correo electrónico',
+                            icono: Icons.email_outlined,
+                            tipo: TextInputType.emailAddress,
+                            validator: _validarEmail,
                           ),
+                          const SizedBox(height: 12),
+                          _campo(
+                            controller: _telefonoController,
+                            label: 'Teléfono',
+                            icono: Icons.phone_outlined,
+                            tipo: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _loading ? null : _guardarCambios,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE8651A),
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor:
+                                    const Color(0xFFE8651A)
+                                        .withValues(alpha: 0.6),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                              ),
+                              child: _loading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5),
+                                    )
+                                  : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.check_circle_outline,
+                                            size: 18),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Guardar cambios',
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // ── Tarjeta: Contraseña ──
+                  _buildTarjeta(
+                    icono: Icons.lock_outline,
+                    color: Colors.indigo,
+                    titulo: 'Seguridad',
+                    trailing: GestureDetector(
+                      onTap: _loading
+                          ? null
+                          : () => setState(
+                              () => _cambiarPassword = !_cambiarPassword),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: _cambiarPassword
+                              ? Colors.grey.shade100
+                              : const Color(0xFFE8651A).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
                         ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _cambiarPassword
+                                  ? Icons.close
+                                  : Icons.edit_outlined,
+                              size: 13,
+                              color: _cambiarPassword
+                                  ? Colors.grey
+                                  : const Color(0xFFE8651A),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _cambiarPassword ? 'Cancelar' : 'Cambiar',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _cambiarPassword
+                                    ? Colors.grey
+                                    : const Color(0xFFE8651A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    child: _cambiarPassword
+                        ? Form(
+                            key: _formKeyPass,
+                            child: Column(
+                              children: [
+                                _campoPassword(
+                                  controller: _passwordController,
+                                  label: 'Nueva contraseña',
+                                  ver: _verPassword,
+                                  onToggle: () => setState(
+                                      () => _verPassword = !_verPassword),
+                                  validator: _validarPassword,
+                                ),
+                                const SizedBox(height: 12),
+                                _campoPassword(
+                                  controller: _confirmPasswordController,
+                                  label: 'Confirmar contraseña',
+                                  ver: _verConfirmPassword,
+                                  onToggle: () => setState(() =>
+                                      _verConfirmPassword =
+                                          !_verConfirmPassword),
+                                  validator: _validarConfirm,
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _loading ? null : _cambiarContrasena,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.indigo,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor:
+                                          Colors.indigo.withValues(alpha: 0.6),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                    ),
+                                    child: _loading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2.5),
+                                          )
+                                        : const Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.lock_reset_outlined,
+                                                  size: 18),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Actualizar contraseña',
+                                                style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w700),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Row(
+                              children: [
+                                Icon(Icons.shield_outlined,
+                                    size: 16, color: Colors.grey.shade400),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Toca "Cambiar" para modificar la contraseña',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Tarjeta de sección ──────────────────────────────────────────────────
+
+  Widget _buildTarjeta({
+    required IconData icono,
+    required Color color,
+    required String titulo,
+    required Widget child,
+    Widget? trailing,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icono, color: color, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87),
                 ),
               ),
+              if (trailing != null) trailing,
             ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
 
-            const SizedBox(height: 30),
-          ],
+  // ── Campo de texto estándar ─────────────────────────────────────────────
+
+  Widget _campo({
+    required TextEditingController controller,
+    required String label,
+    required IconData icono,
+    String? Function(String?)? validator,
+    TextInputType tipo = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      enabled: !_loading,
+      keyboardType: tipo,
+      validator: validator,
+      style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        floatingLabelStyle: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFFE8651A),
+            fontWeight: FontWeight.w600),
+        filled: true,
+        fillColor: _loading ? Colors.grey.shade100 : Colors.grey.shade50,
+        prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide:
+              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red, width: 1.8),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      ),
+    );
+  }
+
+  // ── Campo de contraseña ─────────────────────────────────────────────────
+
+  Widget _campoPassword({
+    required TextEditingController controller,
+    required String label,
+    required bool ver,
+    required VoidCallback onToggle,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      enabled: !_loading,
+      obscureText: !ver,
+      validator: validator,
+      style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        floatingLabelStyle: const TextStyle(
+            fontSize: 12,
+            color: Colors.indigo,
+            fontWeight: FontWeight.w600),
+        filled: true,
+        fillColor: _loading ? Colors.grey.shade100 : Colors.grey.shade50,
+        prefixIcon:
+            Icon(Icons.lock_outline, color: Colors.grey.shade400, size: 18),
+        suffixIcon: IconButton(
+          onPressed: onToggle,
+          icon: Icon(
+            ver
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            color: Colors.grey.shade400,
+            size: 18,
+          ),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.indigo, width: 1.8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red, width: 1.8),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
       ),
     );
   }
