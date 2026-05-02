@@ -42,144 +42,427 @@ class _CartModalState extends State<CartModal> {
     final instruccionesController = TextEditingController();
     String tipoVivienda = 'Casa';
 
+    final tipos = [
+      ('Casa', Icons.home_outlined),
+      ('Apartamento', Icons.apartment_outlined),
+      ('Oficina/Local comercial', Icons.business_center_outlined),
+      ('Hotel', Icons.hotel_outlined),
+    ];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (newDirSheetCtx) => StatefulBuilder(
-        builder: (newDirSheetCtx, setModalState) => Container(
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setModalState) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFF5F5F5),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(newDirSheetCtx).viewInsets.bottom + 20,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
           ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8651A).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.add_location_alt_outlined,
-                          color: Color(0xFFE8651A), size: 18),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Nueva dirección',
-                      style: TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w800),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                _campo(barrioController, 'Barrio'),
-                const SizedBox(height: 12),
-                _campo(direccionController, 'Dirección'),
-                const SizedBox(height: 12),
-                _campo(instruccionesController, 'Instrucciones (opcional)',
-                    maxLines: 2),
-                const SizedBox(height: 12),
+                // ── Mini header naranja ──
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.grey.shade50,
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: tipoVivienda,
-                      isExpanded: true,
-                      items: ['Casa', 'Apartamento', 'Oficina/Local comercial', 'Hotel']
-                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                          .toList(),
-                      onChanged: (v) =>
-                          setModalState(() => tipoVivienda = v ?? tipoVivienda),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.add_location_alt_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Nueva dirección',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                'Completa los datos de entrega',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (barrioController.text.trim().isEmpty ||
-                          direccionController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(newDirSheetCtx).showSnackBar(
-                          SnackBar(
-                            content: const Text('Barrio y dirección son requeridos'),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            margin: const EdgeInsets.all(16),
-                          ),
-                        );
-                        return;
-                      }
 
-                      final nav = Navigator.of(newDirSheetCtx);
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      final ok = await _addressService.createAddress({
-                        'barrio': barrioController.text.trim(),
-                        'direccion': direccionController.text.trim(),
-                        'instrucciones': instruccionesController.text.trim(),
-                        'tipoVivienda': tipoVivienda,
-                      });
-
-                      nav.pop();
-
-                      if (ok) {
-                        await _cargarDirecciones();
-                        if (mounted) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: const Text('Dirección agregada correctamente'),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              margin: const EdgeInsets.all(16),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // ── Selector tipo vivienda ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          );
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8651A),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text('Guardar dirección',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFE8651A,
+                                    ).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.home_outlined,
+                                    color: Color(0xFFE8651A),
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Tipo de vivienda',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: tipos.map((t) {
+                                final (label, icono) = t;
+                                final seleccionado = tipoVivienda == label;
+                                final labelCorto =
+                                    label == 'Oficina/Local comercial'
+                                    ? 'Oficina'
+                                    : label;
+                                final isLast = label == 'Hotel';
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setModalState(
+                                      () => tipoVivienda = label,
+                                    ),
+                                    child: Container(
+                                      margin: EdgeInsets.only(
+                                        right: isLast ? 0 : 8,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: seleccionado
+                                            ? const Color(
+                                                0xFFE8651A,
+                                              ).withValues(alpha: 0.08)
+                                            : Colors.grey.shade50,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: seleccionado
+                                              ? const Color(
+                                                  0xFFE8651A,
+                                                ).withValues(alpha: 0.5)
+                                              : Colors.grey.shade200,
+                                          width: seleccionado ? 1.5 : 1,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            icono,
+                                            size: 20,
+                                            color: seleccionado
+                                                ? const Color(0xFFE8651A)
+                                                : Colors.grey.shade400,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            labelCorto,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w700,
+                                              color: seleccionado
+                                                  ? const Color(0xFFE8651A)
+                                                  : Colors.grey.shade500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Campos ubicación ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFE8651A,
+                                    ).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.location_on_outlined,
+                                    color: Color(0xFFE8651A),
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Ubicación',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            _campoDir(
+                              barrioController,
+                              'Barrio / Conjunto',
+                              icono: Icons.map_outlined,
+                            ),
+                            const SizedBox(height: 12),
+                            _campoDir(
+                              direccionController,
+                              'Dirección',
+                              icono: Icons.signpost_outlined,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Instrucciones ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.notes_outlined,
+                                    color: Colors.blue,
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Detalles adicionales',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Opcional',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            _campoDir(
+                              instruccionesController,
+                              'Instrucciones para el domiciliario',
+                              icono: Icons.info_outline,
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // ── Botón guardar ──
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (barrioController.text.trim().isEmpty ||
+                                direccionController.text.trim().isEmpty) {
+                              ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Barrio y dirección son requeridos',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  margin: const EdgeInsets.all(16),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final nav = Navigator.of(sheetCtx);
+                            final messenger = ScaffoldMessenger.of(context);
+
+                            final ok = await _addressService.createAddress({
+                              'barrio': barrioController.text.trim(),
+                              'direccion': direccionController.text.trim(),
+                              'instrucciones': instruccionesController.text
+                                  .trim(),
+                              'tipoVivienda': tipoVivienda,
+                            });
+
+                            nav.pop();
+
+                            if (ok) {
+                              await _cargarDirecciones();
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'Dirección agregada correctamente',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE8651A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.save_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Guardar dirección',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
                 ),
               ],
@@ -190,15 +473,33 @@ class _CartModalState extends State<CartModal> {
     );
   }
 
-  Widget _campo(TextEditingController controller, String label,
-      {int maxLines = 1}) {
+  Widget _campoDir(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+    IconData? icono,
+  }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        floatingLabelStyle: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFFE8651A),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
+        prefixIcon: icono != null
+            ? Icon(icono, color: Colors.grey.shade400, size: 18)
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -211,7 +512,10 @@ class _CartModalState extends State<CartModal> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
-        labelStyle: const TextStyle(color: Colors.grey),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }
@@ -223,7 +527,9 @@ class _CartModalState extends State<CartModal> {
           content: const Text('Selecciona una dirección'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -252,7 +558,9 @@ class _CartModalState extends State<CartModal> {
           content: const Text('¡Pedido creado con éxito!'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -262,7 +570,9 @@ class _CartModalState extends State<CartModal> {
           content: Text(result['error'] ?? 'Error al crear el pedido'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -289,8 +599,8 @@ class _CartModalState extends State<CartModal> {
                 child: cart.isEmpty
                     ? _carritoVacio()
                     : _mostrarCheckout
-                        ? _vistaCheckout(cart)
-                        : _listaItems(cart),
+                    ? _vistaCheckout(cart)
+                    : _listaItems(cart),
               ),
 
               // ── Footer ──
@@ -340,16 +650,20 @@ class _CartModalState extends State<CartModal> {
                     color: const Color(0xFFE8651A).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.shopping_cart_outlined,
-                      color: Color(0xFFE8651A), size: 18),
+                  child: const Icon(
+                    Icons.shopping_cart_outlined,
+                    color: Color(0xFFE8651A),
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 const Text(
                   'Mi carrito',
                   style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87,
+                  ),
                 ),
                 const Spacer(),
                 if (_mostrarCheckout)
@@ -357,21 +671,29 @@ class _CartModalState extends State<CartModal> {
                     onTap: () => setState(() => _mostrarCheckout = false),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.arrow_back_ios,
-                              size: 12, color: Colors.grey.shade600),
+                          Icon(
+                            Icons.arrow_back_ios,
+                            size: 12,
+                            color: Colors.grey.shade600,
+                          ),
                           const SizedBox(width: 3),
-                          Text('Carrito',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Carrito',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -381,16 +703,21 @@ class _CartModalState extends State<CartModal> {
                     onTap: () => cart.limpiar(),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text('Vaciar',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600)),
+                      child: const Text(
+                        'Vaciar',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -453,19 +780,24 @@ class _CartModalState extends State<CartModal> {
             color: const Color(0xFFE8651A).withValues(alpha: 0.08),
             shape: BoxShape.circle,
             border: Border.all(
-                color: const Color(0xFFE8651A).withValues(alpha: 0.3),
-                width: 2),
+              color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+              width: 2,
+            ),
           ),
-          child: const Icon(Icons.shopping_cart_outlined,
-              color: Color(0xFFE8651A), size: 32),
+          child: const Icon(
+            Icons.shopping_cart_outlined,
+            color: Color(0xFFE8651A),
+            size: 32,
+          ),
         ),
         const SizedBox(height: 16),
         const Text(
           'Tu carrito está vacío',
           style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A)),
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1A1A1A),
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -508,8 +840,11 @@ class _CartModalState extends State<CartModal> {
                   color: const Color(0xFFE8651A).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.restaurant_outlined,
-                    color: Color(0xFFE8651A), size: 18),
+                child: const Icon(
+                  Icons.restaurant_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -519,14 +854,17 @@ class _CartModalState extends State<CartModal> {
                     Text(
                       item.nombre,
                       style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
                     ),
                     Text(
                       '\$${item.precio.toStringAsFixed(0)} c/u',
                       style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade500),
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                   ],
                 ),
@@ -542,10 +880,14 @@ class _CartModalState extends State<CartModal> {
                         shape: BoxShape.circle,
                         color: Colors.red.withValues(alpha: 0.1),
                         border: Border.all(
-                            color: Colors.red.withValues(alpha: 0.3)),
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
                       ),
-                      child: const Icon(Icons.remove,
-                          color: Colors.red, size: 14),
+                      child: const Icon(
+                        Icons.remove,
+                        color: Colors.red,
+                        size: 14,
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -554,7 +896,9 @@ class _CartModalState extends State<CartModal> {
                       '${item.cantidad}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w800),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -566,8 +910,11 @@ class _CartModalState extends State<CartModal> {
                         shape: BoxShape.circle,
                         color: Color(0xFFE8651A),
                       ),
-                      child: const Icon(Icons.add,
-                          color: Colors.white, size: 14),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -576,9 +923,10 @@ class _CartModalState extends State<CartModal> {
               Text(
                 '\$${(item.precio * item.cantidad).toStringAsFixed(0)}',
                 style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFFE8651A)),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFE8651A),
+                ),
               ),
             ],
           ),
@@ -605,7 +953,9 @@ class _CartModalState extends State<CartModal> {
                 // Cabecera tabla
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 6),
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF3ED),
                     borderRadius: BorderRadius.circular(8),
@@ -614,44 +964,56 @@ class _CartModalState extends State<CartModal> {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: Text('Producto',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFE8651A),
-                                fontSize: 11)),
+                        child: Text(
+                          'Producto',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A),
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                       Expanded(
-                        child: Text('Subtotal',
-                            textAlign: TextAlign.end,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFE8651A),
-                                fontSize: 11)),
+                        child: Text(
+                          'Subtotal',
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A),
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...cart.items.map((item) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              '${item.nombre} ×${item.cantidad}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.black87),
+                ...cart.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Text(
+                            '${item.nombre} ×${item.cantidad}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black87,
                             ),
                           ),
-                          Text(
-                            '\$${(item.precio * item.cantidad).toStringAsFixed(0)}',
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '\$${(item.precio * item.cantidad).toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                      ),
-                    )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Divider(color: Colors.grey.shade100),
                 const SizedBox(height: 6),
@@ -661,28 +1023,34 @@ class _CartModalState extends State<CartModal> {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF3ED),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: const Color(0xFFE8651A)
-                            .withValues(alpha: 0.3)),
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.black87)),
+                      const Text(
+                        'Total',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
                       Text(
                         '\$${cart.total.toStringAsFixed(0)}',
                         style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFE8651A)),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFE8651A),
+                        ),
                       ),
                     ],
                   ),
@@ -700,25 +1068,33 @@ class _CartModalState extends State<CartModal> {
             accion: GestureDetector(
               onTap: _mostrarFormularioNuevaDireccion,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF3ED),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: const Color(0xFFE8651A)
-                          .withValues(alpha: 0.4)),
+                    color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.add_location_alt_outlined,
-                        color: Color(0xFFE8651A), size: 13),
+                    Icon(
+                      Icons.add_location_alt_outlined,
+                      color: Color(0xFFE8651A),
+                      size: 13,
+                    ),
                     SizedBox(width: 4),
-                    Text('Nueva',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFFE8651A),
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'Nueva',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFE8651A),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -729,29 +1105,39 @@ class _CartModalState extends State<CartModal> {
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8651A)
-                            .withValues(alpha: 0.04),
+                        color: const Color(0xFFE8651A).withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFE8651A)
-                                .withValues(alpha: 0.4),
-                            width: 1.5),
+                          color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                          width: 1.5,
+                        ),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.add_location_alt_outlined,
-                              color: Color(0xFFE8651A), size: 18),
+                          Icon(
+                            Icons.add_location_alt_outlined,
+                            color: Color(0xFFE8651A),
+                            size: 18,
+                          ),
                           SizedBox(width: 10),
-                          Text('Agrega tu primera dirección',
-                              style: TextStyle(
-                                  color: Color(0xFFE8651A),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13)),
+                          Text(
+                            'Agrega tu primera dirección',
+                            style: TextStyle(
+                              color: Color(0xFFE8651A),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
                           Spacer(),
-                          Icon(Icons.chevron_right,
-                              color: Color(0xFFE8651A), size: 18),
+                          Icon(
+                            Icons.chevron_right,
+                            color: Color(0xFFE8651A),
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),
@@ -766,17 +1152,21 @@ class _CartModalState extends State<CartModal> {
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: seleccionada
-                                ? const Color(0xFFE8651A)
-                                    .withValues(alpha: 0.06)
+                                ? const Color(
+                                    0xFFE8651A,
+                                  ).withValues(alpha: 0.06)
                                 : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: seleccionada
-                                  ? const Color(0xFFE8651A)
-                                      .withValues(alpha: 0.4)
+                                  ? const Color(
+                                      0xFFE8651A,
+                                    ).withValues(alpha: 0.4)
                                   : Colors.grey.shade200,
                               width: seleccionada ? 1.5 : 1,
                             ),
@@ -788,47 +1178,57 @@ class _CartModalState extends State<CartModal> {
                                 height: 34,
                                 decoration: BoxDecoration(
                                   color: seleccionada
-                                      ? const Color(0xFFE8651A)
-                                          .withValues(alpha: 0.1)
+                                      ? const Color(
+                                          0xFFE8651A,
+                                        ).withValues(alpha: 0.1)
                                       : Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.location_on_outlined,
-                                    color: seleccionada
-                                        ? const Color(0xFFE8651A)
-                                        : Colors.grey.shade400,
-                                    size: 16),
+                                child: Icon(
+                                  Icons.location_on_outlined,
+                                  color: seleccionada
+                                      ? const Color(0xFFE8651A)
+                                      : Colors.grey.shade400,
+                                  size: 16,
+                                ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       dir['barrio'] ?? '',
                                       style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: seleccionada
-                                              ? const Color(0xFFE8651A)
-                                              : Colors.black87),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: seleccionada
+                                            ? const Color(0xFFE8651A)
+                                            : Colors.black87,
+                                      ),
                                     ),
                                     Text(
                                       dir['direccion'] ?? '',
                                       style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade500),
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                               if (seleccionada)
-                                const Icon(Icons.check_circle,
-                                    color: Color(0xFFE8651A), size: 18)
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFFE8651A),
+                                  size: 18,
+                                )
                               else
-                                Icon(Icons.radio_button_unchecked,
-                                    color: Colors.grey.shade300, size: 18),
+                                Icon(
+                                  Icons.radio_button_unchecked,
+                                  color: Colors.grey.shade300,
+                                  size: 18,
+                                ),
                             ],
                           ),
                         ),
@@ -905,15 +1305,15 @@ class _CartModalState extends State<CartModal> {
                 child: Icon(icono, color: color, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(titulo,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87)),
-              if (accion != null) ...[
-                const Spacer(),
-                accion,
-              ],
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              if (accion != null) ...[const Spacer(), accion],
             ],
           ),
           const SizedBox(height: 14),
@@ -958,23 +1358,29 @@ class _CartModalState extends State<CartModal> {
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icono,
-                  color: seleccionado ? color : Colors.grey.shade400,
-                  size: 16),
+              child: Icon(
+                icono,
+                color: seleccionado ? color : Colors.grey.shade400,
+                size: 16,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: seleccionado ? color : Colors.black87)),
-                  Text(descripcion,
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade500)),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: seleccionado ? color : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    descripcion,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  ),
                 ],
               ),
             ),
@@ -1005,16 +1411,22 @@ class _CartModalState extends State<CartModal> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600)),
-          Text('\$${valor.toStringAsFixed(0)}',
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          Text(
+            '\$${valor.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
         ],
       ),
     );
@@ -1041,15 +1453,17 @@ class _CartModalState extends State<CartModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Total',
-                  style:
-                      TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+              Text(
+                'Total',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              ),
               Text(
                 '\$${cart.total.toStringAsFixed(0)}',
                 style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFFE8651A)),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFE8651A),
+                ),
               ),
             ],
           ),
@@ -1068,11 +1482,13 @@ class _CartModalState extends State<CartModal> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8651A),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    const Color(0xFFE8651A).withValues(alpha: 0.6),
+                disabledBackgroundColor: const Color(
+                  0xFFE8651A,
+                ).withValues(alpha: 0.6),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: _loading
@@ -1080,7 +1496,9 @@ class _CartModalState extends State<CartModal> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.5),
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1093,11 +1511,11 @@ class _CartModalState extends State<CartModal> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _mostrarCheckout
-                              ? 'Confirmar pedido'
-                              : 'Ir a pagar',
+                          _mostrarCheckout ? 'Confirmar pedido' : 'Ir a pagar',
                           style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ],
                     ),

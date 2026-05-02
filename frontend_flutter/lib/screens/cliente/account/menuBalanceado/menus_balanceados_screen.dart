@@ -55,7 +55,6 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
   @override
   void initState() {
     super.initState();
-    // Si viene con objetivo desde PerfilNutricional, lo preseleccionamos
     _objetivoSeleccionado = widget.objetivoInicial ?? 'todos';
     _cargar();
   }
@@ -63,9 +62,8 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
   Future<void> _cargar() async {
     setState(() => _loading = true);
     try {
-      final objetivo = _objetivoSeleccionado == 'todos'
-          ? null
-          : _objetivoSeleccionado;
+      final objetivo =
+          _objetivoSeleccionado == 'todos' ? null : _objetivoSeleccionado;
       final menus = await _menuService.getMenusBalanceados(objetivo: objetivo);
       if (mounted) setState(() => _menus = menus);
     } catch (e) {
@@ -96,16 +94,12 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                        horizontal: 8, vertical: 4),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.arrow_back,
+                              color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Expanded(
@@ -118,7 +112,6 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             ),
                           ),
                         ),
-                        // Reemplaza el IconButton por esto
                         GestureDetector(
                           onTap: () => Navigator.push(
                             context,
@@ -129,9 +122,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                           child: Container(
                             margin: const EdgeInsets.only(right: 12),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -142,11 +133,8 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.monitor_weight_outlined,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
+                                Icon(Icons.monitor_weight_outlined,
+                                    color: Colors.white, size: 14),
                                 SizedBox(width: 5),
                                 Text(
                                   'Mi perfil',
@@ -173,11 +161,8 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
-                            Icons.restaurant_menu_outlined,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                          child: const Icon(Icons.restaurant_menu_outlined,
+                              color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -195,9 +180,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                               Text(
                                 'Menús diseñados para tu salud',
                                 style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
+                                    color: Colors.white70, fontSize: 12),
                               ),
                             ],
                           ),
@@ -205,6 +188,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                       ],
                     ),
                   ),
+
                   // ── Chips de filtro ──
                   SizedBox(
                     height: 44,
@@ -225,9 +209,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             duration: const Duration(milliseconds: 200),
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: seleccionado
                                   ? Colors.white
@@ -242,18 +224,20 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  data['icono'] as IconData,
-                                  size: 14,
-                                  color: seleccionado ? color : Colors.white,
-                                ),
+                                Icon(data['icono'] as IconData,
+                                    size: 14,
+                                    color: seleccionado
+                                        ? color
+                                        : Colors.white),
                                 const SizedBox(width: 4),
                                 Text(
                                   data['label'] as String,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: seleccionado ? color : Colors.white,
+                                    color: seleccionado
+                                        ? color
+                                        : Colors.white,
                                   ),
                                 ),
                               ],
@@ -273,228 +257,470 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
-                  )
+                    child: CircularProgressIndicator(
+                        color: Color(0xFFE8651A)))
                 : _menus.isEmpty
-                ? _sinResultados()
-                : RefreshIndicator(
-                    onRefresh: _cargar,
-                    color: const Color(0xFFE8651A),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _menus.length,
-                      itemBuilder: (_, i) => _menuCard(_menus[i]),
-                    ),
-                  ),
+                    ? _sinResultados()
+                    : RefreshIndicator(
+                        onRefresh: _cargar,
+                        color: const Color(0xFFE8651A),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _menus.length,
+                          itemBuilder: (_, i) => _MenuCard(
+                            menu: _menus[i],
+                            objetivos: _objetivos,
+                            onAgregar: () {
+                              context
+                                  .read<CartProvider>()
+                                  .agregarMenu(_menus[i], 1);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${_menus[i]['nombre']} agregado al carrito',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
+                                  margin: const EdgeInsets.all(16),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
           ),
         ],
       ),
     );
   }
 
-  Widget _menuCard(Map<String, dynamic> menu) {
-    final objetivo = _objetivos[menu['objetivo']];
-    final color = objetivo?['color'] as Color? ?? Colors.grey;
-    final precio = double.tryParse(menu['precio'].toString()) ?? 0;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+  Widget _sinResultados() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFF3ED),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.no_meals_outlined,
+                size: 40, color: Color(0xFFE8651A)),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No hay menús para este objetivo',
+            style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Prueba con otro filtro',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Imagen
-          if (menu['imagenUrl'] != null &&
-              menu['imagenUrl'].toString().isNotEmpty)
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// Card de menú balanceado
+// ══════════════════════════════════════════════════════════════
+
+class _MenuCard extends StatefulWidget {
+  final Map<String, dynamic> menu;
+  final Map<String, Map<String, dynamic>> objetivos;
+  final VoidCallback onAgregar;
+
+  const _MenuCard({
+    required this.menu,
+    required this.objetivos,
+    required this.onAgregar,
+  });
+
+  @override
+  State<_MenuCard> createState() => _MenuCardState();
+}
+
+class _MenuCardState extends State<_MenuCard> {
+  bool _expandido = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final objetivo = widget.objetivos[widget.menu['objetivo']];
+    final color = objetivo?['color'] as Color? ?? Colors.grey;
+    final precio =
+        double.tryParse(widget.menu['precio'].toString()) ?? 0;
+    final descripcion = widget.menu['descripcion']?.toString() ?? '';
+    final tieneDescripcionLarga = descripcion.length > 80;
+
+    return GestureDetector(
+      onTap: () => _mostrarDetalle(context),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Imagen ──
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: Image.network(
-                menu['imagenUrl'],
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _imagenPlaceholder(),
-              ),
-            )
-          else
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: _imagenPlaceholder(),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+              child: widget.menu['imagenUrl'] != null &&
+                      widget.menu['imagenUrl'].toString().isNotEmpty
+                  ? Image.network(
+                      widget.menu['imagenUrl'],
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _placeholder(),
+                    )
+                  : _placeholder(),
             ),
 
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Nombre + badge objetivo
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        menu['nombre'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    if (objetivo != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              objetivo['icono'] as IconData,
-                              size: 12,
-                              color: color,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              objetivo['label'] as String,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: color,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-
-                if (menu['descripcion'] != null &&
-                    menu['descripcion'].toString().isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    menu['descripcion'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-
-                const SizedBox(height: 10),
-
-                // Macros
-                if (menu['calorias'] != null)
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Nombre + badge ──
                   Row(
                     children: [
-                      _macro(
-                        Icons.local_fire_department_outlined,
-                        '${menu['calorias']} kcal',
-                        Colors.orange,
-                      ),
-                      const SizedBox(width: 12),
-                      if (menu['proteinas'] != null)
-                        _macro(
-                          Icons.fitness_center_outlined,
-                          '${menu['proteinas']}g prot',
-                          Colors.red,
+                      Expanded(
+                        child: Text(
+                          widget.menu['nombre'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                          ),
                         ),
-                      const SizedBox(width: 12),
-                      if (menu['carbohidratos'] != null)
-                        _macro(
-                          Icons.grain_outlined,
-                          '${menu['carbohidratos']}g carbs',
-                          Colors.amber.shade700,
+                      ),
+                      if (objetivo != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(objetivo['icono'] as IconData,
+                                  size: 12, color: color),
+                              const SizedBox(width: 4),
+                              Text(
+                                objetivo['label'] as String,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: color,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   ),
 
-                const SizedBox(height: 10),
-
-                // Precio
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  // ── Descripción con Ver más ──
+                  if (descripcion.isNotEmpty) ...[
+                    const SizedBox(height: 6),
                     Text(
-                      '\$${precio.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFFE8651A),
+                      descripcion,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        height: 1.4,
                       ),
+                      maxLines: _expandido ? null : 2,
+                      overflow: _expandido
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        context.read<CartProvider>().agregarMenu(menu, 1);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${menu['nombre']} agregado al carrito',
+                    if (tieneDescripcionLarga)
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _expandido = !_expandido),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            _expandido ? 'Ver menos' : 'Ver más...',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE8651A),
                             ),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            margin: const EdgeInsets.all(16),
-                            duration: const Duration(seconds: 2),
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE8651A),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
                         ),
                       ),
-                      icon: const Icon(
-                        Icons.add_shopping_cart_outlined,
-                        size: 16,
+                  ],
+
+                  const SizedBox(height: 10),
+
+                  // ── Macros ──
+                  if (widget.menu['calorias'] != null)
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        _macro(
+                          Icons.local_fire_department_outlined,
+                          '${widget.menu['calorias']} kcal',
+                          Colors.orange,
+                        ),
+                        if (widget.menu['proteinas'] != null)
+                          _macro(
+                            Icons.fitness_center_outlined,
+                            '${widget.menu['proteinas']}g prot',
+                            Colors.red,
+                          ),
+                        if (widget.menu['carbohidratos'] != null)
+                          _macro(
+                            Icons.grain_outlined,
+                            '${widget.menu['carbohidratos']}g carbs',
+                            Colors.amber.shade700,
+                          ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 10),
+
+                  // ── Precio + botón ──
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '\$${precio.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFE8651A),
+                        ),
                       ),
-                      label: const Text(
-                        'Agregar',
+                      ElevatedButton.icon(
+                        onPressed: widget.onAgregar,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE8651A),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        icon: const Icon(
+                            Icons.add_shopping_cart_outlined,
+                            size: 16),
+                        label: const Text('Agregar',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Detalle completo ────────────────────────────────────────
+
+  void _mostrarDetalle(BuildContext context) {
+    final objetivo = widget.objetivos[widget.menu['objetivo']];
+    final color = objetivo?['color'] as Color? ?? Colors.grey;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.75,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Imagen
+                    if (widget.menu['imagenUrl'] != null &&
+                        widget.menu['imagenUrl'].toString().isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.network(
+                          widget.menu['imagenUrl'],
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => _placeholder(),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Nombre + badge
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.menu['nombre'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        if (objetivo != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(objetivo['icono'] as IconData,
+                                    size: 13, color: color),
+                                const SizedBox(width: 4),
+                                Text(
+                                  objetivo['label'] as String,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    // Descripción completa
+                    if (widget.menu['descripcion'] != null &&
+                        widget.menu['descripcion'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        widget.menu['descripcion'],
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
                         ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Macros detallados
+                    if (widget.menu['calorias'] != null) ...[
+                      const Text(
+                        'Información nutricional',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _filaMacro('Calorías',
+                          '${widget.menu['calorias']} kcal',
+                          Colors.orange),
+                      if (widget.menu['proteinas'] != null)
+                        _filaMacro('Proteínas',
+                            '${widget.menu['proteinas']}g', Colors.red),
+                      if (widget.menu['carbohidratos'] != null)
+                        _filaMacro('Carbohidratos',
+                            '${widget.menu['carbohidratos']}g',
+                            Colors.amber.shade700),
+                      if (widget.menu['grasas'] != null)
+                        _filaMacro('Grasas',
+                            '${widget.menu['grasas']}g', Colors.blue),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Precio
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Precio',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            '\$${double.tryParse(widget.menu['precio'].toString())?.toStringAsFixed(0) ?? '0'}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  // ── Helpers ─────────────────────────────────────────────────
 
   Widget _macro(IconData icono, String texto, Color color) {
     return Row(
@@ -505,46 +731,46 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
         Text(
           texto,
           style: TextStyle(
-            fontSize: 11,
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600),
         ),
       ],
     );
   }
 
-  Widget _sinResultados() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _filaMacro(String label, String valor, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.no_meals_outlined, size: 60, color: Colors.grey.shade400),
-          const SizedBox(height: 12),
-          Text(
-            'No hay menús para este objetivo',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Prueba con otro filtro',
-            style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-          ),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 13, color: Colors.grey.shade600)),
+          Text(valor,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: color)),
         ],
       ),
     );
   }
 
-  Widget _imagenPlaceholder() {
+  Widget _placeholder() {
     return Container(
       height: 160,
       width: double.infinity,
       color: Colors.grey.shade100,
-      child: Icon(
-        Icons.restaurant_outlined,
-        size: 50,
-        color: Colors.grey.shade300,
-      ),
+      child: Icon(Icons.restaurant_outlined,
+          size: 50, color: Colors.grey.shade300),
     );
   }
 }
