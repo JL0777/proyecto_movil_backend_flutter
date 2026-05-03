@@ -20,5 +20,6 @@ router.post('/', verifyToken, menuController.create);
 router.put('/nutricional/:id', verifyToken, menuController.updateNutricional); 
 router.put('/:id', verifyToken, menuController.update);
 router.delete('/:id', verifyToken, menuController.destroy);
+router.patch('/:id/toggle', verifyToken, menuController.toggleDisponible);
 
 module.exports = router;

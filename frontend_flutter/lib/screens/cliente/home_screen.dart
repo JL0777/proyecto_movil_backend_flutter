@@ -10,6 +10,7 @@ import 'home/drinks_screen.dart';
 import 'orders/my_orders_screen.dart';
 import 'account/my_account_screen.dart';
 import 'home/widgets/cart_modal.dart';
+import 'home/widgets/cart_fab.dart';
 import 'home/busqueda_screen.dart';
 import 'account/menuBalanceado/menus_balanceados_screen.dart';
 
@@ -148,11 +149,12 @@ class _HomeScreenState extends State<HomeScreen>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8651A),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFFE8651A), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFE8651A).withValues(alpha: 0.4),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -163,14 +165,14 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     Icon(
                       Icons.restaurant_menu_outlined,
-                      color: Colors.white,
+                      color: Color(0xFFE8651A),
                       size: 16,
                     ),
                     SizedBox(width: 6),
                     Text(
                       'Menús saludables',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFFE8651A),
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -179,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             )
-          : null,
+          : const CartFab(),
     );
   }
 }

@@ -36,10 +36,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     'extra',
   ];
 
-  final List<String> _tiposComunes = [
-    'bebida',
-    'complemento',
-  ];
+  final List<String> _tiposComunes = ['bebida', 'complemento'];
 
   final List<String> _todosLosTipos = [
     'proteina',
@@ -104,8 +101,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       filtro = _filtroComunes;
     }
 
-    final base =
-        _ingredientes.where((i) => tipos.contains(i['tipo'])).toList();
+    final base = _ingredientes.where((i) => tipos.contains(i['tipo'])).toList();
 
     if (filtro != null) {
       return base.where((i) => i['tipo'] == filtro).toList();
@@ -160,6 +156,314 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     }
   }
 
+  Future<void> _toggleDisponible(Map<String, dynamic> ing) async {
+    final ok = await _service.toggleDisponible(ing['id']);
+    if (ok) {
+      final nuevoEstado = !(ing['disponible'] ?? true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  nuevoEstado ? Icons.check_circle : Icons.cancel,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  nuevoEstado
+                      ? 'Ingrediente activado'
+                      : 'Ingrediente desactivado',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: nuevoEstado ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      _cargar();
+    }
+  }
+
+  void _mostrarDetalle(Map<String, dynamic> ing) {
+    final precio = double.tryParse(ing['precio'].toString()) ?? 0;
+    final cantidad = ing['cantidad'] != null
+        ? double.tryParse(ing['cantidad'].toString()) ?? 0.0
+        : 0.0;
+    final disponible = ing['disponible'] ?? true;
+    final color = _coloresTipo[ing['tipo']] ?? Colors.grey;
+    final icono = _iconosTipo[ing['tipo']] ?? Icons.restaurant_outlined;
+    final label = _labelTipo[ing['tipo']] ?? ing['tipo'];
+    final precioPorGramo = cantidad > 0 ? precio / cantidad : 0.0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Icono grande
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icono, color: color, size: 36),
+            ),
+            const SizedBox(height: 12),
+
+            Text(
+              ing['nombre'] ?? '',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Stats
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _statCard(
+                      'Cantidad base',
+                      '${cantidad.toStringAsFixed(0)}g/ml',
+                      Icons.monitor_weight_outlined,
+                      Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _statCard(
+                      'Precio base',
+                      '\$${precio.toStringAsFixed(0)}',
+                      Icons.attach_money,
+                      const Color(0xFFE8651A),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _statCard(
+                      'Por gramo',
+                      '\$${precioPorGramo.toStringAsFixed(2)}',
+                      Icons.calculate_outlined,
+                      Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Toggle disponible
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: disponible ? Colors.green.shade50 : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: disponible
+                        ? Colors.green.shade200
+                        : Colors.red.shade200,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      disponible
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: disponible
+                          ? Colors.green.shade600
+                          : Colors.red.shade400,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            disponible
+                                ? 'Visible para clientes'
+                                : 'Oculto para clientes',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: disponible
+                                  ? Colors.green.shade700
+                                  : Colors.red.shade600,
+                            ),
+                          ),
+                          Text(
+                            disponible
+                                ? 'Los clientes pueden seleccionar este ingrediente'
+                                : 'No aparece al personalizar menús',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: disponible,
+                      onChanged: (_) async {
+                        Navigator.pop(ctx);
+                        await _toggleDisponible(ing);
+                      },
+                      activeThumbColor: Colors.green,
+                      inactiveThumbColor: Colors.red.shade300,
+                      inactiveTrackColor: Colors.red.shade100,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Botones
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _mostrarFormulario(ingrediente: ing);
+                      },
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: const Text(
+                        'Editar',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFE8651A),
+                        side: const BorderSide(color: Color(0xFFE8651A)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _eliminar(ing);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                    ),
+                    child: const Icon(Icons.delete_outline, size: 18),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statCard(String label, String valor, IconData icono, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Icon(icono, color: color, size: 18),
+          const SizedBox(height: 4),
+          Text(
+            valor,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   void _mostrarFormulario({Map<String, dynamic>? ingrediente}) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -183,8 +487,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -196,8 +499,10 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: TextStyle(color: Colors.grey.shade600)),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -205,7 +510,8 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Eliminar'),
           ),
@@ -226,7 +532,8 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+              borderRadius: BorderRadius.circular(10),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -262,30 +569,34 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
               child: DropdownButton<String?>(
                 value: filtroActual,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down,
-                    color: Color(0xFFE8651A)),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Color(0xFFE8651A),
+                ),
                 items: [
                   const DropdownMenuItem<String?>(
                     value: null,
                     child: Text('Todos los tipos'),
                   ),
-                  ...tipos.map((t) => DropdownMenuItem<String?>(
-                        value: t,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: _coloresTipo[t] ?? Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
+                  ...tipos.map(
+                    (t) => DropdownMenuItem<String?>(
+                      value: t,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: _coloresTipo[t] ?? Colors.grey,
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(width: 8),
-                            Text(_labelTipo[t] ?? t),
-                          ],
-                        ),
-                      )),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(_labelTipo[t] ?? t),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
                 onChanged: (v) => _setFiltro(tabIndex, v),
               ),
@@ -310,7 +621,9 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                   onTap: () => _setFiltro(tabIndex, null),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8651A).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -348,8 +661,11 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fastfood_outlined,
-                size: 60, color: Colors.grey.shade400),
+            Icon(
+              Icons.fastfood_outlined,
+              size: 60,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
             Text(
               'No hay ingredientes aquí',
@@ -379,97 +695,145 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
               : 0.0;
           final color = _coloresTipo[ing['tipo']] ?? Colors.grey;
           final precioPorGramo = cantidad > 0 ? precio / cantidad : 0.0;
+          final disponible = ing['disponible'] ?? true;
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+          return GestureDetector(
+            onTap: () => _mostrarDetalle(ing),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: disponible
+                      ? Colors.grey.shade200
+                      : Colors.red.shade100,
+                  width: disponible ? 1 : 1.5,
                 ),
-              ],
-            ),
-            child: ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.restaurant_outlined,
-                    color: color, size: 22),
-              ),
-              title: Text(
-                ing['nombre'],
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Base: ${cantidad.toStringAsFixed(0)}g/ml',
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade500),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  const SizedBox(height: 2),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _labelTipo[ing['tipo']] ?? ing['tipo'],
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: color,
-                            fontWeight: FontWeight.w600,
+                ],
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.restaurant_outlined,
+                    color: color,
+                    size: 22,
+                  ),
+                ),
+                title: Text(
+                  ing['nombre'],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Base: ${cantidad.toStringAsFixed(0)}g/ml',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            _labelTipo[ing['tipo']] ?? ing['tipo'],
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: color,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        '\$${precio.toStringAsFixed(0)} · \$${precioPorGramo.toStringAsFixed(1)}/g',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE8651A),
+                        const SizedBox(width: 6),
+                        Text(
+                          '\$${precio.toStringAsFixed(0)} · \$${precioPorGramo.toStringAsFixed(1)}/g',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE8651A),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _iconBtn(
-                    icon: Icons.edit_outlined,
-                    color: const Color(0xFFE8651A),
-                    bg: const Color(0xFFFFF3ED),
-                    onTap: () => _mostrarFormulario(ingrediente: ing),
-                  ),
-                  const SizedBox(width: 8),
-                  _iconBtn(
-                    icon: Icons.delete_outline,
-                    color: Colors.red,
-                    bg: const Color(0xFFFEF2F2),
-                    onTap: () => _eliminar(ing),
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: disponible
+                                ? Colors.green.shade50
+                                : Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: disponible
+                                  ? Colors.green.shade200
+                                  : Colors.red.shade200,
+                            ),
+                          ),
+                          child: Text(
+                            disponible ? 'Activo' : 'Inactivo',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: disponible
+                                  ? Colors.green.shade700
+                                  : Colors.red.shade600,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        _iconBtn(
+                          icon: Icons.edit_outlined,
+                          color: const Color(0xFFE8651A),
+                          bg: const Color(0xFFFFF3ED),
+                          onTap: () => _mostrarFormulario(ingrediente: ing),
+                        ),
+                        const SizedBox(width: 8),
+                        _iconBtn(
+                          icon: Icons.delete_outline,
+                          color: Colors.red,
+                          bg: const Color(0xFFFEF2F2),
+                          onTap: () => _eliminar(ing),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                ),
               ),
             ),
           );
@@ -489,8 +853,10 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       child: Container(
         width: 32,
         height: 32,
-        decoration:
-            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Icon(icon, color: color, size: 18),
       ),
     );
@@ -521,7 +887,9 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                   const SizedBox(width: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 1),
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(10),
@@ -548,7 +916,8 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFE8651A)))
+              child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+            )
           : TabBarView(
               controller: _tabController,
               children: List.generate(
@@ -610,12 +979,15 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
   @override
   void initState() {
     super.initState();
-    _nombreController =
-        TextEditingController(text: widget.ingrediente?['nombre'] ?? '');
+    _nombreController = TextEditingController(
+      text: widget.ingrediente?['nombre'] ?? '',
+    );
     _cantidadController = TextEditingController(
-        text: widget.ingrediente?['cantidad']?.toString() ?? '');
+      text: widget.ingrediente?['cantidad']?.toString() ?? '',
+    );
     _precioController = TextEditingController(
-        text: widget.ingrediente?['precio']?.toString() ?? '0');
+      text: widget.ingrediente?['precio']?.toString() ?? '0',
+    );
     _tipo = widget.ingrediente?['tipo'] ?? widget.tiposPorTab.first;
   }
 
@@ -645,8 +1017,7 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
 
     final data = {
       'nombre': _nombreController.text.trim(),
-      'cantidad':
-          double.tryParse(_cantidadController.text.trim()) ?? 0,
+      'cantidad': double.tryParse(_cantidadController.text.trim()) ?? 0,
       'precio': double.tryParse(_precioController.text.trim()) ?? 0,
       'tipo': _tipo,
     };
@@ -672,7 +1043,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -748,7 +1120,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                             tipo: TextInputType.number,
                             validator: _validarNumero,
                             prefijo: '\$ ',
-                            helper: 'Precio para la cantidad base (IVA incluido)',
+                            helper:
+                                'Precio para la cantidad base (IVA incluido)',
                           ),
                         ],
                       ),
@@ -763,20 +1136,23 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE8651A),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFFE8651A)
-                              .withValues(alpha: 0.6),
+                          disabledBackgroundColor: const Color(
+                            0xFFE8651A,
+                          ).withValues(alpha: 0.6),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
                         child: _guardando
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2.5),
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -793,8 +1169,9 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                                         ? 'Guardar cambios'
                                         : 'Crear ingrediente',
                                     style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -826,16 +1203,12 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
           onTap: () => setState(() => _tipo = t),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color:
-                  seleccionado ? color : color.withValues(alpha: 0.07),
+              color: seleccionado ? color : color.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: seleccionado
-                    ? color
-                    : color.withValues(alpha: 0.3),
+                color: seleccionado ? color : color.withValues(alpha: 0.3),
                 width: seleccionado ? 1.5 : 1,
               ),
             ),
@@ -893,8 +1266,11 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -913,8 +1289,7 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                 _editMode
                     ? 'Modifica la información del ingrediente'
                     : 'Completa los datos del nuevo ingrediente',
-                style: const TextStyle(
-                    color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -961,9 +1336,10 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
               Text(
                 titulo,
                 style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -993,24 +1369,24 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
       keyboardType: tipo,
       validator: validator,
       style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500),
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
         helperText: helper,
         suffixText: sufijo,
         prefixText: prefijo,
-        labelStyle:
-            TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFFE8651A),
-            fontWeight: FontWeight.w600),
+          fontSize: 12,
+          color: Color(0xFFE8651A),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        prefixIcon:
-            Icon(icono, color: Colors.grey.shade400, size: 18),
+        prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -1021,8 +1397,7 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -1032,8 +1407,10 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 1.8),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }

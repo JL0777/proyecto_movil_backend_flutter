@@ -14,5 +14,6 @@ router.get('/', verifyToken, ingredienteController.getAll);
 router.post('/', verifyToken, ingredienteController.create);
 router.put('/:id', verifyToken, ingredienteController.update);
 router.delete('/:id', verifyToken, ingredienteController.destroy);
+router.patch('/:id/toggle', verifyToken, ingredienteController.toggleDisponible);
 
 module.exports = router;

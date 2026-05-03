@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../services/menu_service.dart';
 import 'menu_detail_screen.dart';
 import 'personalizar/paso1_ingredientes_screen.dart';
+import 'widgets/cart_fab.dart';
 
 class CategoriaScreen extends StatefulWidget {
   final Map<String, dynamic> categoria;
@@ -220,6 +221,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           ),
         ],
       ),
+      floatingActionButton: const CartFab(),
     );
   }
 

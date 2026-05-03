@@ -3,6 +3,7 @@ import '../../../../services/menu_service.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/providers/cart_provider.dart';
 import 'perfil_nutricional_screen.dart';
+import '../../home/widgets/cart_fab.dart';
 
 class MenusBalanceadosScreen extends StatefulWidget {
   final String? objetivoInicial;
@@ -295,6 +296,7 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
           ),
         ],
       ),
+      floatingActionButton: const CartFab(),
     );
   }
 

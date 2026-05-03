@@ -78,4 +78,12 @@ class IngredienteService {
 
     throw Exception("Error cargando ingredientes");
   }
+
+  Future<bool> toggleDisponible(int id) async {
+    final response = await http.patch(
+      Uri.parse("$baseUrl/$id/toggle"),
+      headers: await _headers(),
+    );
+    return response.statusCode == 200;
+  }
 }

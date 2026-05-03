@@ -119,3 +119,15 @@ exports.getByTipoPublico = async (req, res) => {
     res.status(500).json({ error: 'Error del servidor' });
   }
 };
+
+exports.toggleDisponible = async (req, res) => {
+  try {
+    const ing = await Ingrediente.findByPk(req.params.id);
+    if (!ing) return res.status(404).json({ error: 'No encontrado' });
+    ing.disponible = !ing.disponible;
+    await ing.save();
+    res.json({ disponible: ing.disponible });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al actualizar' });
+  }
+};

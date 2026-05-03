@@ -248,3 +248,17 @@ exports.updateNutricional = async (req, res) => {
     res.status(500).json({ error: "Error del servidor" });
   }
 };
+
+const toggleDisponible = async (req, res) => {
+  try {
+    const menu = await Menu.findByPk(req.params.id);
+    if (!menu) return res.status(404).json({ error: 'No encontrado' });
+    menu.disponible = !menu.disponible;
+    await menu.save();
+    res.json({ disponible: menu.disponible });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al actualizar' });
+  }
+};
+
+exports.toggleDisponible = toggleDisponible;
