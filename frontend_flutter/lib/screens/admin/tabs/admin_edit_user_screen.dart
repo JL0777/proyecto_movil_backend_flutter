@@ -531,7 +531,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                       color: Colors.black87),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 14),
