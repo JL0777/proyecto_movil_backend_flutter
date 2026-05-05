@@ -3,14 +3,14 @@ import '../../core/theme/app_theme.dart';
 import '../login_screen.dart';
 import '../register_screen.dart';
 
-class PreviewOrdersScreen extends StatefulWidget {
-  const PreviewOrdersScreen({super.key});
+class ImcHelpScreen extends StatefulWidget {
+  const ImcHelpScreen({super.key});
 
   @override
-  State<PreviewOrdersScreen> createState() => _PreviewOrdersScreenState();
+  State<ImcHelpScreen> createState() => _ImcHelpScreenState();
 }
 
-class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
+class _ImcHelpScreenState extends State<ImcHelpScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fade;
@@ -19,23 +19,19 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
-
     _fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-
     _controller.forward();
   }
 
@@ -51,7 +47,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
       backgroundColor: const Color(0xFFFBFBFB),
       appBar: AppBar(
         title: const Text(
-          "Mis pedidos",
+          "Calculadora IMC",
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         centerTitle: true,
@@ -70,7 +66,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   children: [
-                    /// HEADER REFINADO
+                    /// HEADER
                     Center(
                       child: Column(
                         children: [
@@ -104,7 +100,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                                   ],
                                 ),
                                 child: const Icon(
-                                  Icons.receipt_long_rounded,
+                                  Icons.monitor_weight_rounded,
                                   size: 42,
                                   color: Colors.white,
                                 ),
@@ -113,7 +109,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                           ),
                           const SizedBox(height: 24),
                           const Text(
-                            "Información de pedidos",
+                            "Tu salud en equilibrio",
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
@@ -121,13 +117,13 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                             ),
                           ),
                           const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
                             child: Text(
-                              "Entérate de cómo funciona el seguimiento de tus platos favoritos en MyMeal.",
+                              "Utiliza nuestra calculadora de IMC para personalizar tus porciones y alcanzar tus objetivos nutricionales.",
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: AppTheme.textGrey,
+                                color: Color(0xFF888888),
                                 fontSize: 14,
                                 height: 1.4,
                               ),
@@ -138,34 +134,28 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                     ),
 
                     const SizedBox(height: 40),
-                    _sectionLabel("GUÍA DE USUARIO"),
+                    _sectionLabel("¿QUÉ ENCONTRARÁS?"),
                     const SizedBox(height: 16),
 
-                    /// NUEVA OPCIÓN AGREGADA
+                    _buildInfoCard(
+                      Icons.calculate_rounded,
+                      "Cálculo preciso",
+                      "Obtén tu Índice de Masa Corporal basado en tu peso y estatura actual.",
+                    ),
                     _buildInfoCard(
                       Icons.restaurant_menu_rounded,
-                      "Cómo realizar un pedido",
-                      "Aprende a ordenar de forma: predeterminada, personalizada o saludable.",
+                      "Porciones sugeridas",
+                      "Ajusta las cantidades de tus pedidos según tus necesidades calóricas.",
                     ),
                     _buildInfoCard(
-                      Icons.stars_rounded,
-                      "Estados del pedido",
-                      "Sigue el proceso: desde la cocina hasta la puerta de tu casa.",
-                    ),
-                    _buildInfoCard(
-                      Icons.history_rounded,
-                      "Historial completo",
-                      "Revisa qué pediste antes y repite tus órdenes favoritas fácilmente.",
-                    ),
-                    _buildInfoCard(
-                      Icons.notifications_active_rounded,
-                      "Alertas en tiempo real",
-                      "Te avisaremos en cada paso para que tu comida llegue caliente.",
+                      Icons.trending_up_rounded,
+                      "Seguimiento",
+                      "Monitorea tus cambios a lo largo del tiempo para mantenerte motivado.",
                     ),
 
                     const SizedBox(height: 24),
 
-                    /// BANNER INFORMATIVO (ESTILO TARJETA)
+                    /// BANNER INFORMATIVO
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -181,7 +171,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                           const SizedBox(width: 14),
                           Expanded(
                             child: Text(
-                              "Inicia sesión para gestionar tus pedidos activos.",
+                              "Inicia sesión para guardar tu progreso y obtener recomendaciones personalizadas.",
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.primaryOrange.withValues(alpha: 0.9),
@@ -198,7 +188,7 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
             ),
           ),
 
-          /// SECCIÓN DE BOTONES INFERIORES
+          /// BOTONES INFERIORES
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
             child: Column(
@@ -246,10 +236,10 @@ class _PreviewOrdersScreenState extends State<PreviewOrdersScreen>
                     MaterialPageRoute(builder: (_) => const RegisterScreen()),
                   ),
                   child: RichText(
-                    text: TextSpan(
+                    text: const TextSpan(
                       text: "¿Nuevo en MyMeal? ",
-                      style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
-                      children: const [
+                      style: TextStyle(color: Color(0xFF888888), fontSize: 14),
+                      children: [
                         TextSpan(
                           text: "Crea una cuenta",
                           style: TextStyle(

@@ -4,6 +4,7 @@ import 'preview_orders_screen.dart';
 import 'preview_payments_screen.dart';
 import 'preview_delivery_screen.dart';
 import 'preview_contact_screen.dart';
+import 'preview_imc_screen.dart'; // Importación añadida para la pantalla de IMC
 
 class PreviewHelpScreen extends StatefulWidget {
   const PreviewHelpScreen({super.key});
@@ -130,6 +131,18 @@ class _PreviewHelpScreenState extends State<PreviewHelpScreen> with TickerProvid
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const PreviewOrdersScreen()),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // OPCIÓN IMC INTEGRADA
+            _HelpCard(
+              icon: Icons.monitor_weight_rounded,
+              title: "Calculadora IMC",
+              subtitle: "Entiende cómo personalizar tu nutrición",
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ImcHelpScreen()),
               ),
             ),
             const SizedBox(height: 12),
