@@ -13,8 +13,9 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
 
   bool showPersonalizado = false;
   bool showPredeterminado = false;
+  bool showSaludable = false; // Nueva variable para el estado del menú saludable
 
-  // Agregamos controladores para mantener el estilo visual
+  // Controladores para mantener el estilo visual
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -71,7 +72,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
             _sectionTitle("Preguntas frecuentes"),
             const SizedBox(height: 15),
 
-            /// -------------------- REALIZAR PEDIDO --------------------
+            /// -------------------- PREGUNTA 1: REALIZAR PEDIDO --------------------
             _faqItem(
               index: 0,
               question: "¿Cómo realizo un pedido?",
@@ -80,7 +81,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Puedes realizar pedidos de dos formas dentro de la app. Selecciona el tipo de pedido que deseas conocer:",
+                    "Puedes realizar pedidos de tres formas dentro de la app. Selecciona el tipo de pedido que deseas conocer:",
                     style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
                   ),
 
@@ -92,6 +93,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
                       setState(() {
                         showPersonalizado = !showPersonalizado;
                         showPredeterminado = false;
+                        showSaludable = false;
                       });
                     },
                     child: AnimatedContainer(
@@ -146,7 +148,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
                     _buildStyledImage('assets/help/pedido_paso_confirmar.png'),
                   ],
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   /// BOTÓN PREDETERMINADO
                   GestureDetector(
@@ -154,6 +156,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
                       setState(() {
                         showPredeterminado = !showPredeterminado;
                         showPersonalizado = false;
+                        showSaludable = false;
                       });
                     },
                     child: AnimatedContainer(
@@ -186,32 +189,98 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
 
                   if (showPredeterminado) ...[
                     const SizedBox(height: 15),
-                    _stepText("1. Selecciona el menú:", "Escoge uno de los menús ya preparados disponibles dentro de la aplicación. Estos menús ya vienen configurados con ingredientes definidos, por lo que no necesitas personalizar nada. Es la opción ideal si quieres hacer un pedido rápido sin perder tiempo eligiendo componentes individuales."),
+                    _stepText("1. Selecciona el menú:", "Escoge uno de los menús ya preparados disponibles dentro de la aplicación. Estos menús ya vienen configurados con ingredientes definidos."),
                     _buildStyledImage('assets/help/menu_seleccion.png'),
 
-                    _stepText("2. Agrégalo al carrito:", "Una vez hayas seleccionado el menú, agrégalo al carrito. Aquí puedes decidir la cantidad de unidades que deseas pedir. El carrito irá acumulando todos los productos que selecciones antes de finalizar la compra."),
+                    _stepText("2. Agrégalo al carrito:", "Una vez hayas seleccionado el menú, agrégalo al carrito. Aquí puedes decidir la cantidad de unidades que deseas pedir."),
                     _buildStyledImage('assets/help/menu_carrito.png'),
 
-                    _stepText("3. Ve al carrito:", "En esta sección podrás visualizar el resumen completo de tu pedido. Aquí puedes modificar cantidades, eliminar productos o verificar el precio total antes de continuar. Es importante revisar bien este paso para evitar errores en tu compra."),
+                    _stepText("3. Ve al carrito:", "En esta sección podrás visualizar el resumen completo de tu pedido. Aquí puedes modificar cantidades o verificar el precio."),
                     _buildStyledImage('assets/help/menu_carrito_vista.png'),
 
-                    _stepText("4. Selecciona la dirección:", "Debes indicar la dirección donde deseas recibir tu pedido. Puedes escoger una dirección previamente guardada o ingresar una nueva. Asegúrate de que la información sea correcta para evitar problemas en la entrega."),
+                    _stepText("4. Selecciona la dirección:", "Debes indicar la dirección donde deseas recibir tu pedido. Puedes escoger una dirección previamente guardada."),
                     _buildStyledImage('assets/help/menu_direccion.png'),
 
-                    _stepText("5. Selecciona el método de pago:", "Elige cómo deseas pagar tu pedido. Dependiendo de la aplicación, puedes tener opciones como pago en efectivo, tarjeta u otros métodos disponibles. Selecciona el que mejor se adapte a ti antes de finalizar."),
+                    _stepText("5. Selecciona el método de pago:", "Elige cómo deseas pagar tu pedido. Selecciona el que mejor se adapte a ti antes de finalizar."),
                     _buildStyledImage('assets/help/menu_pago.png'),
 
-                    _stepText("6. Revisa el pedido:", "Antes de confirmar, verifica todos los detalles: productos seleccionados, cantidades, dirección y método de pago. Este paso es clave para asegurarte de que todo esté correcto y evitar inconvenientes."),
+                    _stepText("6. Revisa el pedido:", "Antes de confirmar, verifica todos los detalles: productos, cantidades, dirección y método de pago."),
                     _buildStyledImage('assets/help/menu_revision.png'),
 
-                    _stepText("7. Confirma el pedido:", "Una vez todo esté revisado, confirma tu pedido. En este momento el sistema enviará la orden al restaurante para que inicie la preparación."),
+                    _stepText("7. Confirma el pedido:", "Una vez todo esté revisado, confirma tu pedido para que inicie la preparación."),
                     _buildStyledImage('assets/help/menu_confirmar.png'),
+                  ],
+
+                  const SizedBox(height: 12),
+
+                  /// BOTÓN MENÚ SALUDABLE (NUEVO AGREGADO)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        showSaludable = !showSaludable;
+                        showPersonalizado = false;
+                        showPredeterminado = false;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: showSaludable ? AppTheme.primaryOrange : AppTheme.lightOrange.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.primaryOrange.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Menú saludable",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: showSaludable ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          Icon(
+                            showSaludable ? Icons.keyboard_arrow_down_rounded : Icons.arrow_forward_ios, 
+                            size: 16,
+                            color: showSaludable ? Colors.white : Colors.black87,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  if (showSaludable) ...[
+                    const SizedBox(height: 15),
+                    _stepText("Paso 1: Gestión de datos IMC", "Haber gestionado los datos del IMC para tener en cuenta qué tipo de alimentación necesitas según el cálculo."),
+                    _buildStyledImage('assets/help/paso1_imc.png'),
+
+                    _stepText("Paso 2: Escoger menú saludable", "Escoger alguno de los menús saludables que aparecen disponibles abajo."),
+                    _buildStyledImage('assets/help/paso2_menu.png'),
+
+                    _stepText("Paso 3: Elección de plato y carrito", "Escoger el plato que deseemos entre las opciones según nuestro objetivo y se agregará automáticamente al carrito."),
+                    _buildStyledImage('assets/help/paso3_carrito.png'),
+
+                    _stepText("Paso 4: Ir al carrito y pagar", "Ir al carrito a revisar nuestro pedido y darle al botón Ir a pagar."),
+                    _buildStyledImage('assets/help/paso4_pago.png'),
+
+                    _stepText("Paso 5: Método de pago", "Escogemos el método de pago que deseemos (Efectivo o Transferencia)."),
+                    _buildStyledImage('assets/help/paso5_entrega.png'),
+
+                    _stepText("Paso 6: Dirección de entrega", "Escoge nuestra dirección de entrega de tu lista de direcciones guardadas."),
+                    _buildStyledImage('assets/help/paso6_resumen.png'),
+
+                    _stepText("Paso 7: Revisión y Confirmación", "Revisar que el pedido esté correcto en el resumen y darle al botón de confirmar."),
+                    _buildStyledImage('assets/help/paso6_boton.png'),
+
+                    _stepText("Paso 8: Estado del pedido", "El pedido se creará automáticamente en estado pendiente mientras lo revisa la cocina. Puedes mirar su estado en el tab de Mis Pedidos."),
+                    _buildStyledImage('assets/help/paso7_estado.png'),
                   ],
                 ],
               ),
             ),
 
-            /// -------------------- ESTADO --------------------
+            /// -------------------- PREGUNTA 2: ESTADO --------------------
             _faqItem(
               index: 1,
               question: "¿Cómo reviso el estado de mi pedido?",
@@ -233,7 +302,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
               ),
             ),
 
-            /// -------------------- EDITAR / CANCELAR --------------------
+            /// -------------------- PREGUNTA 3: EDITAR / CANCELAR --------------------
             _faqItem(
               index: 2,
               question: "¿Cómo cancelar o editar un pedido?",
@@ -256,7 +325,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
               ),
             ),
 
-            /// -------------------- HISTORIAL --------------------
+            /// -------------------- PREGUNTA 4: HISTORIAL --------------------
             _faqItem(
               index: 3,
               question: "¿Dónde puedo revisar el historial de mis pedidos?",
@@ -281,7 +350,7 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
     );
   }
 
-  // --- WIDGETS DE SOPORTE PARA DISEÑO UX ---
+  // --- WIDGETS DE SOPORTE MANTENIDOS ORIGINALMENTE ---
 
   Widget _buildHeader() {
     return Column(
@@ -454,7 +523,6 @@ class _OrdersHelpScreenState extends State<OrdersHelpScreen> with TickerProvider
       ),
     );
   }
-
 
   Widget _buildStyledImage(String path) {
     return Container(
