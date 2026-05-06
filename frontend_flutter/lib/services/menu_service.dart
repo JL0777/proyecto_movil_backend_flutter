@@ -151,4 +151,16 @@ class MenuService {
     );
     return response.statusCode == 200;
   }
+
+  Future<List<dynamic>> buscarPublico(String query) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/publico/buscar?q=${Uri.encodeComponent(query)}"),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Error en la búsqueda");
+  }
 }

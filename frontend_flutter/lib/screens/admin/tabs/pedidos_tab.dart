@@ -39,8 +39,12 @@ class _PedidosTabState extends State<PedidosTab> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.82,
+          ),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -85,7 +89,8 @@ class _PedidosTabState extends State<PedidosTab> {
                         ),
                       ),
                       child: ClipOval(
-                        child: usuario?['fotoPerfil'] != null &&
+                        child:
+                            usuario?['fotoPerfil'] != null &&
                                 usuario!['fotoPerfil'].toString().isNotEmpty
                             ? Image.network(
                                 usuario['fotoPerfil'],
@@ -220,8 +225,13 @@ class _PedidosTabState extends State<PedidosTab> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
+          constraints: BoxConstraints(
+            maxHeight:
+                MediaQuery.of(context).size.height * 0.82,
+          ),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -305,25 +315,31 @@ class _PedidosTabState extends State<PedidosTab> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFE8651A),
-                                shape: BoxShape.circle,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFE8651A),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '$nombre x$cantidad',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.black87,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '$nombre x$cantidad',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black87,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Text(
                           '\$${(precio * cantidad).toStringAsFixed(0)}',

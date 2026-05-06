@@ -22,12 +22,16 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
   List<dynamic> _categorias = [];
   bool _loading = true;
   int? _categoriaSeleccionada;
+  bool _mostrarSoloBalanceados = false;
 
-  List<dynamic> get _menusFiltrados => _categoriaSeleccionada == null
-      ? _menus
-      : _menus
-            .where((m) => m['categoriaId'] == _categoriaSeleccionada)
-            .toList();
+  List<dynamic> get _menusFiltrados {
+    final filtrados = _categoriaSeleccionada == null
+        ? _menus
+        : _menus.where((m) => m['categoriaId'] == _categoriaSeleccionada).toList();
+    return _mostrarSoloBalanceados
+        ? filtrados.where((m) => m['esBalanceado'] == true).toList()
+        : filtrados;
+  }
 
   @override
   void initState() {
@@ -1041,6 +1045,58 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() {
+                            _mostrarSoloBalanceados = false;
+                          }),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _mostrarSoloBalanceados
+                                ? Colors.grey.shade700
+                                : const Color(0xFFE8651A),
+                            side: BorderSide(
+                              color: _mostrarSoloBalanceados
+                                  ? Colors.grey.shade300
+                                  : const Color(0xFFE8651A),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Todos'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() {
+                            _mostrarSoloBalanceados = true;
+                          }),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _mostrarSoloBalanceados
+                                ? const Color(0xFFE8651A)
+                                : Colors.grey.shade700,
+                            side: BorderSide(
+                              color: _mostrarSoloBalanceados
+                                  ? const Color(0xFFE8651A)
+                                  : Colors.grey.shade300,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Balanceados'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
                       Text(
                         '${_menusFiltrados.length} menú${_menusFiltrados.length != 1 ? 's' : ''}',
                         style: TextStyle(
@@ -1049,11 +1105,13 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (_categoriaSeleccionada != null) ...[
+                      if (_categoriaSeleccionada != null || _mostrarSoloBalanceados) ...[
                         const SizedBox(width: 8),
                         GestureDetector(
-                          onTap: () =>
-                              setState(() => _categoriaSeleccionada = null),
+                          onTap: () => setState(() {
+                            _categoriaSeleccionada = null;
+                            _mostrarSoloBalanceados = false;
+                          }),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
