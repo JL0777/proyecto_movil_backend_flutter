@@ -101,6 +101,7 @@ flutter:
   assets:
     - assets/images/background.png
     - assets/images/logo_mymeal.png
+    - assets/images/balanceados.png
     - assets/images/pse.png
     - assets/images/contraentrega.png
     - assets/help/delivery_field_barrio.png

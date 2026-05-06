@@ -268,16 +268,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Header naranja que cubre desde el borde superior
+          // Header que cubre desde el borde superior
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+              image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Color(0x66000000),
+                  BlendMode.darken,
+                ),
+              ),
             ),
             // El padding superior incluye la status bar
             padding: EdgeInsets.fromLTRB(20, statusBarHeight + 20, 20, 30),

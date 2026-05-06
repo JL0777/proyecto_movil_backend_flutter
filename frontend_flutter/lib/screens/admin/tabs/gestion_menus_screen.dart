@@ -954,8 +954,21 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de menús'),
-        backgroundColor: const Color(0xFFE8651A),
         foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.png'),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Color(0x66000000),
+                BlendMode.darken,
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _mostrarFormulario(),
@@ -1791,10 +1804,10 @@ class _MenuFormPageState extends State<_MenuFormPage> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(

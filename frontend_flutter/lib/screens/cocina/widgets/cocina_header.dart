@@ -7,8 +7,11 @@ class CocinaHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final headerHeight = topPadding + 160;
+
     return SizedBox(
-      height: 230,
+      height: headerHeight,
       child: Stack(
         children: [
           Positioned.fill(
@@ -18,30 +21,31 @@ class CocinaHeader extends StatelessWidget {
               alignment: Alignment.topCenter,
             ),
           ),
-          Positioned.fill(
-            child: Container(color: const Color(0x66000000)),
-          ),
+          Positioned.fill(child: Container(color: const Color(0x66000000))),
           SafeArea(
             child: Stack(
               children: [
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 1),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Image.asset(
                       'assets/images/logo_mymeal.png',
-                      width: 200,
+                      width: MediaQuery.of(context).size.width * 0.45,
                     ),
                   ),
                 ),
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: Row(
                       children: [
-                        const Icon(Icons.restaurant,
-                            color: Colors.white, size: 28),
+                        const Icon(
+                          Icons.restaurant,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Column(
@@ -52,7 +56,7 @@ class CocinaHeader extends StatelessWidget {
                                 'BIENVENIDO AL',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -60,7 +64,7 @@ class CocinaHeader extends StatelessWidget {
                                 'PANEL DE COCINA',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -76,8 +80,11 @@ class CocinaHeader extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.25),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.logout,
-                                color: Colors.white, size: 22),
+                            child: const Icon(
+                              Icons.logout,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                           ),
                         ),
                       ],

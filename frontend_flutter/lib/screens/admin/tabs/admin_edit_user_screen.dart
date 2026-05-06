@@ -30,12 +30,15 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
   @override
   void initState() {
     super.initState();
-    _nombreController =
-        TextEditingController(text: widget.usuario['nombre'] ?? '');
-    _emailController =
-        TextEditingController(text: widget.usuario['email'] ?? '');
-    _telefonoController =
-        TextEditingController(text: widget.usuario['telefono'] ?? '');
+    _nombreController = TextEditingController(
+      text: widget.usuario['nombre'] ?? '',
+    );
+    _emailController = TextEditingController(
+      text: widget.usuario['email'] ?? '',
+    );
+    _telefonoController = TextEditingController(
+      text: widget.usuario['telefono'] ?? '',
+    );
   }
 
   @override
@@ -54,8 +57,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
         content: Text(msg),
         backgroundColor: ok ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -66,14 +68,11 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
 
     setState(() => _loading = true);
 
-    final result = await _service.updateUser(
-      widget.usuario['id'],
-      {
-        "nombre": _nombreController.text.trim(),
-        "email": _emailController.text.trim(),
-        "telefono": _telefonoController.text.trim(),
-      },
-    );
+    final result = await _service.updateUser(widget.usuario['id'], {
+      "nombre": _nombreController.text.trim(),
+      "email": _emailController.text.trim(),
+      "telefono": _telefonoController.text.trim(),
+    });
 
     if (!mounted) return;
     setState(() => _loading = false);
@@ -135,8 +134,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final inicialNombre =
-        (widget.usuario['nombre'] ?? '?')[0].toUpperCase();
+    final inicialNombre = (widget.usuario['nombre'] ?? '?')[0].toUpperCase();
     final fechaRegistro =
         widget.usuario['createdAt']?.toString().substring(0, 10) ?? '';
 
@@ -148,10 +146,13 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Color(0x66000000),
+                  BlendMode.darken,
+                ),
               ),
             ),
             padding: EdgeInsets.fromLTRB(
@@ -174,8 +175,11 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.arrow_back,
-                            color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -192,8 +196,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                         ),
                         Text(
                           'Modifica la información del usuario',
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 12),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),
@@ -217,8 +220,9 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                           color: Colors.white.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              width: 2),
+                            color: Colors.white.withValues(alpha: 0.5),
+                            width: 2,
+                          ),
                         ),
                         child: Center(
                           child: Text(
@@ -247,7 +251,9 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                           Text(
                             'Cliente desde $fechaRegistro',
                             style: const TextStyle(
-                                color: Colors.white70, fontSize: 12),
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -302,35 +308,41 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE8651A),
                                 foregroundColor: Colors.white,
-                                disabledBackgroundColor:
-                                    const Color(0xFFE8651A)
-                                        .withValues(alpha: 0.6),
+                                disabledBackgroundColor: const Color(
+                                  0xFFE8651A,
+                                ).withValues(alpha: 0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 14),
+                                  vertical: 14,
+                                ),
                               ),
                               child: _loading
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
                                       child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5),
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
                                     )
                                   : const Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.check_circle_outline,
-                                            size: 18),
+                                        Icon(
+                                          Icons.check_circle_outline,
+                                          size: 18,
+                                        ),
                                         SizedBox(width: 8),
                                         Text(
                                           'Guardar cambios',
                                           style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -352,10 +364,13 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                       onTap: _loading
                           ? null
                           : () => setState(
-                              () => _cambiarPassword = !_cambiarPassword),
+                              () => _cambiarPassword = !_cambiarPassword,
+                            ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: _cambiarPassword
                               ? Colors.grey.shade100
@@ -399,7 +414,8 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                                   label: 'Nueva contraseña',
                                   ver: _verPassword,
                                   onToggle: () => setState(
-                                      () => _verPassword = !_verPassword),
+                                    () => _verPassword = !_verPassword,
+                                  ),
                                   validator: _validarPassword,
                                 ),
                                 const SizedBox(height: 12),
@@ -407,50 +423,56 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                                   controller: _confirmPasswordController,
                                   label: 'Confirmar contraseña',
                                   ver: _verConfirmPassword,
-                                  onToggle: () => setState(() =>
-                                      _verConfirmPassword =
-                                          !_verConfirmPassword),
+                                  onToggle: () => setState(
+                                    () => _verConfirmPassword =
+                                        !_verConfirmPassword,
+                                  ),
                                   validator: _validarConfirm,
                                 ),
                                 const SizedBox(height: 16),
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
-                                    onPressed:
-                                        _loading ? null : _cambiarContrasena,
+                                    onPressed: _loading
+                                        ? null
+                                        : _cambiarContrasena,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.indigo,
                                       foregroundColor: Colors.white,
-                                      disabledBackgroundColor:
-                                          Colors.indigo.withValues(alpha: 0.6),
+                                      disabledBackgroundColor: Colors.indigo
+                                          .withValues(alpha: 0.6),
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                        vertical: 14,
+                                      ),
                                     ),
                                     child: _loading
                                         ? const SizedBox(
                                             height: 20,
                                             width: 20,
                                             child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2.5),
+                                              color: Colors.white,
+                                              strokeWidth: 2.5,
+                                            ),
                                           )
                                         : const Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              Icon(Icons.lock_reset_outlined,
-                                                  size: 18),
+                                              Icon(
+                                                Icons.lock_reset_outlined,
+                                                size: 18,
+                                              ),
                                               SizedBox(width: 8),
                                               Text(
                                                 'Actualizar contraseña',
                                                 style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.w700),
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -463,8 +485,11 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                             padding: const EdgeInsets.only(top: 2),
                             child: Row(
                               children: [
-                                Icon(Icons.shield_outlined,
-                                    size: 16, color: Colors.grey.shade400),
+                                Icon(
+                                  Icons.shield_outlined,
+                                  size: 16,
+                                  color: Colors.grey.shade400,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Toca "Cambiar" para modificar la contraseña',
@@ -526,9 +551,10 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
                 child: Text(
                   titulo,
                   style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               ?trailing,
@@ -556,16 +582,18 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
       keyboardType: tipo,
       validator: validator,
       style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500),
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFFE8651A),
-            fontWeight: FontWeight.w600),
+          fontSize: 12,
+          color: Color(0xFFE8651A),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: _loading ? Colors.grey.shade100 : Colors.grey.shade50,
         prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
@@ -583,8 +611,7 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -594,8 +621,10 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 1.8),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }
@@ -615,26 +644,29 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
       obscureText: !ver,
       validator: validator,
       style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500),
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
-            fontSize: 12,
-            color: Colors.indigo,
-            fontWeight: FontWeight.w600),
+          fontSize: 12,
+          color: Colors.indigo,
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: _loading ? Colors.grey.shade100 : Colors.grey.shade50,
-        prefixIcon:
-            Icon(Icons.lock_outline, color: Colors.grey.shade400, size: 18),
+        prefixIcon: Icon(
+          Icons.lock_outline,
+          color: Colors.grey.shade400,
+          size: 18,
+        ),
         suffixIcon: IconButton(
           onPressed: onToggle,
           icon: Icon(
-            ver
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
+            ver ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             color: Colors.grey.shade400,
             size: 18,
           ),
@@ -663,8 +695,10 @@ class _AdminEditUserScreenState extends State<AdminEditUserScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 1.8),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }

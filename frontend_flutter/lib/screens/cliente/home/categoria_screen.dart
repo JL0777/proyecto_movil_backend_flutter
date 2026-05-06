@@ -39,9 +39,10 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // Header
+          // ── Header ──
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -49,7 +50,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                 image: AssetImage('assets/images/background.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Color(0x66000000),
+                  Color(0x55000000),
                   BlendMode.darken,
                 ),
               ),
@@ -58,165 +59,280 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
               20,
               MediaQuery.of(context).padding.top + 16,
               20,
-              20,
+              24,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Botón atrás
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 26,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.categoria['nombre']
+                                .toString()
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '${_menus.length} platillo${_menus.length != 1 ? 's' : ''} disponible${_menus.length != 1 ? 's' : ''}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.restaurant_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
                   ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  widget.categoria['nombre'].toString().toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
                 ),
               ],
             ),
           ),
 
-          // Contenido
+          // ── Contenido ──
           Expanded(
             child: _loading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFFE8651A),
-                    ),
+                        color: Color(0xFFE8651A)),
                   )
-                : ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-
-                      // Botón personalizar — solo si NO es bebida
-                      if (widget.categoria['tipo'] != 'bebida')
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                : RefreshIndicator(
+                    onRefresh: _cargar,
+                    color: const Color(0xFFE8651A),
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                      children: [
+                        // ── Botón personalizar ──
+                        if (widget.categoria['tipo'] != 'bebida') ...[
+                          GestureDetector(
+                            onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => Paso1IngredientesScreen(
                                   categoria: widget.categoria,
                                 ),
                               ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0xFFE8651A),
-                                width: 1.5,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFE8651A),
+                                    Color(0xFFFF8C42)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFE8651A)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black
-                                      .withValues(alpha: 0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF3ED),
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(
-                                    Icons.restaurant_menu_outlined,
-                                    color: Color(0xFFE8651A),
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Text(
-                                    '¡Personaliza tu propio menú!',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFE8651A),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.2),
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.tune_rounded,
+                                      color: Colors.white,
+                                      size: 28,
                                     ),
                                   ),
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: Color(0xFFE8651A),
-                                ),
-                              ],
+                                  const SizedBox(width: 14),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '¡Personaliza tu menú!',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Elige tus ingredientes favoritos',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.2),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 20),
 
-                      if (widget.categoria['tipo'] != 'bebida')
-                        const SizedBox(height: 20),
-
-                      // Lista de menús
-                      if (_menus.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 40),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.fastfood_outlined,
-                                  size: 60,
-                                  color: Colors.grey.shade400,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No hay menús disponibles',
+                          // Separador
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                    color: Colors.grey.shade300,
+                                    height: 1),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12),
+                                child: Text(
+                                  'O ELIGE UN MENÚ',
                                   style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 15,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.grey.shade400,
+                                    letterSpacing: 1,
                                   ),
                                 ),
-                              ],
+                              ),
+                              Expanded(
+                                child: Divider(
+                                    color: Colors.grey.shade300,
+                                    height: 1),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // ── Lista de menús ──
+                        if (_menus.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.fastfood_outlined,
+                                      size: 44,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No hay menús disponibles',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Vuelve pronto',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade400,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                          )
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.78,
+                            ),
+                            itemCount: _menus.length,
+                            itemBuilder: (catGridCtx, index) {
+                              return _menuCard(_menus[index]);
+                            },
                           ),
-                        )
-                      else
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.85,
-                          ),
-                          itemCount: _menus.length,
-                          itemBuilder: (catGridCtx, index) {
-                            final menu = _menus[index];
-                            return _menuCard(menu);
-                          },
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
           ),
         ],
@@ -226,25 +342,25 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   }
 
   Widget _menuCard(Map<String, dynamic> menu) {
+    final precio =
+        double.tryParse(menu['precio'].toString()) ?? 0;
+
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MenuDetailScreen(menu: menu),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MenuDetailScreen(menu: menu),
+        ),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -255,24 +371,46 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(14),
+                    top: Radius.circular(16)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    menu['imagenUrl'] != null &&
+                            menu['imagenUrl'].toString().isNotEmpty
+                        ? Image.network(
+                            menu['imagenUrl'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                _imagenPlaceholder(),
+                          )
+                        : _imagenPlaceholder(),
+                    // Gradient overlay
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.3),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: menu['imagenUrl'] != null &&
-                        menu['imagenUrl'].toString().isNotEmpty
-                    ? Image.network(
-                        menu['imagenUrl'],
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (catErrCtx, catErrObj, catErrStack) =>
-                            _imagenPlaceholder(),
-                      )
-                    : _imagenPlaceholder(),
               ),
             ),
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -286,14 +424,31 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '\$${double.parse(menu['precio'].toString()).toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFE8651A),
-                    ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '\$${precio.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFE8651A),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE8651A),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -307,10 +462,10 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   Widget _imagenPlaceholder() {
     return Container(
       color: Colors.grey.shade100,
-      child: const Center(
+      child: Center(
         child: Icon(
           Icons.fastfood_outlined,
-          color: Colors.grey,
+          color: Colors.grey.shade300,
           size: 40,
         ),
       ),

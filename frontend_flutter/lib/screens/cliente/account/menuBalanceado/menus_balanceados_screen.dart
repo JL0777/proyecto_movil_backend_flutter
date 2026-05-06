@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/providers/cart_provider.dart';
 import 'perfil_nutricional_screen.dart';
 import '../../home/widgets/cart_fab.dart';
+import '../../../../services/user_service.dart';
 
 class MenusBalanceadosScreen extends StatefulWidget {
   final String? objetivoInicial;
@@ -16,6 +17,7 @@ class MenusBalanceadosScreen extends StatefulWidget {
 
 class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
   final MenuService _menuService = MenuService();
+  final UserService _userService = UserService();
   List<dynamic> _menus = [];
   bool _loading = true;
   String? _objetivoSeleccionado;
@@ -58,13 +60,17 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
     super.initState();
     _objetivoSeleccionado = widget.objetivoInicial ?? 'todos';
     _cargar();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 600), _verificarPerfil);
+    });
   }
 
   Future<void> _cargar() async {
     setState(() => _loading = true);
     try {
-      final objetivo =
-          _objetivoSeleccionado == 'todos' ? null : _objetivoSeleccionado;
+      final objetivo = _objetivoSeleccionado == 'todos'
+          ? null
+          : _objetivoSeleccionado;
       final menus = await _menuService.getMenusBalanceados(objetivo: objetivo);
       if (mounted) setState(() => _menus = menus);
     } catch (e) {
@@ -72,6 +78,148 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _verificarPerfil() async {
+    try {
+      final result = await _userService.getPerfilNutricional();
+      final tieneDatos = result['tieneDatos'] ?? false;
+      if (!tieneDatos && mounted) {
+        _mostrarTipPerfil();
+      }
+    } catch (e) {
+      // si hay error no mostramos nada
+    }
+  }
+
+  void _mostrarTipPerfil() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icono
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3ED),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.monitor_weight_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Título
+              const Text(
+                '¡Completa tu perfil nutricional!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Descripción
+              Text(
+                'Para recibir menús personalizados según tu IMC, calorías y objetivo de salud, llena tu perfil nutricional.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Tip flecha apuntando al botón
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3ED),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.north_east, color: Color(0xFFE8651A), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Toca "Mi perfil" en la esquina superior derecha',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFE8651A),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Botones
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PerfilNutricionalScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE8651A),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  child: const Text(
+                    'Llenar mi perfil ahora',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(
+                  'Ahora no',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -95,12 +243,16 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Expanded(
@@ -123,7 +275,9 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                           child: Container(
                             margin: const EdgeInsets.only(right: 12),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -134,8 +288,11 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.monitor_weight_outlined,
-                                    color: Colors.white, size: 14),
+                                Icon(
+                                  Icons.monitor_weight_outlined,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
                                 SizedBox(width: 5),
                                 Text(
                                   'Mi perfil',
@@ -162,8 +319,11 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.restaurant_menu_outlined,
-                              color: Colors.white, size: 24),
+                          child: const Icon(
+                            Icons.restaurant_menu_outlined,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -181,7 +341,9 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                               Text(
                                 'Menús diseñados para tu salud',
                                 style: TextStyle(
-                                    color: Colors.white70, fontSize: 12),
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -210,7 +372,9 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             duration: const Duration(milliseconds: 200),
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: seleccionado
                                   ? Colors.white
@@ -225,20 +389,18 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(data['icono'] as IconData,
-                                    size: 14,
-                                    color: seleccionado
-                                        ? color
-                                        : Colors.white),
+                                Icon(
+                                  data['icono'] as IconData,
+                                  size: 14,
+                                  color: seleccionado ? color : Colors.white,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   data['label'] as String,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: seleccionado
-                                        ? color
-                                        : Colors.white,
+                                    color: seleccionado ? color : Colors.white,
                                   ),
                                 ),
                               ],
@@ -258,41 +420,42 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFE8651A)))
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                  )
                 : _menus.isEmpty
-                    ? _sinResultados()
-                    : RefreshIndicator(
-                        onRefresh: _cargar,
-                        color: const Color(0xFFE8651A),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _menus.length,
-                          itemBuilder: (_, i) => _MenuCard(
-                            menu: _menus[i],
-                            objetivos: _objetivos,
-                            onAgregar: () {
-                              context
-                                  .read<CartProvider>()
-                                  .agregarMenu(_menus[i], 1);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${_menus[i]['nombre']} agregado al carrito',
-                                  ),
-                                  backgroundColor: Colors.green,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10)),
-                                  margin: const EdgeInsets.all(16),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                ? _sinResultados()
+                : RefreshIndicator(
+                    onRefresh: _cargar,
+                    color: const Color(0xFFE8651A),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _menus.length,
+                      itemBuilder: (_, i) => _MenuCard(
+                        menu: _menus[i],
+                        objetivos: _objetivos,
+                        onAgregar: () {
+                          context.read<CartProvider>().agregarMenu(
+                            _menus[i],
+                            1,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${_menus[i]['nombre']} agregado al carrito',
+                              ),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
                       ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -311,16 +474,20 @@ class _MenusBalanceadosScreenState extends State<MenusBalanceadosScreen> {
               color: Color(0xFFFFF3ED),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.no_meals_outlined,
-                size: 40, color: Color(0xFFE8651A)),
+            child: const Icon(
+              Icons.no_meals_outlined,
+              size: 40,
+              color: Color(0xFFE8651A),
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
             'No hay menús para este objetivo',
             style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87),
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -359,8 +526,7 @@ class _MenuCardState extends State<_MenuCard> {
   Widget build(BuildContext context) {
     final objetivo = widget.objetivos[widget.menu['objetivo']];
     final color = objetivo?['color'] as Color? ?? Colors.grey;
-    final precio =
-        double.tryParse(widget.menu['precio'].toString()) ?? 0;
+    final precio = double.tryParse(widget.menu['precio'].toString()) ?? 0;
     final descripcion = widget.menu['descripcion']?.toString() ?? '';
     final tieneDescripcionLarga = descripcion.length > 80;
 
@@ -384,9 +550,11 @@ class _MenuCardState extends State<_MenuCard> {
           children: [
             // ── Imagen ──
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-              child: widget.menu['imagenUrl'] != null &&
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child:
+                  widget.menu['imagenUrl'] != null &&
                       widget.menu['imagenUrl'].toString().isNotEmpty
                   ? Image.network(
                       widget.menu['imagenUrl'],
@@ -419,7 +587,9 @@ class _MenuCardState extends State<_MenuCard> {
                       if (objetivo != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
@@ -427,8 +597,11 @@ class _MenuCardState extends State<_MenuCard> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(objetivo['icono'] as IconData,
-                                  size: 12, color: color),
+                              Icon(
+                                objetivo['icono'] as IconData,
+                                size: 12,
+                                color: color,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 objetivo['label'] as String,
@@ -461,8 +634,7 @@ class _MenuCardState extends State<_MenuCard> {
                     ),
                     if (tieneDescripcionLarga)
                       GestureDetector(
-                        onTap: () =>
-                            setState(() => _expandido = !_expandido),
+                        onTap: () => setState(() => _expandido = !_expandido),
                         child: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
@@ -526,17 +698,24 @@ class _MenuCardState extends State<_MenuCard> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                         ),
                         icon: const Icon(
-                            Icons.add_shopping_cart_outlined,
-                            size: 16),
-                        label: const Text('Agregar',
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700)),
+                          Icons.add_shopping_cart_outlined,
+                          size: 16,
+                        ),
+                        label: const Text(
+                          'Agregar',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -569,7 +748,8 @@ class _MenuCardState extends State<_MenuCard> {
           children: [
             Container(
               margin: const EdgeInsets.only(top: 10),
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(2),
@@ -612,7 +792,9 @@ class _MenuCardState extends State<_MenuCard> {
                         if (objetivo != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
@@ -620,8 +802,11 @@ class _MenuCardState extends State<_MenuCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(objetivo['icono'] as IconData,
-                                    size: 13, color: color),
+                                Icon(
+                                  objetivo['icono'] as IconData,
+                                  size: 13,
+                                  color: color,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   objetivo['label'] as String,
@@ -664,19 +849,29 @@ class _MenuCardState extends State<_MenuCard> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _filaMacro('Calorías',
-                          '${widget.menu['calorias']} kcal',
-                          Colors.orange),
+                      _filaMacro(
+                        'Calorías',
+                        '${widget.menu['calorias']} kcal',
+                        Colors.orange,
+                      ),
                       if (widget.menu['proteinas'] != null)
-                        _filaMacro('Proteínas',
-                            '${widget.menu['proteinas']}g', Colors.red),
+                        _filaMacro(
+                          'Proteínas',
+                          '${widget.menu['proteinas']}g',
+                          Colors.red,
+                        ),
                       if (widget.menu['carbohidratos'] != null)
-                        _filaMacro('Carbohidratos',
-                            '${widget.menu['carbohidratos']}g',
-                            Colors.amber.shade700),
+                        _filaMacro(
+                          'Carbohidratos',
+                          '${widget.menu['carbohidratos']}g',
+                          Colors.amber.shade700,
+                        ),
                       if (widget.menu['grasas'] != null)
-                        _filaMacro('Grasas',
-                            '${widget.menu['grasas']}g', Colors.blue),
+                        _filaMacro(
+                          'Grasas',
+                          '${widget.menu['grasas']}g',
+                          Colors.blue,
+                        ),
                     ],
 
                     const SizedBox(height: 16),
@@ -696,11 +891,14 @@ class _MenuCardState extends State<_MenuCard> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Precio',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600)),
+                          const Text(
+                            'Precio',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           Text(
                             '\$${double.tryParse(widget.menu['precio'].toString())?.toStringAsFixed(0) ?? '0'}',
                             style: const TextStyle(
@@ -733,9 +931,10 @@ class _MenuCardState extends State<_MenuCard> {
         Text(
           texto,
           style: TextStyle(
-              fontSize: 11,
-              color: color,
-              fontWeight: FontWeight.w600),
+            fontSize: 11,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -744,8 +943,7 @@ class _MenuCardState extends State<_MenuCard> {
   Widget _filaMacro(String label, String valor, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
@@ -753,14 +951,18 @@ class _MenuCardState extends State<_MenuCard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade600)),
-          Text(valor,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: color)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          ),
+          Text(
+            valor,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -771,8 +973,11 @@ class _MenuCardState extends State<_MenuCard> {
       height: 160,
       width: double.infinity,
       color: Colors.grey.shade100,
-      child: Icon(Icons.restaurant_outlined,
-          size: 50, color: Colors.grey.shade300),
+      child: Icon(
+        Icons.restaurant_outlined,
+        size: 50,
+        color: Colors.grey.shade300,
+      ),
     );
   }
 }

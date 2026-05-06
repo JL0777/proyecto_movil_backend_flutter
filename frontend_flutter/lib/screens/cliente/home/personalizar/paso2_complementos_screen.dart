@@ -79,7 +79,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
           children: [
             Container(
               margin: const EdgeInsets.only(top: 12),
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(2),
@@ -96,14 +97,16 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                       color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.local_drink_outlined,
-                        color: Colors.blue, size: 20),
+                    child: const Icon(
+                      Icons.local_drink_outlined,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Text(
                     'Elige tu bebida',
-                    style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -123,7 +126,9 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: _bebidaSeleccionada == null
                             ? Colors.grey.shade100
@@ -138,32 +143,41 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                       child: Row(
                         children: [
                           Container(
-                            width: 36, height: 36,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(Icons.no_drinks_outlined,
-                                color: Colors.grey.shade400, size: 18),
+                            child: Icon(
+                              Icons.no_drinks_outlined,
+                              color: Colors.grey.shade400,
+                              size: 18,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
-                            child: Text('Sin bebida',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black54)),
+                            child: Text(
+                              'Sin bebida',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black54,
+                              ),
+                            ),
                           ),
                           if (_bebidaSeleccionada == null)
-                            const Icon(Icons.check_circle,
-                                color: Colors.grey, size: 18),
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.grey,
+                              size: 18,
+                            ),
                         ],
                       ),
                     ),
                   ),
                   ..._bebidas.map((b) {
-                    final seleccionada =
-                        _bebidaSeleccionada?['id'] == b['id'];
+                    final seleccionada = _bebidaSeleccionada?['id'] == b['id'];
                     return GestureDetector(
                       onTap: () {
                         setState(() => _bebidaSeleccionada = b);
@@ -172,7 +186,9 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: seleccionada
                               ? Colors.blue.withValues(alpha: 0.06)
@@ -188,13 +204,17 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                         child: Row(
                           children: [
                             Container(
-                              width: 36, height: 36,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: Colors.blue.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.local_drink_outlined,
-                                  color: Colors.blue, size: 18),
+                              child: const Icon(
+                                Icons.local_drink_outlined,
+                                color: Colors.blue,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -215,8 +235,9 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                                     Text(
                                       '${double.parse(b['cantidad'].toString()).toStringAsFixed(0)}ml',
                                       style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade500),
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                      ),
                                     ),
                                 ],
                               ),
@@ -233,11 +254,17 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                             ),
                             const SizedBox(width: 8),
                             if (seleccionada)
-                              const Icon(Icons.check_circle,
-                                  color: Colors.blue, size: 18)
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.blue,
+                                size: 18,
+                              )
                             else
-                              Icon(Icons.add_circle_outline,
-                                  color: Colors.grey.shade400, size: 18),
+                              Icon(
+                                Icons.add_circle_outline,
+                                color: Colors.grey.shade400,
+                                size: 18,
+                              ),
                           ],
                         ),
                       ),
@@ -281,14 +308,13 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFE8651A)))
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                  )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         // ── Resumen del paso 1 ──
                         _buildResumenIngredientes(),
                         const SizedBox(height: 16),
@@ -324,9 +350,13 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Subtotal',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500)),
+                    Text(
+                      'Subtotal',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                     Text(
                       '\$${_subtotalTotal.toStringAsFixed(0)}',
                       style: const TextStyle(
@@ -359,15 +389,20 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Siguiente',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w700)),
+                        Text(
+                          'Siguiente',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         SizedBox(width: 6),
                         Icon(Icons.arrow_forward, size: 18),
                       ],
@@ -392,12 +427,16 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         color: const Color(0xFFFFF3ED),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
+          color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_outline,
-              color: Color(0xFFE8651A), size: 18),
+          const Icon(
+            Icons.check_circle_outline,
+            color: Color(0xFFE8651A),
+            size: 18,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -448,7 +487,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8, offset: const Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -463,20 +503,24 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                   color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.local_drink_outlined,
-                    color: Colors.blue, size: 16),
+                child: const Icon(
+                  Icons.local_drink_outlined,
+                  color: Colors.blue,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Bebida',
                 style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(10),
@@ -484,9 +528,10 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                 child: Text(
                   'Opcional',
                   style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 10,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -496,8 +541,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
             onTap: _mostrarBebidas,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: _bebidaSeleccionada != null
                     ? Colors.blue.withValues(alpha: 0.06)
@@ -549,11 +593,13 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                     ),
                     const SizedBox(width: 8),
                   ],
-                  Icon(Icons.keyboard_arrow_down,
-                      color: _bebidaSeleccionada != null
-                          ? Colors.blue
-                          : Colors.grey.shade400,
-                      size: 20),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: _bebidaSeleccionada != null
+                        ? Colors.blue
+                        : Colors.grey.shade400,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
@@ -574,7 +620,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8, offset: const Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -589,21 +636,28 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.add_circle_outline,
-                    color: Colors.green, size: 16),
+                child: const Icon(
+                  Icons.add_circle_outline,
+                  color: Colors.green,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Complementos',
                 style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
               const Spacer(),
               // Contador
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: _totalComplementos > 0
                       ? Colors.green.withValues(alpha: 0.1)
@@ -631,8 +685,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
             child: LinearProgressIndicator(
               value: _totalComplementos / _maxComplementosGratis,
               backgroundColor: Colors.grey.shade100,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Colors.green),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
               minHeight: 6,
             ),
           ),
@@ -646,8 +699,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: seleccionado
                     ? Colors.green.withValues(alpha: 0.05)
@@ -663,7 +715,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 34, height: 34,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       color: seleccionado
                           ? Colors.green.withValues(alpha: 0.1)
@@ -672,9 +725,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                     ),
                     child: Icon(
                       Icons.add_circle_outline,
-                      color: seleccionado
-                          ? Colors.green
-                          : Colors.grey.shade400,
+                      color: seleccionado ? Colors.green : Colors.grey.shade400,
                       size: 18,
                     ),
                   ),
@@ -697,8 +748,9 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                           Text(
                             '${double.parse(comp['cantidad'].toString()).toStringAsFixed(0)}g',
                             style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade500),
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
                       ],
                     ),
@@ -718,7 +770,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                           }
                         },
                         child: Container(
-                          width: 30, height: 30,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: cantidad > 0
@@ -730,11 +783,13 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                                   : Colors.grey.shade300,
                             ),
                           ),
-                          child: Icon(Icons.remove,
-                              size: 16,
-                              color: cantidad > 0
-                                  ? Colors.red
-                                  : Colors.grey.shade400),
+                          child: Icon(
+                            Icons.remove,
+                            size: 16,
+                            color: cantidad > 0
+                                ? Colors.red
+                                : Colors.grey.shade400,
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -745,9 +800,7 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            color: seleccionado
-                                ? Colors.green
-                                : Colors.black54,
+                            color: seleccionado ? Colors.green : Colors.black54,
                           ),
                         ),
                       ),
@@ -761,24 +814,30 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: const Text(
-                                    'Máximo $_maxComplementosGratis complementos gratis'),
+                                  'Máximo $_maxComplementosGratis complementos gratis',
+                                ),
                                 backgroundColor: Colors.orange,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 margin: const EdgeInsets.all(16),
                               ),
                             );
                           }
                         },
                         child: Container(
-                          width: 30, height: 30,
+                          width: 30,
+                          height: 30,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Color(0xFFE8651A),
                           ),
-                          child: const Icon(Icons.add,
-                              size: 16, color: Colors.white),
+                          child: const Icon(
+                            Icons.add,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -798,10 +857,10 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -815,13 +874,17 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -870,25 +933,30 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
     );
   }
 
-  Widget _paso(int numero, String label, bool activo,
-      {bool completado = false}) {
+  Widget _paso(
+    int numero,
+    String label,
+    bool activo, {
+    bool completado = false,
+  }) {
     return Column(
       children: [
         Container(
-          width: 30, height: 30,
+          width: 30,
+          height: 30,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: activo
                 ? const Color(0xFFE8651A)
                 : completado
-                    ? Colors.green
-                    : Colors.grey.shade100,
+                ? Colors.green
+                : Colors.grey.shade100,
             border: Border.all(
               color: activo
                   ? const Color(0xFFE8651A)
                   : completado
-                      ? Colors.green
-                      : Colors.grey.shade300,
+                  ? Colors.green
+                  : Colors.grey.shade300,
             ),
           ),
           child: Center(
@@ -912,10 +980,11 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
             color: activo
                 ? const Color(0xFFE8651A)
                 : completado
-                    ? Colors.green
-                    : Colors.grey,
-            fontWeight:
-                activo || completado ? FontWeight.w700 : FontWeight.normal,
+                ? Colors.green
+                : Colors.grey,
+            fontWeight: activo || completado
+                ? FontWeight.w700
+                : FontWeight.normal,
           ),
         ),
       ],
@@ -924,7 +993,8 @@ class _Paso2ComplementosScreenState extends State<Paso2ComplementosScreen> {
 
   Widget _lineaPaso({bool completado = false}) {
     return Container(
-      width: 22, height: 1,
+      width: 22,
+      height: 1,
       color: completado ? Colors.green.shade200 : Colors.grey.shade200,
       margin: const EdgeInsets.only(bottom: 18),
     );

@@ -867,8 +867,20 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de ingredientes'),
-        backgroundColor: const Color(0xFFE8651A),
         foregroundColor: Colors.white,
+
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.png'),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Color(0x66000000),
+                BlendMode.darken,
+              ),
+            ),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -1243,10 +1255,10 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(

@@ -78,8 +78,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -93,8 +92,10 @@ class _CategoriasTabState extends State<CategoriasTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: TextStyle(color: Colors.grey.shade600)),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -102,7 +103,8 @@ class _CategoriasTabState extends State<CategoriasTab> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Eliminar'),
           ),
@@ -123,7 +125,8 @@ class _CategoriasTabState extends State<CategoriasTab> {
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+              borderRadius: BorderRadius.circular(10),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -169,30 +172,34 @@ class _CategoriasTabState extends State<CategoriasTab> {
                 child: DropdownButton<String?>(
                   value: _tipoSeleccionado,
                   isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down,
-                      color: Color(0xFFE8651A)),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Color(0xFFE8651A),
+                  ),
                   items: [
                     const DropdownMenuItem<String?>(
                       value: null,
                       child: Text('Todos los tipos'),
                     ),
-                    ..._tipos.map((t) => DropdownMenuItem<String?>(
-                          value: t,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: _coloresTipo[t] ?? Colors.grey,
-                                  shape: BoxShape.circle,
-                                ),
+                    ..._tipos.map(
+                      (t) => DropdownMenuItem<String?>(
+                        value: t,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: _coloresTipo[t] ?? Colors.grey,
+                                shape: BoxShape.circle,
                               ),
-                              const SizedBox(width: 8),
-                              Text(_labelTipo[t] ?? t),
-                            ],
-                          ),
-                        )),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(_labelTipo[t] ?? t),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                   onChanged: (v) => setState(() => _tipoSeleccionado = v),
                 ),
@@ -219,10 +226,11 @@ class _CategoriasTabState extends State<CategoriasTab> {
                     onTap: () => setState(() => _tipoSeleccionado = null),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color:
-                            const Color(0xFFE8651A).withValues(alpha: 0.1),
+                        color: const Color(0xFFE8651A).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Row(
@@ -237,8 +245,7 @@ class _CategoriasTabState extends State<CategoriasTab> {
                             ),
                           ),
                           SizedBox(width: 4),
-                          Icon(Icons.close,
-                              size: 12, color: Color(0xFFE8651A)),
+                          Icon(Icons.close, size: 12, color: Color(0xFFE8651A)),
                         ],
                       ),
                     ),
@@ -257,21 +264,28 @@ class _CategoriasTabState extends State<CategoriasTab> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.category_outlined,
-                            size: 60, color: Colors.grey.shade400),
+                        Icon(
+                          Icons.category_outlined,
+                          size: 60,
+                          color: Colors.grey.shade400,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           _tipoSeleccionado != null
                               ? 'No hay categorías de este tipo'
                               : 'No hay categorías creadas',
                           style: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 15),
+                            color: Colors.grey.shade500,
+                            fontSize: 15,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Toca + para agregar una',
                           style: TextStyle(
-                              color: Colors.grey.shade400, fontSize: 13),
+                            color: Colors.grey.shade400,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -284,22 +298,21 @@ class _CategoriasTabState extends State<CategoriasTab> {
                       itemCount: _categoriasFiltradas.length,
                       itemBuilder: (ctx, index) {
                         final cat = _categoriasFiltradas[index];
-                        final color = _coloresTipo[cat['tipo']] ??
+                        final color =
+                            _coloresTipo[cat['tipo']] ??
                             const Color(0xFFE8651A);
-                        final icono = _iconosTipo[cat['tipo']] ??
-                            Icons.category_outlined;
+                        final icono =
+                            _iconosTipo[cat['tipo']] ?? Icons.category_outlined;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
-                            border:
-                                Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: Colors.grey.shade200),
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                    Colors.black.withValues(alpha: 0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -307,7 +320,9 @@ class _CategoriasTabState extends State<CategoriasTab> {
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             leading: Container(
                               width: 44,
                               height: 44,
@@ -328,7 +343,9 @@ class _CategoriasTabState extends State<CategoriasTab> {
                             subtitle: Container(
                               margin: const EdgeInsets.only(top: 4),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: color.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
@@ -383,8 +400,10 @@ class _CategoriasTabState extends State<CategoriasTab> {
       child: Container(
         width: 32,
         height: 32,
-        decoration:
-            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Icon(icon, color: color, size: 18),
       ),
     );
@@ -429,8 +448,9 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
   @override
   void initState() {
     super.initState();
-    _nombreController =
-        TextEditingController(text: widget.categoria?['nombre'] ?? '');
+    _nombreController = TextEditingController(
+      text: widget.categoria?['nombre'] ?? '',
+    );
     _tipo = widget.categoria?['tipo'] ?? widget.tipos.first;
   }
 
@@ -451,10 +471,7 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
 
     setState(() => _guardando = true);
 
-    final data = {
-      'nombre': _nombreController.text.trim(),
-      'tipo': _tipo,
-    };
+    final data = {'nombre': _nombreController.text.trim(), 'tipo': _tipo};
 
     final bool ok = _editMode
         ? await widget.service.update(widget.categoria!['id'], data)
@@ -477,7 +494,8 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
+            borderRadius: BorderRadius.circular(10),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -486,8 +504,7 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorActual =
-        widget.coloresTipo[_tipo] ?? const Color(0xFFE8651A);
+    final colorActual = widget.coloresTipo[_tipo] ?? const Color(0xFFE8651A);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -533,20 +550,23 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE8651A),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFFE8651A)
-                              .withValues(alpha: 0.6),
+                          disabledBackgroundColor: const Color(
+                            0xFFE8651A,
+                          ).withValues(alpha: 0.6),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
                         child: _guardando
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2.5),
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -563,8 +583,9 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
                                         ? 'Guardar cambios'
                                         : 'Crear categoría',
                                     style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -624,8 +645,7 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color:
-                          seleccionado ? color : Colors.grey.shade500,
+                      color: seleccionado ? color : Colors.grey.shade500,
                     ),
                   ),
                 ],
@@ -643,10 +663,10 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -666,8 +686,11 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -686,8 +709,7 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
                 _editMode
                     ? 'Modifica los datos de la categoría'
                     : 'Completa los datos de la nueva categoría',
-                style: const TextStyle(
-                    color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -734,9 +756,10 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
               Text(
                 titulo,
                 style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -759,21 +782,21 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
       controller: controller,
       validator: validator,
       style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500),
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFFE8651A),
-            fontWeight: FontWeight.w600),
+          fontSize: 12,
+          color: Color(0xFFE8651A),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        prefixIcon:
-            Icon(icono, color: Colors.grey.shade400, size: 18),
+        prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -784,8 +807,7 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -795,8 +817,10 @@ class _CategoriaFormPageState extends State<_CategoriaFormPage> {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 1.8),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }

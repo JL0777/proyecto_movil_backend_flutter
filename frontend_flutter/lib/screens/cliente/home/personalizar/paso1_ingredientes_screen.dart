@@ -157,7 +157,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 // Handle
                 Container(
                   margin: const EdgeInsets.only(top: 12),
-                  width: 40, height: 4,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
@@ -178,21 +179,25 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         ),
                         child: Icon(
                           _iconos[tipo] ?? Icons.restaurant_outlined,
-                          color: color, size: 20,
+                          color: color,
+                          size: 20,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Text(
                         _labels[tipo] ?? tipo,
                         style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       const Spacer(),
                       if (seleccionados.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
@@ -234,17 +239,23 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: color.withValues(alpha: 0.25)),
+                                color: color.withValues(alpha: 0.25),
+                              ),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.check_circle,
-                                    color: color, size: 18),
+                                Icon(
+                                  Icons.check_circle,
+                                  color: color,
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
@@ -280,8 +291,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                 const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
-                                    setState(() =>
-                                        _seleccionados[tipo]!.removeAt(i));
+                                    setState(
+                                      () => _seleccionados[tipo]!.removeAt(i),
+                                    );
                                     setModalState(() {});
                                   },
                                   child: Container(
@@ -290,8 +302,11 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                       color: Colors.red.withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.close,
-                                        color: Colors.red, size: 14),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.red,
+                                      size: 14,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -323,7 +338,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(12),
@@ -332,14 +349,16 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 36, height: 36,
+                                  width: 36,
+                                  height: 36,
                                   decoration: BoxDecoration(
                                     color: color.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     _iconos[tipo] ?? Icons.restaurant_outlined,
-                                    color: color, size: 18,
+                                    color: color,
+                                    size: 18,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -376,8 +395,11 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Icon(Icons.add_circle_outline,
-                                    color: color, size: 20),
+                                Icon(
+                                  Icons.add_circle_outline,
+                                  color: color,
+                                  size: 20,
+                                ),
                               ],
                             ),
                           ),
@@ -427,14 +449,16 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   ),
                   child: Icon(
                     _iconos[tipo] ?? Icons.restaurant_outlined,
-                    color: color, size: 28,
+                    color: color,
+                    size: 28,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   op['nombre'],
                   style: const TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
                     color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
@@ -463,15 +487,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           }
                         },
                         child: Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: gramos > 10
-                                ? color
-                                : Colors.grey.shade200,
+                            color: gramos > 10 ? color : Colors.grey.shade200,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.remove,
-                              color: Colors.white, size: 20),
+                          child: const Icon(
+                            Icons.remove,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 24),
@@ -485,22 +511,30 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                               color: color,
                             ),
                           ),
-                          Text('g/ml',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade500)),
+                          Text(
+                            'g/ml',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(width: 24),
                       GestureDetector(
                         onTap: () => setDialogState(() => gramos += 10),
                         child: Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: color, shape: BoxShape.circle,
+                            color: color,
+                            shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.add,
-                              color: Colors.white, size: 20),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
@@ -513,7 +547,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [color, color.withValues(alpha: 0.7)],
@@ -525,11 +561,14 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Precio',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Precio',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       Text(
                         '\$${(precioPorGramo * gramos).toStringAsFixed(0)}',
                         style: const TextStyle(
@@ -556,8 +595,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('Cancelar',
-                            style: TextStyle(color: Colors.grey.shade600)),
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -566,10 +607,11 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         onPressed: () {
                           final opConCantidad = Map<String, dynamic>.from(op);
                           opConCantidad['cantidad'] = gramos;
-                          opConCantidad['precio'] =
-                              (precioPorGramo * gramos).toStringAsFixed(0);
+                          opConCantidad['precio'] = (precioPorGramo * gramos)
+                              .toStringAsFixed(0);
                           setState(
-                              () => _seleccionados[tipo]!.add(opConCantidad));
+                            () => _seleccionados[tipo]!.add(opConCantidad),
+                          );
                           Navigator.pop(ctx);
                         },
                         style: ElevatedButton.styleFrom(
@@ -577,11 +619,14 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text('Agregar',
-                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        child: const Text(
+                          'Agregar',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ),
                   ],
@@ -605,14 +650,13 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFE8651A)))
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                  )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         // ── Visual central ──
                         _buildVisualCentral(),
                         const SizedBox(height: 20),
@@ -628,9 +672,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                            width: 40,
-                            height: 3,
-                            color: const Color(0xFFE8651A)),
+                          width: 40,
+                          height: 3,
+                          color: const Color(0xFFE8651A),
+                        ),
                         const SizedBox(height: 14),
 
                         // ── Pills por tipo ──
@@ -639,14 +684,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                           final lista = _seleccionados[tipo] ?? [];
                           final color =
                               _colores[tipo] ?? const Color(0xFFE8651A);
-                          final icono = _iconos[tipo] ?? Icons.restaurant_outlined;
+                          final icono =
+                              _iconos[tipo] ?? Icons.restaurant_outlined;
 
                           return GestureDetector(
                             onTap: () => _mostrarOpciones(tipo),
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               decoration: BoxDecoration(
                                 color: lista.isNotEmpty
                                     ? color.withValues(alpha: 0.06)
@@ -669,18 +717,21 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 38, height: 38,
+                                    width: 38,
+                                    height: 38,
                                     decoration: BoxDecoration(
                                       color: lista.isNotEmpty
                                           ? color.withValues(alpha: 0.12)
                                           : Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: Icon(icono,
-                                        color: lista.isNotEmpty
-                                            ? color
-                                            : Colors.grey.shade400,
-                                        size: 20),
+                                    child: Icon(
+                                      icono,
+                                      color: lista.isNotEmpty
+                                          ? color
+                                          : Colors.grey.shade400,
+                                      size: 20,
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -705,8 +756,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                                 .join(', '),
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: color
-                                                  .withValues(alpha: 0.8),
+                                              color: color.withValues(
+                                                alpha: 0.8,
+                                              ),
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           )
@@ -731,11 +783,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    Icon(Icons.check_circle,
-                                        color: color, size: 18),
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: color,
+                                      size: 18,
+                                    ),
                                   ] else
-                                    Icon(Icons.chevron_right,
-                                        color: Colors.grey.shade400, size: 20),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.grey.shade400,
+                                      size: 20,
+                                    ),
                                 ],
                               ),
                             ),
@@ -766,9 +824,13 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Subtotal',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500)),
+                    Text(
+                      'Subtotal',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                     Text(
                       '\$${_subtotal.toStringAsFixed(0)}',
                       style: const TextStyle(
@@ -783,16 +845,20 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      final haySeleccionado = _seleccionados.values
-                          .any((lista) => lista.isNotEmpty);
+                      final haySeleccionado = _seleccionados.values.any(
+                        (lista) => lista.isNotEmpty,
+                      );
 
                       if (!haySeleccionado) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Row(
                               children: [
-                                Icon(Icons.warning_amber_rounded,
-                                    color: Colors.white, size: 18),
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -804,7 +870,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                             backgroundColor: Colors.red,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             margin: const EdgeInsets.all(16),
                           ),
                         );
@@ -827,15 +894,20 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Siguiente',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w700)),
+                        Text(
+                          'Siguiente',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         SizedBox(width: 6),
                         Icon(Icons.arrow_forward, size: 18),
                       ],
@@ -876,13 +948,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           ? Column(
               children: [
                 Container(
-                  width: 80, height: 80,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.restaurant_menu_outlined,
-                      color: Colors.grey.shade400, size: 36),
+                  child: Icon(
+                    Icons.restaurant_menu_outlined,
+                    color: Colors.grey.shade400,
+                    size: 36,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -896,9 +972,7 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Selecciona ingredientes para comenzar',
-                  style: TextStyle(
-                    fontSize: 12, color: Colors.grey.shade400,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ],
             )
@@ -913,8 +987,11 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                         color: const Color(0xFFFFF3ED),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.restaurant_outlined,
-                          color: Color(0xFFE8651A), size: 16),
+                      child: const Icon(
+                        Icons.restaurant_outlined,
+                        color: Color(0xFFE8651A),
+                        size: 16,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     const Text(
@@ -928,7 +1005,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF3ED),
                         borderRadius: BorderRadius.circular(20),
@@ -949,37 +1028,42 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: seleccionadosList
-                      .expand((entry) => entry.value.map((item) {
-                            final color = _colores[entry.key] ??
-                                const Color(0xFFE8651A);
-                            final icono = _iconos[entry.key] ??
-                                Icons.restaurant_outlined;
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: color.withValues(alpha: 0.25)),
+                      .expand(
+                        (entry) => entry.value.map((item) {
+                          final color =
+                              _colores[entry.key] ?? const Color(0xFFE8651A);
+                          final icono =
+                              _iconos[entry.key] ?? Icons.restaurant_outlined;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.25),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(icono, size: 13, color: color),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    item['nombre'],
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: color,
-                                    ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(icono, size: 13, color: color),
+                                const SizedBox(width: 5),
+                                Text(
+                                  item['nombre'],
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: color,
                                   ),
-                                ],
-                              ),
-                            );
-                          }))
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      )
                       .toList(),
                 ),
                 const SizedBox(height: 14),
@@ -995,7 +1079,9 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
                     Text(
                       'Subtotal',
                       style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade500),
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                     Text(
                       '\$${_subtotal.toStringAsFixed(0)}',
@@ -1018,10 +1104,10 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -1035,13 +1121,17 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -1094,7 +1184,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
     return Column(
       children: [
         Container(
-          width: 30, height: 30,
+          width: 30,
+          height: 30,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: activo ? const Color(0xFFE8651A) : Colors.grey.shade100,
@@ -1128,7 +1219,8 @@ class _Paso1IngredientesScreenState extends State<Paso1IngredientesScreen> {
 
   Widget _lineaPaso() {
     return Container(
-      width: 22, height: 1,
+      width: 22,
+      height: 1,
       color: Colors.grey.shade200,
       margin: const EdgeInsets.only(bottom: 18),
     );

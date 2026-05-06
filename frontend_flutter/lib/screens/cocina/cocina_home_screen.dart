@@ -34,9 +34,11 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
   List<dynamic> get _nuevos {
     final nuevos = _pedidos.where((p) => p['estado'] == 'Pendiente').toList();
     nuevos.sort((a, b) {
-      final aDate = DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
+      final aDate =
+          DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
+      final bDate =
+          DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0);
       return aDate.compareTo(bDate);
     });
@@ -278,6 +280,9 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         backgroundColor: Colors.transparent,
         child: Container(
           width: MediaQuery.of(ctx).size.width * 0.9,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -382,6 +387,9 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
         backgroundColor: Colors.transparent,
         child: Container(
           width: MediaQuery.of(ctx).size.width * 0.9,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -797,21 +805,28 @@ class _CocinaHomeScreenState extends State<CocinaHomeScreen>
 
   Widget _buildLista(List<dynamic> pedidos) {
     if (pedidos.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 60,
-              color: Colors.grey.shade400,
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 60,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No hay pedidos aquí',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'No hay pedidos aquí',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
-            ),
-          ],
+          ),
         ),
       );
     }

@@ -389,93 +389,96 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           // ── Header original ────────────────────────────────────────────
           Container(
             width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
               ),
             ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // AppBar manual
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Editar perfil',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.4),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // AppBar manual
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.white),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const Expanded(
+                            child: Text(
+                              'Editar perfil',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Avatar
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: fotoPerfil != null &&
-                              fotoPerfil.toString().isNotEmpty
-                          ? Image.network(
-                              fotoPerfil,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, _) =>
-                                  _avatarPlaceholder(),
-                            )
-                          : _avatarPlaceholder(),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  if (nombre.isNotEmpty)
-                    Text(
-                      nombre,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        ],
                       ),
                     ),
 
-                  const SizedBox(height: 4),
-
-                  Text(
-                    email,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 13,
+                    // Avatar
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: fotoPerfil != null &&
+                                fotoPerfil.toString().isNotEmpty
+                            ? Image.network(
+                                fotoPerfil,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, _) =>
+                                    _avatarPlaceholder(),
+                              )
+                            : _avatarPlaceholder(),
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 10),
+
+                    if (nombre.isNotEmpty)
+                      Text(
+                        nombre,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      email,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 13,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),

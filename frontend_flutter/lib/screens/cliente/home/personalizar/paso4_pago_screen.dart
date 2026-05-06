@@ -106,8 +106,11 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   color: Colors.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_circle,
-                    color: Colors.green, size: 48),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 48,
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -205,9 +208,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Total',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500)),
+                    Text(
+                      'Total',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                     Text(
                       '\$${_total.toStringAsFixed(0)}',
                       style: const TextStyle(
@@ -225,11 +232,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE8651A),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          const Color(0xFFE8651A).withValues(alpha: 0.6),
+                      disabledBackgroundColor: const Color(
+                        0xFFE8651A,
+                      ).withValues(alpha: 0.6),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: _loading
@@ -249,7 +258,9 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                               Text(
                                 'Confirmar pedido',
                                 style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w700),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ],
                           ),
@@ -291,16 +302,20 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   color: const Color(0xFFE8651A).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.receipt_long_outlined,
-                    color: Color(0xFFE8651A), size: 16),
+                child: const Icon(
+                  Icons.receipt_long_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Resumen del pedido',
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -317,27 +332,36 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
               children: [
                 Expanded(
                   flex: 3,
-                  child: Text('Producto',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE8651A),
-                          fontSize: 11)),
+                  child: Text(
+                    'Producto',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE8651A),
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
                 Expanded(
-                  child: Text('Cant.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE8651A),
-                          fontSize: 11)),
+                  child: Text(
+                    'Cant.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE8651A),
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
                 Expanded(
-                  child: Text('Total',
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE8651A),
-                          fontSize: 11)),
+                  child: Text(
+                    'Total',
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE8651A),
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -347,11 +371,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
           // Ingredientes
           ...widget.ingredientes.entries
               .where((e) => e.value != null)
-              .map((e) => _filaResumen(
-                    '${e.value!['nombre']} (${e.value!['cantidad'] ?? ''})',
-                    1,
-                    double.parse(e.value!['precio'].toString()),
-                  )),
+              .map(
+                (e) => _filaResumen(
+                  '${e.value!['nombre']} (${e.value!['cantidad'] ?? ''})',
+                  1,
+                  double.parse(e.value!['precio'].toString()),
+                ),
+              ),
 
           // Bebida
           if (widget.bebida.isNotEmpty && widget.bebida['nombre'] != null)
@@ -362,11 +388,13 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
             ),
 
           // Complementos
-          ...widget.complementos.entries.map((e) => _filaResumen(
-                e.value['nombre']?.toString() ?? 'Complemento',
-                e.value['cantidad'] ?? 1,
-                0,
-              )),
+          ...widget.complementos.entries.map(
+            (e) => _filaResumen(
+              e.value['nombre']?.toString() ?? 'Complemento',
+              e.value['cantidad'] ?? 1,
+              0,
+            ),
+          ),
 
           const SizedBox(height: 8),
           Divider(color: Colors.grey.shade100),
@@ -383,22 +411,27 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
               color: const Color(0xFFFFF3ED),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
+                color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total',
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87)),
+                const Text(
+                  'Total',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87,
+                  ),
+                ),
                 Text(
                   '\$${_total.toStringAsFixed(0)}',
                   style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFE8651A)),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFE8651A),
+                  ),
                 ),
               ],
             ),
@@ -408,15 +441,15 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline,
-                  size: 13, color: Colors.orange.shade600),
+              Icon(Icons.info_outline, size: 13, color: Colors.orange.shade600),
               const SizedBox(width: 5),
               Text(
                 'El domicilio no va incluido en tu pedido',
                 style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.orange.shade700,
-                    fontStyle: FontStyle.italic),
+                  fontSize: 11,
+                  color: Colors.orange.shade700,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
@@ -434,7 +467,8 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         color: const Color(0xFFFFF3ED),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
+          color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -444,8 +478,11 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
               color: const Color(0xFFE8651A).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.location_on_outlined,
-                color: Color(0xFFE8651A), size: 16),
+            child: const Icon(
+              Icons.location_on_outlined,
+              color: Color(0xFFE8651A),
+              size: 16,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -455,28 +492,28 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                 const Text(
                   'Dirección de envío',
                   style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFE8651A)),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFE8651A),
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   widget.direccion['barrio'] ?? '',
                   style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
                 Text(
                   widget.direccion['direccion'] ?? '',
-                  style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.check_circle,
-              color: Color(0xFFE8651A), size: 18),
+          const Icon(Icons.check_circle, color: Color(0xFFE8651A), size: 18),
         ],
       ),
     );
@@ -509,16 +546,20 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   color: Colors.purple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.payment_outlined,
-                    color: Colors.purple, size: 16),
+                child: const Icon(
+                  Icons.payment_outlined,
+                  color: Colors.purple,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Método de pago',
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -579,9 +620,11 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icono,
-                  color: seleccionado ? color : Colors.grey.shade400,
-                  size: 18),
+              child: Icon(
+                icono,
+                color: seleccionado ? color : Colors.grey.shade400,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -598,8 +641,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   ),
                   Text(
                     descripcion,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
               ),
@@ -611,8 +653,7 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                 shape: BoxShape.circle,
                 color: seleccionado ? color : Colors.transparent,
                 border: Border.all(
-                  color:
-                      seleccionado ? color : Colors.grey.shade300,
+                  color: seleccionado ? color : Colors.grey.shade300,
                   width: 2,
                 ),
               ),
@@ -656,16 +697,20 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                       color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.account_balance_outlined,
-                        color: Colors.blue, size: 16),
+                    child: const Icon(
+                      Icons.account_balance_outlined,
+                      color: Colors.blue,
+                      size: 16,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
                     'Datos para transferencia',
                     style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -679,27 +724,35 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF3ED),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color:
-                          const Color(0xFFE8651A).withValues(alpha: 0.3)),
+                    color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total a transferir',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87)),
-                    Text('\$${_total.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFE8651A))),
+                    const Text(
+                      'Total a transferir',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '\$${_total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFE8651A),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -725,18 +778,22 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                   color: Colors.orange.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.warning_amber_rounded,
-                    color: Colors.orange, size: 18),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.orange,
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'Recuerda mostrar el comprobante al domiciliario. De lo contrario el pedido no será entregado.',
                   style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                      height: 1.4),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -755,18 +812,24 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         children: [
           SizedBox(
             width: 130,
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600)),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
           ),
           Expanded(
-            child: Text(valor,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87)),
+            child: Text(
+              valor,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+              ),
+            ),
           ),
         ],
       ),
@@ -780,25 +843,27 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
         children: [
           Expanded(
             flex: 3,
-            child: Text(nombre,
-                style: const TextStyle(fontSize: 12, color: Colors.black87)),
+            child: Text(
+              nombre,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
           ),
           Expanded(
-            child: Text('$cantidad',
-                textAlign: TextAlign.center,
-                style:
-                    TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            child: Text(
+              '$cantidad',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
           ),
           Expanded(
             child: Text(
               precio == 0 ? 'Gratis' : '\$${precio.toStringAsFixed(0)}',
               textAlign: TextAlign.end,
               style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: precio == 0
-                      ? Colors.green
-                      : Colors.black87),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: precio == 0 ? Colors.green : Colors.black87,
+              ),
             ),
           ),
         ],
@@ -812,16 +877,22 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600)),
-          Text('\$${valor.toStringAsFixed(0)}',
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          Text(
+            '\$${valor.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
         ],
       ),
     );
@@ -833,10 +904,10 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -856,8 +927,11 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -906,8 +980,12 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
     );
   }
 
-  Widget _paso(int numero, String label, bool activo,
-      {bool completado = false}) {
+  Widget _paso(
+    int numero,
+    String label,
+    bool activo, {
+    bool completado = false,
+  }) {
     return Column(
       children: [
         Container(
@@ -918,14 +996,14 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
             color: activo
                 ? const Color(0xFFE8651A)
                 : completado
-                    ? Colors.green
-                    : Colors.grey.shade100,
+                ? Colors.green
+                : Colors.grey.shade100,
             border: Border.all(
               color: activo
                   ? const Color(0xFFE8651A)
                   : completado
-                      ? Colors.green
-                      : Colors.grey.shade300,
+                  ? Colors.green
+                  : Colors.grey.shade300,
             ),
           ),
           child: Center(
@@ -949,10 +1027,11 @@ class _Paso4PagoScreenState extends State<Paso4PagoScreen> {
             color: activo
                 ? const Color(0xFFE8651A)
                 : completado
-                    ? Colors.green
-                    : Colors.grey,
-            fontWeight:
-                activo || completado ? FontWeight.w700 : FontWeight.normal,
+                ? Colors.green
+                : Colors.grey,
+            fontWeight: activo || completado
+                ? FontWeight.w700
+                : FontWeight.normal,
           ),
         ),
       ],

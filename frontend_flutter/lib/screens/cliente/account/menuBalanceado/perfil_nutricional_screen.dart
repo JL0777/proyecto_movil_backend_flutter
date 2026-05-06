@@ -105,6 +105,28 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
     super.dispose();
   }
 
+  double _calcularAgua() {
+    final peso = double.tryParse('${_perfil!['peso']}') ?? 0;
+    double base = peso * 35; // ml base
+
+    switch (_perfil!['nivelActividad']) {
+      case 'ligero':
+        base += 300;
+        break;
+      case 'moderado':
+        base += 500;
+        break;
+      case 'activo':
+        base += 700;
+        break;
+      case 'muy_activo':
+        base += 1000;
+        break;
+    }
+
+    return base / 1000; // convertir a litros
+  }
+
   Future<void> _cargar() async {
     setState(() => _loading = true);
     try {
@@ -189,8 +211,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         content: Text(msg),
         backgroundColor: ok ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -206,10 +227,13 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              image: DecorationImage(
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Color(0x66000000),
+                  BlendMode.darken,
+                ),
               ),
             ),
             child: SafeArea(
@@ -217,12 +241,16 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Expanded(
@@ -237,10 +265,12 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
                         ),
                         if (_tieneDatos && !_editando)
                           TextButton.icon(
-                            onPressed: () =>
-                                setState(() => _editando = true),
-                            icon: const Icon(Icons.edit,
-                                color: Colors.white, size: 16),
+                            onPressed: () => setState(() => _editando = true),
+                            icon: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                             label: const Text(
                               'Editar',
                               style: TextStyle(color: Colors.white),
@@ -300,8 +330,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFE8651A)),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
@@ -328,12 +357,12 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
               color: const Color(0xFFFFF3ED),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
+                color: const Color(0xFFE8651A).withValues(alpha: 0.3),
+              ),
             ),
             child: const Row(
               children: [
-                Icon(Icons.info_outline,
-                    color: Color(0xFFE8651A), size: 18),
+                Icon(Icons.info_outline, color: Color(0xFFE8651A), size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -432,7 +461,8 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             child: _guardando
@@ -440,7 +470,9 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2),
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   )
                 : Text(
                     _tieneDatos ? 'Actualizar perfil' : 'Calcular mi perfil',
@@ -515,8 +547,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      objetivo?['icono'] as IconData? ??
-                          Icons.flag_outlined,
+                      objetivo?['icono'] as IconData? ?? Icons.flag_outlined,
                       color: Colors.white,
                       size: 22,
                     ),
@@ -527,10 +558,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
                     children: [
                       const Text(
                         'Tu objetivo recomendado',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 11),
                       ),
                       Text(
                         objetivo?['label'] as String? ?? '',
@@ -584,6 +612,104 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           ],
         ),
 
+        const SizedBox(height: 12),
+
+        // ── Card agua ──
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.water_drop_outlined,
+                  color: Colors.blue,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Agua recomendada',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: _calcularAgua().toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: ' L/día',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '≈ ${(_calcularAgua() * 1000 / 250).ceil()} vasos de 250 ml',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Indicador visual de vasos
+              Column(
+                children: List.generate(
+                  4,
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Icon(
+                      Icons.local_drink_outlined,
+                      size: 14,
+                      color: i < (_calcularAgua() / 0.5).ceil().clamp(0, 4)
+                          ? Colors.blue
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: 16),
 
         // ── Datos ingresados ──
@@ -598,12 +724,17 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           ),
           child: Column(
             children: [
-              _datoRow(Icons.monitor_weight_outlined, 'Peso',
-                  '${_perfil!['peso']} kg'),
-              _datoRow(Icons.height_outlined, 'Altura',
-                  '${_perfil!['altura']} cm'),
-              _datoRow(Icons.cake_outlined, 'Edad',
-                  '${_perfil!['edad']} años'),
+              _datoRow(
+                Icons.monitor_weight_outlined,
+                'Peso',
+                '${_perfil!['peso']} kg',
+              ),
+              _datoRow(
+                Icons.height_outlined,
+                'Altura',
+                '${_perfil!['altura']} cm',
+              ),
+              _datoRow(Icons.cake_outlined, 'Edad', '${_perfil!['edad']} años'),
               _datoRow(
                 _perfil!['sexo'] == 'masculino'
                     ? Icons.male_rounded
@@ -629,13 +760,11 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           decoration: BoxDecoration(
             color: _colorImc(imc).withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: _colorImc(imc).withValues(alpha: 0.2)),
+            border: Border.all(color: _colorImc(imc).withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline,
-                  color: _colorImc(imc), size: 18),
+              Icon(Icons.info_outline, color: _colorImc(imc), size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -660,27 +789,28 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
             onPressed: () {
               // Aquí se navega a la pantalla de menús balanceados
               // pasando el objetivo recomendado
-              Navigator.push(context, MaterialPageRoute(
-                builder: (_) => MenusBalanceadosScreen(
-                  objetivoInicial: _perfil!['objetivoRecomendado'],
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MenusBalanceadosScreen(
+                    objetivoInicial: _perfil!['objetivoRecomendado'],
+                  ),
                 ),
-              ));
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE8651A),
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             icon: const Icon(Icons.restaurant_menu_outlined, size: 18),
             label: const Text(
               'Ver menús recomendados',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -701,12 +831,18 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
 
   String _labelActividad(String? nivel) {
     switch (nivel) {
-      case 'sedentario':  return 'Sedentario';
-      case 'ligero':      return 'Ligero';
-      case 'moderado':    return 'Moderado';
-      case 'activo':      return 'Activo';
-      case 'muy_activo':  return 'Muy activo';
-      default:            return nivel ?? '';
+      case 'sedentario':
+        return 'Sedentario';
+      case 'ligero':
+        return 'Ligero';
+      case 'moderado':
+        return 'Moderado';
+      case 'activo':
+        return 'Activo';
+      case 'muy_activo':
+        return 'Muy activo';
+      default:
+        return nivel ?? '';
     }
   }
 
@@ -724,8 +860,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Container(
-            width: 30, height: 2, color: const Color(0xFFE8651A)),
+        Container(width: 30, height: 2, color: const Color(0xFFE8651A)),
       ],
     );
   }
@@ -749,7 +884,9 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         fillColor: Colors.white,
         labelStyle: const TextStyle(fontSize: 13),
         floatingLabelStyle: const TextStyle(
-            color: Color(0xFFE8651A), fontSize: 13),
+          color: Color(0xFFE8651A),
+          fontSize: 13,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -760,11 +897,12 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-              color: Color(0xFFE8651A), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         contentPadding: const EdgeInsets.symmetric(
-            vertical: 16, horizontal: 14),
+          vertical: 16,
+          horizontal: 14,
+        ),
       ),
     );
   }
@@ -791,8 +929,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         ),
         child: Column(
           children: [
-            Icon(icono,
-                color: seleccionado ? Colors.white : color, size: 24),
+            Icon(icono, color: seleccionado ? Colors.white : color, size: 24),
             const SizedBox(height: 4),
             Text(
               label,
@@ -817,9 +954,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: seleccionado
-              ? const Color(0xFFE8651A)
-              : Colors.white,
+          color: seleccionado ? const Color(0xFFE8651A) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: seleccionado
@@ -861,8 +996,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
               ),
             ),
             if (seleccionado)
-              const Icon(Icons.check_circle,
-                  color: Colors.white, size: 18),
+              const Icon(Icons.check_circle, color: Colors.white, size: 18),
           ],
         ),
       ),
@@ -918,18 +1052,19 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
           ),
           Text(
             subtitulo,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
           ),
         ],
       ),
     );
   }
 
-  Widget _datoRow(IconData icono, String label, String valor,
-      {bool isLast = false}) {
+  Widget _datoRow(
+    IconData icono,
+    String label,
+    String valor, {
+    bool isLast = false,
+  }) {
     return Column(
       children: [
         Padding(
@@ -940,10 +1075,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
               const SizedBox(width: 10),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade500,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
               ),
               const Spacer(),
               Text(

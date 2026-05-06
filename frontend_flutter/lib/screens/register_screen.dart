@@ -57,17 +57,19 @@ class _RegisterScreenState extends State<RegisterScreen>
       duration: const Duration(milliseconds: 400),
     );
 
-    _heroFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _heroController, curve: Curves.easeOut),
-    );
+    _heroFade = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
     _heroSlide = Tween<Offset>(
       begin: const Offset(0, -0.2),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
 
-    _cardFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _cardController, curve: Curves.easeOut),
-    );
+    _cardFade = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _cardController, curve: Curves.easeOut));
     _cardSlide = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -76,12 +78,10 @@ class _RegisterScreenState extends State<RegisterScreen>
     _fieldsFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
     );
-    _fieldsSlide = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
-    );
+    _fieldsSlide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _fieldsController, curve: Curves.easeOut),
+        );
 
     _bottomBarFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _bottomBarController, curve: Curves.easeOut),
@@ -179,8 +179,10 @@ class _RegisterScreenState extends State<RegisterScreen>
     final availableHeight =
         screenHeight - safeAreaTop - safeAreaBottom - bottomInset;
     final heroHeight = keyboardOpen ? 60.0 : screenHeight * 0.28;
-    final cardHeight =
-        (availableHeight - heroHeight).clamp(300.0, double.infinity);
+    final cardHeight = (availableHeight - heroHeight).clamp(
+      300.0,
+      double.infinity,
+    );
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -311,99 +313,103 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 0.8,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 16,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8651A).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFFE8651A).withValues(alpha: 0.35),
+                      color: Colors.white.withValues(alpha: 0.2),
                       width: 0.8,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE8651A),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 7),
-                      const Text(
-                        'MYMEAL',
-                        style: TextStyle(
-                          color: Color(0xFFE8651A),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.8,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Crea tu\ncuenta',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
                     color: Colors.white,
-                    fontSize: 42,
-                    fontWeight: FontWeight.w700,
-                    height: 1.1,
-                    letterSpacing: -0.5,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  'Regístrate para continuar',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.50),
-                    fontSize: 15,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 48),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFE8651A).withValues(alpha: 0.35),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE8651A),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        const Text(
+                          'MYMEAL',
+                          style: TextStyle(
+                            color: Color(0xFFE8651A),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Crea tu\ncuenta',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.width * 0.10,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Regístrate para continuar',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.50),
+                      fontSize: 15,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -475,8 +481,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     isPassword: true,
                     passwordVisible: _confirmPasswordVisible,
                     onTogglePassword: () => setState(
-                      () =>
-                          _confirmPasswordVisible = !_confirmPasswordVisible,
+                      () => _confirmPasswordVisible = !_confirmPasswordVisible,
                     ),
                   ),
                   const SizedBox(height: 22),

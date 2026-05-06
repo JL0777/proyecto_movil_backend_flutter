@@ -155,20 +155,23 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE8651A),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFFE8651A)
-                              .withValues(alpha: 0.6),
+                          disabledBackgroundColor: const Color(
+                            0xFFE8651A,
+                          ).withValues(alpha: 0.6),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
                         child: loading
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2.5),
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -185,8 +188,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                                         ? 'Actualizar dirección'
                                         : 'Guardar dirección',
                                     style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -208,10 +212,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -231,8 +235,11 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -251,8 +258,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 editMode
                     ? 'Modifica los datos de tu dirección'
                     : 'Completa los datos de entrega',
-                style:
-                    const TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -295,16 +301,20 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                   color: const Color(0xFFE8651A).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.home_outlined,
-                    color: Color(0xFFE8651A), size: 16),
+                child: const Icon(
+                  Icons.home_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Tipo de vivienda',
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -320,19 +330,16 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 child: GestureDetector(
                   onTap: () => setState(() => tipoVivienda = label),
                   child: Container(
-                    margin: EdgeInsets.only(
-                        right: label != 'Hotel' ? 8 : 0),
+                    margin: EdgeInsets.only(right: label != 'Hotel' ? 8 : 0),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: seleccionado
-                          ? const Color(0xFFE8651A)
-                              .withValues(alpha: 0.08)
+                          ? const Color(0xFFE8651A).withValues(alpha: 0.08)
                           : Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: seleccionado
-                            ? const Color(0xFFE8651A)
-                                .withValues(alpha: 0.5)
+                            ? const Color(0xFFE8651A).withValues(alpha: 0.5)
                             : Colors.grey.shade200,
                         width: seleccionado ? 1.5 : 1,
                       ),
@@ -408,9 +415,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
               Text(
                 titulo,
                 style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -435,16 +443,18 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       maxLines: maxLines,
       validator: validator,
       style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          fontWeight: FontWeight.w500),
+        fontSize: 14,
+        color: Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFFE8651A),
-            fontWeight: FontWeight.w600),
+          fontSize: 12,
+          color: Color(0xFFE8651A),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: Colors.grey.shade50,
         prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
@@ -458,8 +468,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -470,7 +479,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
           borderSide: const BorderSide(color: Colors.red, width: 1.8),
         ),
         contentPadding: const EdgeInsets.symmetric(
-            vertical: 14, horizontal: 14),
+          vertical: 14,
+          horizontal: 14,
+        ),
       ),
     );
   }

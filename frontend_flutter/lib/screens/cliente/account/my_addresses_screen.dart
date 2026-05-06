@@ -70,8 +70,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   Future<void> editar(Map address) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (_) => AddEditAddressScreen(address: address)),
+      MaterialPageRoute(builder: (_) => AddEditAddressScreen(address: address)),
     );
     if (result == true) {
       mensaje("Dirección actualizada correctamente", true);
@@ -83,8 +82,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -97,23 +95,26 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                   color: Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.delete_outline_rounded,
-                    color: Colors.red, size: 28),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red,
+                  size: 28,
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
                 '¿Eliminar dirección?',
-                style: TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
                 'Esta dirección se eliminará permanentemente de tu cuenta.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                    height: 1.4),
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -126,13 +127,15 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                           borderRadius: BorderRadius.circular(10),
                           side: BorderSide(color: Colors.grey.shade300),
                         ),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: Text('Cancelar',
-                          style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -144,12 +147,14 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Eliminar',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
+                      child: const Text(
+                        'Eliminar',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -207,12 +212,11 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
           Expanded(
             child: loading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFE8651A)),
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
                   )
                 : addresses.isEmpty
-                    ? _buildVacio()
-                    : _buildLista(),
+                ? _buildVacio()
+                : _buildLista(),
           ),
         ],
       ),
@@ -220,14 +224,18 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
         onPressed: agregar,
         backgroundColor: const Color(0xFFE8651A),
         elevation: 4,
-        icon: const Icon(Icons.add_location_alt_outlined,
-            color: Colors.white, size: 20),
+        icon: const Icon(
+          Icons.add_location_alt_outlined,
+          color: Colors.white,
+          size: 20,
+        ),
         label: const Text(
           'Nueva dirección',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 14),
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
         ),
       ),
     );
@@ -239,10 +247,10 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -262,8 +270,11 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -283,8 +294,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                   addresses.isEmpty
                       ? 'Ninguna guardada aún'
                       : '${addresses.length} dirección${addresses.length == 1 ? '' : 'es'} guardada${addresses.length == 1 ? '' : 's'}',
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 12),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
             ],
           ),
@@ -313,25 +323,30 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                   width: 2,
                 ),
               ),
-              child: const Icon(Icons.location_off_outlined,
-                  size: 38, color: Color(0xFFE8651A)),
+              child: const Icon(
+                Icons.location_off_outlined,
+                size: 38,
+                color: Color(0xFFE8651A),
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Sin direcciones guardadas',
               style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87),
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Agrega una dirección para que\npodamos llevarte tu comida favorita.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade500,
-                  height: 1.5),
+                fontSize: 13,
+                color: Colors.grey.shade500,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 28),
           ],
@@ -347,8 +362,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
       itemCount: addresses.length,
-      itemBuilder: (context, index) =>
-          _tarjetaDireccion(addresses[index]),
+      itemBuilder: (context, index) => _tarjetaDireccion(addresses[index]),
     );
   }
 
@@ -406,28 +420,30 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                   const SizedBox(height: 3),
                   Text(
                     a['barrio'] ?? '',
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 6),
                   // Chip tipo
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8651A)
-                          .withValues(alpha: 0.08),
+                      color: const Color(0xFFE8651A).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFFE8651A)
-                            .withValues(alpha: 0.25),
+                        color: const Color(0xFFE8651A).withValues(alpha: 0.25),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(_iconForTipo(tipo),
-                            size: 11, color: const Color(0xFFE8651A)),
+                        Icon(
+                          _iconForTipo(tipo),
+                          size: 11,
+                          color: const Color(0xFFE8651A),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           _labelForTipo(tipo),
@@ -446,16 +462,20 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.info_outline,
-                            size: 11, color: Colors.grey.shade400),
+                        Icon(
+                          Icons.info_outline,
+                          size: 11,
+                          color: Colors.grey.shade400,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             a['instrucciones'],
                             style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade500,
-                                fontStyle: FontStyle.italic),
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
                       ],
@@ -500,8 +520,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
-          border:
-              Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Icon(icono, color: color, size: 16),
       ),
