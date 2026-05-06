@@ -132,3 +132,17 @@ flutter:
     - assets/help/menu_pago.png
     - assets/help/menu_revision.png
     - assets/help/menu_confirmar.png
+    - assets/help/paso1_imc.png
+    - assets/help/paso2_menu.png
+    - assets/help/paso3_carrito.png
+    - assets/help/paso4_pago.png
+    - assets/help/paso5_entrega.png
+    - assets/help/paso6_resumen.png
+    - assets/help/paso6_boton.png
+    - assets/help/paso7_estado.png
+    - assets/help/imc_paso0.png
+    - assets/help/imc_paso1.png
+    - assets/help/imc_paso2.png
+    - assets/help/imc_paso3.png
+    - assets/help/imc_paso4.png
+    - assets/help/imc_paso5.png

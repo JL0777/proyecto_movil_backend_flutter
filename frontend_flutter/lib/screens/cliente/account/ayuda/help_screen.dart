@@ -3,6 +3,7 @@ import '../../../../core/theme/app_theme.dart';
 import 'orders_help_screen.dart';
 import 'payments_help_screen.dart';
 import 'delivery_help_screen.dart';
+import 'imc_help_screen.dart'; // <-- NUEVA IMPORTACIÓN
 import '../support_screen.dart';
 
 class HelpScreen extends StatefulWidget {
@@ -131,9 +132,22 @@ class _HelpScreenState extends State<HelpScreen> with TickerProviderStateMixin {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const OrdersHelpScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const OrdersHelpScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+
+            /// NUEVA TARJETA IMC
+            _HelpCard(
+              icon: Icons.monitor_weight_outlined,
+              title: 'Calcular IMC',
+              subtitle: 'Aprende a calcular tu índice corporal',
+              index: 1,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ImcHelpScreen()),
                 );
               },
             ),
@@ -143,13 +157,11 @@ class _HelpScreenState extends State<HelpScreen> with TickerProviderStateMixin {
               icon: Icons.payment_outlined,
               title: 'Pagos y facturación',
               subtitle: 'Información sobre métodos de pago',
-              index: 1,
+              index: 2,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const PaymentsHelpScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const PaymentsHelpScreen()),
                 );
               },
             ),
@@ -159,13 +171,11 @@ class _HelpScreenState extends State<HelpScreen> with TickerProviderStateMixin {
               icon: Icons.location_on_outlined,
               title: 'Entregas y direcciones',
               subtitle: 'Todo sobre el envío de tu pedido',
-              index: 2,
+              index: 3,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const DeliveryHelpScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const DeliveryHelpScreen()),
                 );
               },
             ),
@@ -175,20 +185,17 @@ class _HelpScreenState extends State<HelpScreen> with TickerProviderStateMixin {
               icon: Icons.chat_bubble_outline,
               title: 'Contáctanos',
               subtitle: 'Habla con nuestro equipo de soporte',
-              index: 3,
+              index: 4,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const SupportScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const SupportScreen()),
                 );
               },
             ),
             
             const SizedBox(height: 40),
             
-            /// PIE DE PÁGINA SUTIL
             Center(
               child: Text(
                 "Versión 1.0.2",
@@ -257,7 +264,6 @@ class _HelpCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                /// ICONO CON FONDO REFINADO
                 Container(
                   width: 52,
                   height: 52,
@@ -273,7 +279,6 @@ class _HelpCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 
-                /// TEXTOS
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +304,6 @@ class _HelpCard extends StatelessWidget {
                   ),
                 ),
                 
-                /// ACCIÓN INDICADORA
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
