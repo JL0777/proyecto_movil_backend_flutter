@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/ingrediente_service.dart';
+import '../../../services/usda_service.dart';
 
 class GestionIngredientesScreen extends StatefulWidget {
   const GestionIngredientesScreen({super.key});
@@ -101,7 +102,8 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       filtro = _filtroComunes;
     }
 
-    final base = _ingredientes.where((i) => tipos.contains(i['tipo'])).toList();
+    final base =
+        _ingredientes.where((i) => tipos.contains(i['tipo'])).toList();
 
     if (filtro != null) {
       return base.where((i) => i['tipo'] == filtro).toList();
@@ -204,231 +206,338 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     final label = _labelTipo[ing['tipo']] ?? ing['tipo'];
     final precioPorGramo = cantidad > 0 ? precio / cantidad : 0.0;
 
+    final calorias = ing['calorias'];
+    final proteinas = ing['proteinas'];
+    final carbohidratos = ing['carbohidratos'];
+    final grasas = ing['grasas'];
+    final tieneNutricional = calorias != null ||
+        proteinas != null ||
+        carbohidratos != null ||
+        grasas != null;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Icono grande
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icono, color: color, size: 36),
-            ),
-            const SizedBox(height: 12),
-
-            Text(
-              ing['nombre'] ?? '',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 6),
-
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Stats
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _statCard(
-                      'Cantidad base',
-                      '${cantidad.toStringAsFixed(0)}g/ml',
-                      Icons.monitor_weight_outlined,
-                      Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _statCard(
-                      'Precio base',
-                      '\$${precio.toStringAsFixed(0)}',
-                      Icons.attach_money,
-                      const Color(0xFFE8651A),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _statCard(
-                      'Por gramo',
-                      '\$${precioPorGramo.toStringAsFixed(2)}',
-                      Icons.calculate_outlined,
-                      Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Toggle disponible
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: disponible ? Colors.green.shade50 : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: disponible
-                        ? Colors.green.shade200
-                        : Colors.red.shade200,
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icono, color: color, size: 36),
+              ),
+              const SizedBox(height: 12),
+
+              Text(
+                ing['nombre'] ?? '',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 6),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: color,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    Icon(
-                      disponible
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: disponible
-                          ? Colors.green.shade600
-                          : Colors.red.shade400,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            disponible
-                                ? 'Visible para clientes'
-                                : 'Oculto para clientes',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: disponible
-                                  ? Colors.green.shade700
-                                  : Colors.red.shade600,
-                            ),
-                          ),
-                          Text(
-                            disponible
-                                ? 'Los clientes pueden seleccionar este ingrediente'
-                                : 'No aparece al personalizar menús',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
+                      child: _statCard(
+                        'Cantidad base',
+                        '${cantidad.toStringAsFixed(0)}g/ml',
+                        Icons.monitor_weight_outlined,
+                        Colors.blue,
                       ),
                     ),
-                    Switch(
-                      value: disponible,
-                      onChanged: (_) async {
-                        Navigator.pop(ctx);
-                        await _toggleDisponible(ing);
-                      },
-                      activeThumbColor: Colors.green,
-                      inactiveThumbColor: Colors.red.shade300,
-                      inactiveTrackColor: Colors.red.shade100,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _statCard(
+                        'Precio base',
+                        '\$${precio.toStringAsFixed(0)}',
+                        Icons.attach_money,
+                        const Color(0xFFE8651A),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _statCard(
+                        'Por gramo',
+                        '\$${precioPorGramo.toStringAsFixed(2)}',
+                        Icons.calculate_outlined,
+                        Colors.green,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              // Info nutricional
+              if (tieneNutricional) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.health_and_safety_outlined,
+                              color: Colors.green,
+                              size: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Nutricional (por 100g)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border:
+                                  Border.all(color: Colors.green.shade200),
+                            ),
+                            child: Text(
+                              'USDA',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _statCard(
+                              'Calorías',
+                              '${calorias ?? 0} kcal',
+                              Icons.local_fire_department_outlined,
+                              Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _statCard(
+                              'Proteínas',
+                              '${proteinas ?? 0}g',
+                              Icons.fitness_center_outlined,
+                              Colors.red,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _statCard(
+                              'Carbos',
+                              '${carbohidratos ?? 0}g',
+                              Icons.grain_outlined,
+                              Colors.amber.shade700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _statCard(
+                              'Grasas',
+                              '${grasas ?? 0}g',
+                              Icons.water_drop_outlined,
+                              Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
-            // Botones
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
+              const SizedBox(height: 16),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: disponible
+                        ? Colors.green.shade50
+                        : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: disponible
+                          ? Colors.green.shade200
+                          : Colors.red.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        disponible
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: disponible
+                            ? Colors.green.shade600
+                            : Colors.red.shade400,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              disponible
+                                  ? 'Visible para clientes'
+                                  : 'Oculto para clientes',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: disponible
+                                    ? Colors.green.shade700
+                                    : Colors.red.shade600,
+                              ),
+                            ),
+                            Text(
+                              disponible
+                                  ? 'Los clientes pueden seleccionar este ingrediente'
+                                  : 'No aparece al personalizar menús',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: disponible,
+                        onChanged: (_) async {
+                          Navigator.pop(ctx);
+                          await _toggleDisponible(ing);
+                        },
+                        activeThumbColor: Colors.green,
+                        inactiveThumbColor: Colors.red.shade300,
+                        inactiveTrackColor: Colors.red.shade100,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _mostrarFormulario(ingrediente: ing);
+                        },
+                        icon: const Icon(Icons.edit_outlined, size: 16),
+                        label: const Text(
+                          'Editar',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFE8651A),
+                          side: const BorderSide(color: Color(0xFFE8651A)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        _mostrarFormulario(ingrediente: ing);
+                        _eliminar(ing);
                       },
-                      icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text(
-                        'Editar',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFE8651A),
-                        side: const BorderSide(color: Color(0xFFE8651A)),
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
                       ),
+                      child: const Icon(Icons.delete_outline, size: 18),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _eliminar(ing);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 16,
-                      ),
-                    ),
-                    child: const Icon(Icons.delete_outline, size: 18),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -487,7 +596,8 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -621,11 +731,10 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                   onTap: () => _setFiltro(tabIndex, null),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
+                        horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8651A).withValues(alpha: 0.1),
+                      color:
+                          const Color(0xFFE8651A).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Row(
@@ -640,7 +749,11 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                           ),
                         ),
                         SizedBox(width: 4),
-                        Icon(Icons.close, size: 12, color: Color(0xFFE8651A)),
+                        Icon(
+                          Icons.close,
+                          size: 12,
+                          color: Color(0xFFE8651A),
+                        ),
                       ],
                     ),
                   ),
@@ -657,26 +770,35 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
     final lista = _ingredientesFiltrados(tabIndex);
 
     if (lista.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.fastfood_outlined,
-              size: 60,
-              color: Colors.grey.shade400,
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.fastfood_outlined,
+                    size: 60,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No hay ingredientes aquí',
+                    style: TextStyle(
+                        color: Colors.grey.shade500, fontSize: 15),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Toca + para agregar uno',
+                    style: TextStyle(
+                        color: Colors.grey.shade400, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'No hay ingredientes aquí',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Toca + para agregar uno',
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -696,6 +818,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
           final color = _coloresTipo[ing['tipo']] ?? Colors.grey;
           final precioPorGramo = cantidad > 0 ? precio / cantidad : 0.0;
           final disponible = ing['disponible'] ?? true;
+          final tieneNutricional = ing['calorias'] != null;
 
           return GestureDetector(
             onTap: () => _mostrarDetalle(ing),
@@ -785,7 +908,7 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
@@ -815,6 +938,40 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
                             ),
                           ),
                         ),
+                        const SizedBox(width: 6),
+                        if (tieneNutricional)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.green.shade200,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.health_and_safety_outlined,
+                                  size: 10,
+                                  color: Colors.green.shade700,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Nutricional',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         const Spacer(),
                         _iconBtn(
                           icon: Icons.edit_outlined,
@@ -868,7 +1025,6 @@ class _GestionIngredientesScreenState extends State<GestionIngredientesScreen>
       appBar: AppBar(
         title: const Text('Gestión de ingredientes'),
         foregroundColor: Colors.white,
-
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -978,13 +1134,21 @@ class _IngredienteFormPage extends StatefulWidget {
 
 class _IngredienteFormPageState extends State<_IngredienteFormPage> {
   final _formKey = GlobalKey<FormState>();
+  final UsdaService _usdaService = UsdaService();
 
   late final TextEditingController _nombreController;
   late final TextEditingController _cantidadController;
   late final TextEditingController _precioController;
 
+  final TextEditingController _caloriasController = TextEditingController();
+  final TextEditingController _proteinasController = TextEditingController();
+  final TextEditingController _carbosController = TextEditingController();
+  final TextEditingController _grasasController = TextEditingController();
+
   late String _tipo;
   bool _guardando = false;
+  bool _buscandoUsda = false;
+  bool _nutricionalEncontrado = false;
 
   bool get _editMode => widget.ingrediente != null;
 
@@ -1001,6 +1165,24 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
       text: widget.ingrediente?['precio']?.toString() ?? '0',
     );
     _tipo = widget.ingrediente?['tipo'] ?? widget.tiposPorTab.first;
+
+    if (widget.ingrediente?['calorias'] != null) {
+      _caloriasController.text =
+          widget.ingrediente!['calorias'].toString();
+      _nutricionalEncontrado = true;
+    }
+    if (widget.ingrediente?['proteinas'] != null) {
+      _proteinasController.text =
+          widget.ingrediente!['proteinas'].toString();
+    }
+    if (widget.ingrediente?['carbohidratos'] != null) {
+      _carbosController.text =
+          widget.ingrediente!['carbohidratos'].toString();
+    }
+    if (widget.ingrediente?['grasas'] != null) {
+      _grasasController.text =
+          widget.ingrediente!['grasas'].toString();
+    }
   }
 
   @override
@@ -1008,7 +1190,77 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
     _nombreController.dispose();
     _cantidadController.dispose();
     _precioController.dispose();
+    _caloriasController.dispose();
+    _proteinasController.dispose();
+    _carbosController.dispose();
+    _grasasController.dispose();
     super.dispose();
+  }
+
+  Future<void> _buscarNutricional() async {
+    final nombre = _nombreController.text.trim();
+    if (nombre.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Escribe el nombre del ingrediente primero'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _buscandoUsda = true);
+
+    final datos = await _usdaService.buscarNutricional(nombre);
+
+    setState(() => _buscandoUsda = false);
+
+    if (datos != null) {
+      setState(() {
+        _caloriasController.text = datos['calorias'].toString();
+        _proteinasController.text = datos['proteinas'].toString();
+        _carbosController.text = datos['carbohidratos'].toString();
+        _grasasController.text = datos['grasas'].toString();
+        _nutricionalEncontrado = true;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Info nutricional encontrada: ${datos['nombre']}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se encontró información nutricional para este ingrediente',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   String? _validar(String? v) {
@@ -1032,6 +1284,15 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
       'cantidad': double.tryParse(_cantidadController.text.trim()) ?? 0,
       'precio': double.tryParse(_precioController.text.trim()) ?? 0,
       'tipo': _tipo,
+      if (_caloriasController.text.isNotEmpty)
+        'calorias': double.tryParse(_caloriasController.text.trim()),
+      if (_proteinasController.text.isNotEmpty)
+        'proteinas': double.tryParse(_proteinasController.text.trim()),
+      if (_carbosController.text.isNotEmpty)
+        'carbohidratos':
+            double.tryParse(_carbosController.text.trim()),
+      if (_grasasController.text.isNotEmpty)
+        'grasas': double.tryParse(_grasasController.text.trim()),
     };
 
     final bool ok = _editMode
@@ -1081,7 +1342,6 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Tipo de ingrediente ──
                     _buildTarjeta(
                       icono: Icons.category_outlined,
                       color: colorTipoActual,
@@ -1090,25 +1350,19 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                     ),
                     const SizedBox(height: 14),
 
-                    // ── Información básica ──
                     _buildTarjeta(
                       icono: Icons.restaurant_outlined,
                       color: const Color(0xFFE8651A),
                       titulo: 'Información del ingrediente',
-                      child: Column(
-                        children: [
-                          _campo(
-                            controller: _nombreController,
-                            label: 'Nombre del ingrediente',
-                            icono: Icons.label_outline,
-                            validator: _validar,
-                          ),
-                        ],
+                      child: _campo(
+                        controller: _nombreController,
+                        label: 'Nombre del ingrediente',
+                        icono: Icons.label_outline,
+                        validator: _validar,
                       ),
                     ),
                     const SizedBox(height: 14),
 
-                    // ── Cantidad y precio ──
                     _buildTarjeta(
                       icono: Icons.scale_outlined,
                       color: Colors.blue,
@@ -1138,9 +1392,157 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 14),
+
+                    // ── Tarjeta nutricional con USDA ──
+                    _buildTarjeta(
+                      icono: Icons.health_and_safety_outlined,
+                      color: Colors.green,
+                      titulo: 'Información nutricional',
+                      trailing: _nutricionalEncontrado
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: Colors.green.shade200),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.verified,
+                                      size: 12,
+                                      color: Colors.green.shade700),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'USDA',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : null,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _buscandoUsda
+                                  ? null
+                                  : _buscarNutricional,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor:
+                                    Colors.green.withValues(alpha: 0.5),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12),
+                              ),
+                              icon: _buscandoUsda
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.search, size: 18),
+                              label: Text(
+                                _buscandoUsda
+                                    ? 'Buscando en USDA...'
+                                    : 'Buscar información nutricional',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Se buscará usando el nombre del ingrediente',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Valores por 100g/ml',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _campoNutricional(
+                                  _caloriasController,
+                                  'Calorías',
+                                  'kcal',
+                                  Icons.local_fire_department_outlined,
+                                  Colors.orange,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _campoNutricional(
+                                  _proteinasController,
+                                  'Proteínas',
+                                  'g',
+                                  Icons.fitness_center_outlined,
+                                  Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _campoNutricional(
+                                  _carbosController,
+                                  'Carbohidratos',
+                                  'g',
+                                  Icons.grain_outlined,
+                                  Colors.amber.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _campoNutricional(
+                                  _grasasController,
+                                  'Grasas',
+                                  'g',
+                                  Icons.water_drop_outlined,
+                                  Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
 
-                    // ── Botón guardar ──
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -1155,7 +1557,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 15),
                         ),
                         child: _guardando
                             ? const SizedBox(
@@ -1199,7 +1602,45 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
     );
   }
 
-  // ── Selector visual de tipo ───────────────────────────────────────────────
+  Widget _campoNutricional(
+    TextEditingController controller,
+    String label,
+    String sufijo,
+    IconData icono,
+    Color color,
+  ) {
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(fontSize: 13),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: sufijo,
+        prefixIcon: Icon(icono, color: color, size: 18),
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle:
+            TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        floatingLabelStyle: TextStyle(color: color, fontSize: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: color, width: 1.8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 10,
+        ),
+      ),
+    );
+  }
 
   Widget _buildSelectorTipo() {
     return Wrap(
@@ -1215,12 +1656,16 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
           onTap: () => setState(() => _tipo = t),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color: seleccionado ? color : color.withValues(alpha: 0.07),
+              color:
+                  seleccionado ? color : color.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: seleccionado ? color : color.withValues(alpha: 0.3),
+                color: seleccionado
+                    ? color
+                    : color.withValues(alpha: 0.3),
                 width: seleccionado ? 1.5 : 1,
               ),
             ),
@@ -1249,8 +1694,6 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
     );
   }
 
-  // ── Header con gradiente ──────────────────────────────────────────────────
-
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -1258,7 +1701,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
+          colorFilter:
+              ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -1301,7 +1745,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                 _editMode
                     ? 'Modifica la información del ingrediente'
                     : 'Completa los datos del nuevo ingrediente',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -1310,13 +1755,12 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
     );
   }
 
-  // ── Tarjeta de sección ────────────────────────────────────────────────────
-
   Widget _buildTarjeta({
     required IconData icono,
     required Color color,
     required String titulo,
     required Widget child,
+    Widget? trailing,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1345,14 +1789,17 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
                 child: Icon(icono, color: color, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(
-                titulo,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
+              if (trailing != null) trailing,
             ],
           ),
           const SizedBox(height: 14),
@@ -1361,8 +1808,6 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
       ),
     );
   }
-
-  // ── Campo de texto ────────────────────────────────────────────────────────
 
   Widget _campo({
     required TextEditingController controller,
@@ -1390,7 +1835,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
         helperText: helper,
         suffixText: sufijo,
         prefixText: prefijo,
-        labelStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+        labelStyle:
+            TextStyle(fontSize: 13, color: Colors.grey.shade500),
         floatingLabelStyle: const TextStyle(
           fontSize: 12,
           color: Color(0xFFE8651A),
@@ -1398,7 +1844,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        prefixIcon: Icon(icono, color: Colors.grey.shade400, size: 18),
+        prefixIcon:
+            Icon(icono, color: Colors.grey.shade400, size: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -1409,7 +1856,8 @@ class _IngredienteFormPageState extends State<_IngredienteFormPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE8651A), width: 1.8),
+          borderSide:
+              const BorderSide(color: Color(0xFFE8651A), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
