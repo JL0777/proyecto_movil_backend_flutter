@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../services/menu_service.dart';
 import '../../../services/categoria_service.dart';
 import '../../../services/upload_service.dart';
+import '../../../services/ia_service.dart';
 
 class GestionMenusScreen extends StatefulWidget {
   const GestionMenusScreen({super.key});
@@ -16,6 +17,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
   final MenuService _menuService = MenuService();
   final CategoriaService _categoriaService = CategoriaService();
   final UploadService _uploadService = UploadService();
+  final IaService _iaService = IaService();
   final ImagePicker _picker = ImagePicker();
 
   List<dynamic> _menus = [];
@@ -27,7 +29,9 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
   List<dynamic> get _menusFiltrados {
     final filtrados = _categoriaSeleccionada == null
         ? _menus
-        : _menus.where((m) => m['categoriaId'] == _categoriaSeleccionada).toList();
+        : _menus
+              .where((m) => m['categoriaId'] == _categoriaSeleccionada)
+              .toList();
     return _mostrarSoloBalanceados
         ? filtrados.where((m) => m['esBalanceado'] == true).toList()
         : filtrados;
@@ -466,6 +470,7 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
     String? objetivo = menu['objetivo'];
     bool esBalanceado = menu['esBalanceado'] ?? false;
     bool guardando = false;
+    bool completandoConIA = false;
 
     final messenger = ScaffoldMessenger.of(context);
 
@@ -603,7 +608,90 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: completandoConIA
+                        ? null
+                        : () async {
+                            setModalState(() => completandoConIA = true);
+                            try {
+                              final result = await _iaService.completarMenuConIA(
+                                menu['nombre'] ?? '',
+                              );
+
+                              if (result['success']) {
+                                final datos = result['datos'] as Map<String, dynamic>;
+                                caloriasController.text =
+                                    datos['calorias']?.toString() ?? '';
+                                proteinasController.text =
+                                    datos['proteinas']?.toString() ?? '';
+                                carbosController.text =
+                                    datos['carbohidratos']?.toString() ?? '';
+                                grasasController.text =
+                                    datos['grasas']?.toString() ?? '';
+                                setModalState(() => objetivo = datos['objetivo']);
+
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Info nutricional ✓'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                              } else {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(result['error'] ?? 'Error al completar con IA'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Error al completar con IA'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            } finally {
+                              setModalState(() => completandoConIA = false);
+                            }
+                          },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFE8651A),
+                      side: const BorderSide(color: Color(0xFFE8651A)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: const Color(0xFFFFF3ED),
+                    ),
+                    icon: completandoConIA
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFE8651A),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.auto_awesome, size: 18),
+                    label: Text(
+                      completandoConIA ? 'Completando...' : 'Completar con IA',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -1105,7 +1193,8 @@ class _GestionMenusScreenState extends State<GestionMenusScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (_categoriaSeleccionada != null || _mostrarSoloBalanceados) ...[
+                      if (_categoriaSeleccionada != null ||
+                          _mostrarSoloBalanceados) ...[
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () => setState(() {
@@ -1452,6 +1541,13 @@ class _MenuFormPageState extends State<_MenuFormPage> {
   File? _imagenSeleccionada;
   String _imagenUrl = '';
   bool _guardando = false;
+  final IaService _iaService = IaService();
+  bool _completandoConIA = false;
+
+  double? _caloriasIA;
+  double? _proteinasIA;
+  double? _carbohidratosIA;
+  double? _grasasIA;
 
   bool get _editMode => widget.menu != null;
 
@@ -1469,6 +1565,10 @@ class _MenuFormPageState extends State<_MenuFormPage> {
     );
     _categoriaId = widget.menu?['categoriaId'];
     _imagenUrl = widget.menu?['imagenUrl'] ?? '';
+    _caloriasIA = widget.menu?['calorias']?.toDouble();
+    _proteinasIA = widget.menu?['proteinas']?.toDouble();
+    _carbohidratosIA = widget.menu?['carbohidratos']?.toDouble();
+    _grasasIA = widget.menu?['grasas']?.toDouble();
   }
 
   @override
@@ -1486,6 +1586,85 @@ class _MenuFormPageState extends State<_MenuFormPage> {
     );
     if (img != null) {
       setState(() => _imagenSeleccionada = File(img.path));
+    }
+  }
+
+  Widget _macroChip(String texto, IconData icono, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Icon(icono, size: 14, color: color),
+            const SizedBox(height: 2),
+            Text(
+              texto,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _generarDescripcionConIA() async {
+    if (_nombreController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Escribe el nombre del menú primero'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _completandoConIA = true);
+
+    final result = await _iaService.completarMenuConIA(
+      _nombreController.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _completandoConIA = false);
+
+    if (result['success']) {
+      final datos = result['datos'] as Map<String, dynamic>;
+      setState(() {
+        _descripcionController.text = datos['descripcion'] ?? '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+              SizedBox(width: 8),
+              Text('¡Descripción generada con IA!'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Error al generar descripción'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -1547,6 +1726,11 @@ class _MenuFormPageState extends State<_MenuFormPage> {
       'precio': double.parse(_precioController.text.trim()),
       'imagenUrl': imagenFinal,
       'categoriaId': _categoriaId,
+      if (_caloriasIA != null) 'calorias': _caloriasIA!.toInt(),
+      if (_proteinasIA != null) 'proteinas': _proteinasIA,
+      if (_carbohidratosIA != null) 'carbohidratos': _carbohidratosIA,
+      if (_grasasIA != null) 'grasas': _grasasIA,
+      if (_caloriasIA != null) 'esBalanceado': true,
     };
 
     final bool ok = _editMode
@@ -1715,6 +1899,115 @@ class _MenuFormPageState extends State<_MenuFormPage> {
                             icono: Icons.notes_outlined,
                             maxLines: 3,
                           ),
+                          const SizedBox(height: 12),
+
+                          // Botón generar descripción con IA
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _completandoConIA
+                                  ? null
+                                  : _generarDescripcionConIA,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFE8651A),
+                                side: const BorderSide(
+                                  color: Color(0xFFE8651A),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                backgroundColor: const Color(0xFFFFF3ED),
+                              ),
+                              icon: _completandoConIA
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFFE8651A),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.auto_awesome, size: 18),
+                              label: Text(
+                                _completandoConIA
+                                    ? 'Generando...'
+                                    : 'Generar descripción con IA',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Preview nutricional si ya tiene datos
+                          if (_caloriasIA != null) ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.green.shade200,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.verified_outlined,
+                                        color: Colors.green.shade600,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Info nutricional generada por IA',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.green.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      _macroChip(
+                                        '${_caloriasIA?.toStringAsFixed(0)} kcal',
+                                        Icons.local_fire_department_outlined,
+                                        Colors.orange,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      _macroChip(
+                                        '${_proteinasIA?.toStringAsFixed(1)}g prot',
+                                        Icons.fitness_center_outlined,
+                                        Colors.red,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      _macroChip(
+                                        '${_carbohidratosIA?.toStringAsFixed(1)}g carbs',
+                                        Icons.grain_outlined,
+                                        Colors.amber.shade700,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      _macroChip(
+                                        '${_grasasIA?.toStringAsFixed(1)}g grasa',
+                                        Icons.water_drop_outlined,
+                                        Colors.blue,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           _campo(
                             controller: _precioController,

@@ -15,6 +15,7 @@ const pedidoRoutes = require('./routes/pedidoRoutes');
 const ventasRoutes = require('./routes/ventasRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
+const iaRoutes = require('./routes/iaRoutes');
 const path = require('path');
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/ventas', ventasRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/upload', uploadRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/ia', iaRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Backend funcionando correctamente' });

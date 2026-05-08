@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../services/user_service.dart';
 import 'menus_balanceados_screen.dart';
+import 'plan_comidas_screen.dart';
 
 class PerfilNutricionalScreen extends StatefulWidget {
   const PerfilNutricionalScreen({super.key});
@@ -781,6 +782,34 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen> {
         ),
 
         const SizedBox(height: 16),
+
+        // ── Botón IA ──
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PlanComidasScreen(perfil: _perfil!),
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            icon: const Icon(Icons.auto_awesome, size: 18),
+            label: const Text(
+              '¿Qué como hoy? — IA',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
 
         // ── Ver menús recomendados ──
         SizedBox(

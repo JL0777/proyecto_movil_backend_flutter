@@ -1,4 +1,5 @@
 const { Ingrediente } = require('../models');
+const { buscarNutricional } = require('../services/usdaService');
 
 // ======================
 // LISTAR POR TIPO (cliente)
@@ -117,6 +118,27 @@ exports.getByTipoPublico = async (req, res) => {
   } catch (error) {
     console.error('ERROR GET BY TIPO PUBLICO:', error);
     res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+exports.buscarNutricional = async (req, res) => {
+  try {
+    const { nombre } = req.query;
+
+    if (!nombre || nombre.trim().length < 2) {
+      return res.status(400).json({ error: 'Nombre requerido (mínimo 2 caracteres)' });
+    }
+
+    const datos = await buscarNutricional(nombre.trim());
+
+    if (!datos) {
+      return res.status(404).json({ error: 'Alimento no encontrado en USDA' });
+    }
+
+    res.json({ success: true, datos });
+  } catch (error) {
+    console.error('ERROR USDA:', error.message);
+    res.status(500).json({ error: 'Error al consultar USDA' });
   }
 };
 

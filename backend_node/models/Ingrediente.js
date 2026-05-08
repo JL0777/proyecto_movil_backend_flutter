@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
                 'vegetal',
                 'bebida',
                 'complemento',
-                'pan',  
-                'salsa',    
-                'extra'     
+                'pan',
+                'salsa',
+                'extra'
             ),
             allowNull: false
         },
@@ -32,7 +32,27 @@ module.exports = (sequelize, DataTypes) => {
         disponible: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
-        }
+        },
+        calorias: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true,
+            defaultValue: null
+        },
+        proteinas: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true,
+            defaultValue: null
+        },
+        carbohidratos: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true,
+            defaultValue: null
+        },
+        grasas: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true,
+            defaultValue: null
+        },
     }, {
         tableName: 'Ingredientes',
         timestamps: true
