@@ -9,8 +9,11 @@ import 'screens/preview/preview_home_screen.dart';
 import 'screens/cliente/home_screen.dart';
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/cocina/cocina_home_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().inicializar();
   runApp(const MyApp());
 }
 

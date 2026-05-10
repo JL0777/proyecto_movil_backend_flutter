@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen>
                       padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFFE8651A), Color(0xFFFF8C42)],
+                          colors: [Color.fromARGB(255, 250, 147, 87), Color(0xFFFF8C42)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),

@@ -144,8 +144,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   );
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(30),
@@ -188,38 +190,105 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   opacity: _logoFade,
                   child: SlideTransition(
                     position: _logoSlide,
-                    child: Column(
-                      children: [
-                        ScaleTransition(
-                          scale: _logoScale,
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE8651A),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFE8651A)
-                                    ..withValues(alpha: 0.4),
-                                  blurRadius: 24,
-                                  spreadRadius: 4,
+                    child: ScaleTransition(
+                      scale: _logoScale,
+                      child: SizedBox(
+                        width: 180,
+                        height: 180,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Anillo exterior
+                            Container(
+                              width: 180,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Color.fromARGB(255, 235, 183, 141),
+                                  width: 3,
+                                ),
+                              ),
+                            ),
+                            // Anillo interior
+                            Container(
+                              width: 151,
+                              height: 151,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Color.fromARGB(255, 235, 183, 141),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            // 4 puntos dorados
+                            ...[
+                              Alignment.topCenter,
+                              Alignment.bottomCenter,
+                              Alignment.centerLeft,
+                              Alignment.centerRight,
+                            ].map(
+                              (align) => Align(
+                                alignment: align,
+                                child: Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color.fromARGB(255, 235, 183, 141),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Línea horizontal punteada
+                            Positioned(
+                              left: 18,
+                              right: 18,
+                              child: Row(
+                                children: List.generate(
+                                  16,
+                                  (i) => Expanded(
+                                    child: Container(
+                                      height: 1,
+                                      color: i.isEven
+                                          ? const Color.fromARGB(255, 153, 151, 150)
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // MM + tagline
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'MM',
+                                  style: TextStyle(
+                                    fontFamily: 'serif',
+                                    fontSize: 64,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFF5E6C8),
+                                    height: 1,
+                                    letterSpacing: -2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'MY · MEAL',
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    color: Color(0xFFF5E6C8),
+                                    letterSpacing: 5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.restaurant_menu,
-                              color: Colors.white,
-                              size: 44,
-                            ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Image.asset(
-                          'assets/images/logo_mymeal.png',
-                          width: 200,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

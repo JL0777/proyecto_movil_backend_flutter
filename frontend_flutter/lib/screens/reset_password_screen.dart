@@ -82,24 +82,189 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
   }
 
+  Widget _buildLogo() {
+    const double size = 140;
+    const Color gold = Color(0xFFC97A3A);
+    const Color cream = Color(0xFFF5E6C8);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: gold, width: 2.5),
+            ),
+          ),
+          Container(
+            width: size * 0.84,
+            height: size * 0.84,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: gold, width: 0.8),
+            ),
+          ),
+          ...[
+            Alignment.topCenter,
+            Alignment.bottomCenter,
+            Alignment.centerLeft,
+            Alignment.centerRight,
+          ].map((align) => Align(
+                alignment: align,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: gold,
+                  ),
+                ),
+              )),
+          Positioned(
+            left: size * 0.1,
+            right: size * 0.1,
+            child: Row(
+              children: List.generate(
+                14,
+                (i) => Expanded(
+                  child: Container(
+                    height: 1,
+                    color: i.isEven ? gold : Colors.transparent,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                'MM',
+                style: TextStyle(
+                  fontFamily: 'serif',
+                  fontSize: 50,
+                  fontWeight: FontWeight.w700,
+                  color: cream,
+                  height: 1,
+                  letterSpacing: -2,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'MY · MEAL',
+                style: TextStyle(
+                  fontSize: 7,
+                  color: gold,
+                  letterSpacing: 4,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool visible,
+    required VoidCallback onToggle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1C0E05),
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: !visible,
+          style: const TextStyle(fontSize: 15),
+          decoration: InputDecoration(
+            hintText: '••••••••',
+            hintStyle: const TextStyle(color: Colors.black26),
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              color: Color(0xFFE8651A),
+              size: 20,
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                visible
+                    ? Icons.visibility_rounded
+                    : Icons.visibility_off_rounded,
+                color: Colors.black38,
+                size: 20,
+              ),
+              onPressed: onToggle,
+            ),
+            filled: true,
+            fillColor: const Color(0xFFFAF7F4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: Color(0xFFEAE0D6),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: Color(0xFFE8651A),
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF1C0E05),
       body: Stack(
         children: [
+          // Fondo
           Positioned.fill(
             child: Image.asset(
               'assets/images/background.png',
               fit: BoxFit.cover,
-              alignment: Alignment.bottomCenter,
+              alignment: Alignment.topCenter,
             ),
           ),
+          // Overlay oscuro
           Positioned.fill(
-            child: Container(color: const Color(0x73000000)),
+            child: Container(color: const Color(0xAA1C0E05)),
           ),
+
           SafeArea(
             child: Column(
               children: [
+                // Botón atrás
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
@@ -107,119 +272,143 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Image.asset('assets/images/logo_mymeal.png', width: 750),
-                const SizedBox(height: 16),
+
+                const SizedBox(height: 12),
+
+                // Logo MM
+                _buildLogo(),
+
+                const SizedBox(height: 28),
+
+                // Tarjeta blanca
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(40),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(36),
+                        topRight: Radius.circular(36),
+                      ),
                     ),
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 30,
-                      ),
+                      padding: const EdgeInsets.fromLTRB(28, 36, 28, 40),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'NUEVA CONTRASEÑA',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                          // Ícono
+                          Center(
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF0E6),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFE8651A),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.lock_open_rounded,
+                                color: Color(0xFFE8651A),
+                                size: 30,
+                              ),
                             ),
                           ),
+
+                          const SizedBox(height: 20),
+
+                          // Título
+                          const Center(
+                            child: Text(
+                              'Nueva contraseña',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1C0E05),
+                              ),
+                            ),
+                          ),
+
                           const SizedBox(height: 10),
-                          const Text(
-                            'Ingresa tu nueva contraseña.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black54,
+
+                          // Descripción
+                          const Center(
+                            child: Text(
+                              'Mínimo 8 caracteres,\nuna mayúscula y un número.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.black45,
+                                height: 1.6,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Mínimo 8 caracteres, una mayúscula y un número.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.black45,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          TextField(
+
+                          const SizedBox(height: 36),
+
+                          // Campo nueva contraseña
+                          _buildPasswordField(
                             controller: _passwordController,
-                            obscureText: !_passwordVisible,
-                            decoration: InputDecoration(
-                              labelText: 'Nueva contraseña',
-                              border: const UnderlineInputBorder(),
-                              enabledBorder: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder: const UnderlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Color(0xFFE8651A)),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _passwordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () => setState(
-                                    () => _passwordVisible = !_passwordVisible),
-                              ),
-                            ),
+                            label: 'Nueva contraseña',
+                            visible: _passwordVisible,
+                            onToggle: () => setState(
+                                () => _passwordVisible = !_passwordVisible),
                           ),
-                          const SizedBox(height: 16),
-                          TextField(
+
+                          const SizedBox(height: 20),
+
+                          // Campo confirmar contraseña
+                          _buildPasswordField(
                             controller: _confirmController,
-                            obscureText: !_confirmVisible,
-                            decoration: InputDecoration(
-                              labelText: 'Confirmar contraseña',
-                              border: const UnderlineInputBorder(),
-                              enabledBorder: const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder: const UnderlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Color(0xFFE8651A)),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _confirmVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () => setState(
-                                    () => _confirmVisible = !_confirmVisible),
-                              ),
-                            ),
+                            label: 'Confirmar contraseña',
+                            visible: _confirmVisible,
+                            onToggle: () => setState(
+                                () => _confirmVisible = !_confirmVisible),
                           ),
-                          const SizedBox(height: 30),
+
+                          const SizedBox(height: 32),
+
+                          // Botón guardar
                           SizedBox(
                             width: double.infinity,
-                            height: 52,
+                            height: 54,
                             child: ElevatedButton(
                               onPressed: _loading ? null : _cambiarPassword,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE8651A),
                                 foregroundColor: Colors.white,
+                                elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                               child: _loading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white)
-                                  : const Text(
-                                      'GUARDAR CONTRASEÑA',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
                                       ),
+                                    )
+                                  : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.save_rounded, size: 18),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Guardar contraseña',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                             ),
                           ),
