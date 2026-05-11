@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../services/ia_service.dart';
 
 class PlanComidasScreen extends StatefulWidget {
@@ -10,24 +12,81 @@ class PlanComidasScreen extends StatefulWidget {
   State<PlanComidasScreen> createState() => _PlanComidasScreenState();
 }
 
-class _PlanComidasScreenState extends State<PlanComidasScreen> {
+class _PlanComidasScreenState extends State<PlanComidasScreen>
+    with SingleTickerProviderStateMixin {
   final IaService _iaService = IaService();
 
   String? _plan;
-  bool _loading = true;
+  bool _loading = false;
   String? _error;
+
+  // Progreso del día: claves son los títulos de sección
+  Map<String, bool> _completados = {};
+  late AnimationController _progressController;
+  late Animation<double> _progressAnim;
+
+  static const String _prefKeyPlan = 'plan_comidas_hoy';
+  static const String _prefKeyFecha = 'plan_comidas_fecha';
+  static const String _prefKeyCompletados = 'plan_comidas_completados';
+
+  static const Color _naranja = Color(0xFFE8651A);
+  static const Color _verde = Color(0xFF10B981);
 
   @override
   void initState() {
     super.initState();
-    _generarPlan();
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _progressAnim = CurvedAnimation(
+      parent: _progressController,
+      curve: Curves.easeOutCubic,
+    );
+    _cargarOGenerarPlan();
   }
 
-  Future<void> _generarPlan() async {
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  // ── Persistencia ──────────────────────────────────────────
+
+  Future<void> _cargarOGenerarPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    final fechaGuardada = prefs.getString(_prefKeyFecha) ?? '';
+    final hoy = _fechaHoy();
+    final planGuardado = prefs.getString(_prefKeyPlan);
+
+    // Cargar completados del día
+    final completadosJson = prefs.getString(_prefKeyCompletados) ?? '{}';
+    Map<String, bool> completados = {};
+    try {
+      final decoded = jsonDecode(completadosJson) as Map<String, dynamic>;
+      completados = decoded.map((k, v) => MapEntry(k, v as bool));
+    } catch (_) {}
+
+    // Si el plan es de hoy, cargarlo directamente
+    if (fechaGuardada == hoy && planGuardado != null && planGuardado.isNotEmpty) {
+      setState(() {
+        _plan = planGuardado;
+        _completados = completados;
+        _loading = false;
+      });
+      _animarProgreso();
+      return;
+    }
+
+    // Si es un día nuevo, resetear completados y generar nuevo plan
+    await _generarPlan(resetearCompletados: true);
+  }
+
+  Future<void> _generarPlan({bool resetearCompletados = false}) async {
     setState(() {
       _loading = true;
       _error = null;
-      _plan = null;
     });
 
     final result = await _iaService.generarPlanComidas();
@@ -35,10 +94,27 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     if (!mounted) return;
 
     if (result['success']) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefKeyPlan, result['plan']);
+      await prefs.setString(_prefKeyFecha, _fechaHoy());
+
+      if (resetearCompletados) {
+        await prefs.setString(_prefKeyCompletados, '{}');
+      }
+
+      final completadosJson = prefs.getString(_prefKeyCompletados) ?? '{}';
+      Map<String, bool> completados = {};
+      try {
+        final decoded = jsonDecode(completadosJson) as Map<String, dynamic>;
+        completados = decoded.map((k, v) => MapEntry(k, v as bool));
+      } catch (_) {}
+
       setState(() {
         _plan = result['plan'];
+        _completados = resetearCompletados ? {} : completados;
         _loading = false;
       });
+      _animarProgreso();
     } else {
       setState(() {
         _error = result['error'];
@@ -47,16 +123,35 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     }
   }
 
+  Future<void> _toggleCompletado(String titulo, bool valor) async {
+    setState(() => _completados[titulo] = valor);
+    _animarProgreso();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefKeyCompletados, jsonEncode(_completados));
+  }
+
+  void _animarProgreso() {
+    _progressController.reset();
+    _progressController.forward();
+  }
+
+  String _fechaHoy() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month}-${now.day}';
+  }
+
+  // ── Parser de secciones ───────────────────────────────────
+
   List<_Seccion> _parsearPlan(String plan) {
     final secciones = <_Seccion>[];
-
     final bloques = [
-      _BloqueDef('🍳', 'DESAYUNO', Colors.orange, Icons.wb_sunny_outlined),
-      _BloqueDef('🥗', 'ALMUERZO', const Color(0xFFE8651A), Icons.lunch_dining_outlined),
-      _BloqueDef('🍎', 'MERIENDA', Colors.green, Icons.apple_outlined),
-      _BloqueDef('🍽️', 'CENA', Colors.indigo, Icons.dinner_dining_outlined),
-      _BloqueDef('💧', 'HIDRATACIÓN', Colors.blue, Icons.water_drop_outlined),
-      _BloqueDef('✅', 'RESUMEN', Colors.teal, Icons.summarize_outlined),
+      _BloqueDef('🍳', 'DESAYUNO', const Color(0xFFFF8C42), Icons.wb_sunny_outlined),
+      _BloqueDef('🥗', 'ALMUERZO', const Color(0xFF10B981), Icons.lunch_dining_outlined),
+      _BloqueDef('🍎', 'MERIENDA', const Color(0xFFF59E0B), Icons.apple_outlined),
+      _BloqueDef('🍽️', 'CENA', const Color(0xFF6366F1), Icons.dinner_dining_outlined),
+      _BloqueDef('💧', 'HIDRATACIÓN', const Color(0xFF3B82F6), Icons.water_drop_outlined),
+      _BloqueDef('✅', 'RESUMEN', const Color(0xFF14B8A6), Icons.summarize_outlined),
     ];
 
     for (int i = 0; i < bloques.length; i++) {
@@ -78,9 +173,21 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
         icono: bloque.icono,
       ));
     }
-
     return secciones;
   }
+
+  // ── Progreso ──────────────────────────────────────────────
+
+  double _calcularProgreso(List<_Seccion> secciones) {
+    final checkables = secciones.where((s) => s.titulo != 'RESUMEN').toList();
+    if (checkables.isEmpty) return 0;
+    final hechos = checkables.where((s) => _completados[s.titulo] == true).length;
+    return hechos / checkables.length;
+  }
+
+  // ════════════════════════════════════════════════
+  // BUILD
+  // ════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {
@@ -89,111 +196,10 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     final imc = widget.perfil['imc'] ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF2F1EF),
       body: Column(
         children: [
-          // ── Header ──
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/background.png'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Color(0x66000000),
-                  BlendMode.darken,
-                ),
-              ),
-            ),
-            padding: EdgeInsets.fromLTRB(
-              16,
-              MediaQuery.of(context).padding.top + 12,
-              16,
-              20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.arrow_back,
-                            color: Colors.white, size: 20),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '¿Qué como hoy?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            'Plan generado por IA para ti',
-                            style: TextStyle(
-                                color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _loading ? null : _generarPlan,
-                      child: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.refresh_rounded,
-                            color: Colors.white, size: 20),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // Chips de perfil
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _perfilChip(
-                        '${tdee.toStringAsFixed(0)} kcal',
-                        Icons.local_fire_department_outlined,
-                      ),
-                      const SizedBox(width: 8),
-                      _perfilChip(
-                        'IMC ${imc.toStringAsFixed(1)}',
-                        Icons.monitor_weight_outlined,
-                      ),
-                      const SizedBox(width: 8),
-                      _perfilChip(
-                        _labelObjetivo(objetivo),
-                        Icons.flag_outlined,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Contenido ──
+          _buildHeader(tdee, imc, objetivo),
           Expanded(
             child: _loading
                 ? _buildLoading()
@@ -206,7 +212,116 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     );
   }
 
-  // ── Loading ────────────────────────────────────────────────
+  // ── Header ────────────────────────────────────────────────
+
+  Widget _buildHeader(dynamic tdee, dynamic imc, String objetivo) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Color(0x77000000), BlendMode.darken),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + 12,
+        20,
+        22,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _headerBtn(Icons.arrow_back, () => Navigator.pop(context)),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '¿Qué como hoy?',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    Text(
+                      'Plan personalizado con IA',
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              _headerBtn(
+                Icons.refresh_rounded,
+                _loading ? null : () => _generarPlan(resetearCompletados: true),
+                tooltip: 'Generar nuevo plan',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _chip('${(tdee as num).toStringAsFixed(0)} kcal', Icons.local_fire_department_outlined),
+              const SizedBox(width: 8),
+              _chip('IMC ${(imc as num).toStringAsFixed(1)}', Icons.monitor_weight_outlined),
+              const SizedBox(width: 8),
+              _chip(_labelObjetivo(objetivo), Icons.flag_outlined),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerBtn(IconData icon, VoidCallback? onTap, {String? tooltip}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Tooltip(
+        message: tooltip ?? '',
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(String texto, IconData icono) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, color: Colors.white, size: 11),
+          const SizedBox(width: 5),
+          Text(texto,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  // ── Loading ───────────────────────────────────────────────
 
   Widget _buildLoading() {
     return Center(
@@ -214,45 +329,32 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8651A).withValues(alpha: 0.08),
+              color: _naranja.withValues(alpha: 0.08),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFE8651A).withValues(alpha: 0.2),
-                width: 2,
-              ),
+              border: Border.all(color: _naranja.withValues(alpha: 0.18), width: 2),
             ),
             child: const Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(
-                color: Color(0xFFE8651A),
-                strokeWidth: 3,
-              ),
+              padding: EdgeInsets.all(22),
+              child: CircularProgressIndicator(color: _naranja, strokeWidth: 3),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Generando tu plan personalizado...',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87),
-          ),
+          const Text('Creando tu plan del día...',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87)),
           const SizedBox(height: 8),
           Text(
-            'La IA está analizando tu perfil\ny los ingredientes disponibles',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 13, color: Colors.grey.shade500, height: 1.5),
+            'La IA analiza tu perfil y objetivos',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
           ),
         ],
       ),
     );
   }
 
-  // ── Error ──────────────────────────────────────────────────
+  // ── Error ─────────────────────────────────────────────────
 
   Widget _buildError() {
     return Center(
@@ -267,37 +369,26 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
-                border: Border.all(
-                    color: Colors.red.withValues(alpha: 0.2), width: 2),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 2),
               ),
-              child: const Icon(Icons.error_outline,
-                  size: 36, color: Colors.red),
+              child: const Icon(Icons.error_outline, size: 36, color: Colors.red),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No se pudo generar el plan',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87),
-            ),
+            const Text('No se pudo generar el plan',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87)),
             const SizedBox(height: 8),
-            Text(
-              _error ?? 'Error desconocido',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-            ),
+            Text(_error ?? 'Error desconocido',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _generarPlan,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE8651A),
+                backgroundColor: _naranja,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
               ),
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Intentar de nuevo',
@@ -309,47 +400,30 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     );
   }
 
-  // ── Plan ───────────────────────────────────────────────────
+  // ── Plan principal ────────────────────────────────────────
 
   Widget _buildPlan() {
     if (_plan == null) return const SizedBox();
-
     final secciones = _parsearPlan(_plan!);
+    final progreso = _calcularProgreso(secciones);
+    final hechos = secciones.where((s) => s.titulo != 'RESUMEN' && _completados[s.titulo] == true).length;
+    final total = secciones.where((s) => s.titulo != 'RESUMEN').length;
 
     return RefreshIndicator(
-      onRefresh: _generarPlan,
-      color: const Color(0xFFE8651A),
+      onRefresh: () => _generarPlan(resetearCompletados: true),
+      color: _naranja,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         children: [
-          // Banner info
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3ED),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: const Color(0xFFE8651A).withValues(alpha: 0.3)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.auto_awesome,
-                    color: Color(0xFFE8651A), size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Plan generado con IA basado en tu perfil y los ingredientes disponibles. Toca 🔄 para generar uno nuevo.',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFE8651A),
-                        height: 1.4),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // ── Barra de progreso del día ──
+          _barraProgreso(progreso, hechos, total),
+          const SizedBox(height: 16),
 
+          // ── Banner IA ──
+          _bannerIA(),
+          const SizedBox(height: 14),
+
+          // ── Secciones ──
           if (secciones.isEmpty)
             _cardTextoPlano(_plan!)
           else
@@ -359,20 +433,203 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
     );
   }
 
-  // ── Card de sección ────────────────────────────────────────
+  // ── Barra de progreso ────────────────────────────────────
 
-  Widget _cardSeccion(_Seccion seccion) {
+  Widget _barraProgreso(double progreso, int hechos, int total) {
+    final porcentaje = (progreso * 100).round();
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _progresColor(progreso).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  progreso == 1.0 ? Icons.celebration_rounded : Icons.today_rounded,
+                  color: _progresColor(progreso),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      progreso == 1.0
+                          ? '¡Plan completado!'
+                          : 'Tu progreso de hoy',
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87),
+                    ),
+                    Text(
+                      '$hechos de $total comidas completadas',
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade400),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedBuilder(
+                animation: _progressAnim,
+                builder: (_, _) {
+                  final displayPorcentaje = (porcentaje * _progressAnim.value).round();
+                  return Text(
+                    '$displayPorcentaje%',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: _progresColor(progreso),
+                      letterSpacing: -0.5,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: AnimatedBuilder(
+              animation: _progressAnim,
+              builder: (_, _) => LinearProgressIndicator(
+                value: progreso * _progressAnim.value,
+                minHeight: 10,
+                backgroundColor: Colors.grey.shade100,
+                valueColor: AlwaysStoppedAnimation(_progresColor(progreso)),
+              ),
+            ),
+          ),
+          if (total > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: _buildDotIndicators(total),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildDotIndicators(int total) {
+    final nombres = ['D', 'A', 'M', 'C', 'H'];
+    final titulos = ['DESAYUNO', 'ALMUERZO', 'MERIENDA', 'CENA', 'HIDRATACIÓN'];
+    return List.generate(total.clamp(0, 5), (i) {
+      final hecho = _completados[titulos[i]] == true;
+      return Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: hecho ? _verde : Colors.grey.shade100,
+              border: Border.all(
+                color: hecho ? _verde : Colors.grey.shade300,
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: hecho
+                  ? const Icon(Icons.check, color: Colors.white, size: 14)
+                  : Text(nombres[i],
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade400)),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            nombres[i],
+            style: TextStyle(
+                fontSize: 9,
+                color: hecho ? _verde : Colors.grey.shade400,
+                fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    });
+  }
+
+  Color _progresColor(double p) {
+    if (p == 0) return Colors.grey.shade400;
+    if (p < 0.5) return _naranja;
+    if (p < 1.0) return const Color(0xFFF59E0B);
+    return _verde;
+  }
+
+  // ── Banner IA ─────────────────────────────────────────────
+
+  Widget _bannerIA() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3ED),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _naranja.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome_rounded, color: _naranja, size: 15),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Marca cada comida al completarla. Toca 🔄 en la esquina para generar un plan nuevo.',
+              style: TextStyle(fontSize: 11, color: _naranja, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Card de sección ───────────────────────────────────────
+
+  Widget _cardSeccion(_Seccion seccion) {
+    final esResumen = seccion.titulo == 'RESUMEN';
+    final completado = _completados[seccion.titulo] == true;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: completado ? seccion.color.withValues(alpha: 0.04) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: completado
+              ? seccion.color.withValues(alpha: 0.35)
+              : Colors.grey.shade100,
+          width: completado ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: completado
+                ? seccion.color.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: completado ? 12 : 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -381,40 +638,102 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
         children: [
           // Header de la card
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
             decoration: BoxDecoration(
-              color: seccion.color.withValues(alpha: 0.08),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              color: completado
+                  ? seccion.color.withValues(alpha: 0.08)
+                  : seccion.color.withValues(alpha: 0.06),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(7),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: seccion.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(9),
+                    color: completado
+                        ? seccion.color.withValues(alpha: 0.15)
+                        : seccion.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(seccion.icono,
-                      color: seccion.color, size: 16),
+                  child: Icon(
+                    completado && !esResumen
+                        ? Icons.check_circle_rounded
+                        : seccion.icono,
+                    color: seccion.color,
+                    size: 17,
+                  ),
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  seccion.titulo,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: seccion.color,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        seccion.titulo,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: seccion.color,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      if (completado && !esResumen)
+                        Text(
+                          '¡Completado!',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: seccion.color.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
+
+                // Toggle de completado (excepto en Resumen)
+                if (!esResumen)
+                  GestureDetector(
+                    onTap: () => _toggleCompletado(seccion.titulo, !completado),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: 44,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(13),
+                        color: completado ? seccion.color : Colors.grey.shade200,
+                      ),
+                      child: AnimatedAlign(
+                        duration: const Duration(milliseconds: 250),
+                        alignment: completado
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.all(3),
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: completado
+                              ? Icon(Icons.check, color: seccion.color, size: 12)
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
 
-          // Contenido
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: _renderContenido(seccion.contenido, seccion.color),
+          // Contenido (con opacidad reducida si está completado)
+          AnimatedOpacity(
+            opacity: completado && !esResumen ? 0.55 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _renderContenido(seccion.contenido, seccion.color),
+            ),
           ),
         ],
       ),
@@ -433,23 +752,21 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
       children: lineas.map((linea) {
         if (linea.trim().startsWith('•')) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: 7),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(top: 5),
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                      color: color, shape: BoxShape.circle),
+                  margin: const EdgeInsets.only(top: 6, right: 8),
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                 ),
-                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     linea.replaceFirst('•', '').trim(),
                     style: const TextStyle(
-                        fontSize: 13, color: Colors.black87, height: 1.4),
+                        fontSize: 13, color: Colors.black87, height: 1.45),
                   ),
                 ),
               ],
@@ -457,16 +774,17 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
           );
         } else if (linea.trim().startsWith('Por qué:')) {
           return Container(
-            margin: const EdgeInsets.only(top: 4, bottom: 4),
+            margin: const EdgeInsets.only(top: 6, bottom: 6),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: color.withValues(alpha: 0.12)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lightbulb_outline, color: color, size: 14),
+                Icon(Icons.lightbulb_outline_rounded, color: color, size: 13),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -500,7 +818,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
             child: Text(
               linea.trim(),
               style: const TextStyle(
-                  fontSize: 13, color: Colors.black87, height: 1.4),
+                  fontSize: 13, color: Colors.black87, height: 1.45),
             ),
           );
         }
@@ -510,10 +828,10 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
 
   Widget _cardTextoPlano(String texto) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -524,55 +842,22 @@ class _PlanComidasScreenState extends State<PlanComidasScreen> {
       ),
       child: Text(
         texto,
-        style: const TextStyle(
-            fontSize: 13, color: Colors.black87, height: 1.6),
+        style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.6),
       ),
     );
   }
 
-  // ── Helpers ────────────────────────────────────────────────
-
-  Widget _perfilChip(String texto, IconData icono) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icono, color: Colors.white, size: 12),
-          const SizedBox(width: 5),
-          Text(
-            texto,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
+  // ── Helpers ───────────────────────────────────────────────
 
   String _labelObjetivo(String objetivo) {
-    switch (objetivo) {
-      case 'bajar_peso':
-        return 'Bajar peso';
-      case 'subir_musculo':
-        return 'Subir músculo';
-      case 'mantenimiento':
-        return 'Mantenimiento';
-      case 'energia':
-        return 'Energía';
-      case 'digestivo':
-        return 'Digestivo';
-      default:
-        return objetivo;
-    }
+    const map = {
+      'bajar_peso': 'Bajar peso',
+      'subir_musculo': 'Ganar músculo',
+      'mantenimiento': 'Mantenimiento',
+      'energia': 'Energía',
+      'digestivo': 'Digestivo',
+    };
+    return map[objetivo] ?? objetivo;
   }
 }
 
