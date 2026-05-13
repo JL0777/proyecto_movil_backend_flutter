@@ -12,7 +12,8 @@ import 'account/my_account_screen.dart';
 import 'home/widgets/cart_modal.dart';
 import 'home/widgets/cart_fab.dart';
 import 'home/busqueda_screen.dart';
-import 'account/menuBalanceado/menus_balanceados_screen.dart';
+import 'account/menuBalanceado/perfil_nutricional_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -53,10 +54,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _goToMenusBalanceados() {
+  void _goToPerfilNutricional() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MenusBalanceadosScreen()),
+      MaterialPageRoute(builder: (_) => const PerfilNutricionalScreen()),
     );
   }
 
@@ -73,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen>
             GestureDetector(
               onTap: () {
                 Navigator.pop(ctx);
-                _goToMenusBalanceados();
+                _goToPerfilNutricional();
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -182,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: ElevatedButton(
                               onPressed: () {
                                 Navigator.pop(ctx);
-                                _goToMenusBalanceados();
+                                _goToPerfilNutricional();
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE8651A),
@@ -282,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen>
         onTap: (i) => setState(() => _currentIndex = i),
       ),
       floatingActionButton: _currentIndex == 0
-          ? _MenusBalanceadosFab(onTap: _goToMenusBalanceados)
+          ? _MenusBalanceadosFab(onTap: _goToPerfilNutricional)
           : const CartFab(),
     );
   }
@@ -650,7 +651,7 @@ class _MenusBalanceadosFab extends StatelessWidget {
             Icon(Icons.eco_outlined, color: Color(0xFFE8651A), size: 16),
             SizedBox(width: 6),
             Text(
-              'Menús saludables',
+              'Perfil nutricional',
               style: TextStyle(
                 color: Color(0xFFE8651A),
                 fontSize: 13,

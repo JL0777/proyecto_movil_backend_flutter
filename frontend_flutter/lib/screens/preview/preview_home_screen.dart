@@ -88,7 +88,10 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                         padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Color.fromARGB(255, 250, 147, 87), Color(0xFFFF8C42)],
+                            colors: [
+                              Color.fromARGB(255, 250, 147, 87),
+                              Color(0xFFFF8C42),
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -141,7 +144,9 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                           width: double.infinity,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage('assets/images/balanceados.png'),
+                              image: AssetImage(
+                                'assets/images/balanceados.png',
+                              ),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -152,7 +157,9 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 20),
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
                         color: Colors.white,
                         child: Column(
                           children: [
@@ -192,13 +199,15 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 13),
+                                    vertical: 13,
+                                  ),
                                 ),
                                 child: const Text(
                                   'Registrarme para ver menús',
                                   style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ),
@@ -231,8 +240,11 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.close,
-                      color: Colors.black54, size: 18),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.black54,
+                    size: 18,
+                  ),
                 ),
               ),
             ),
@@ -246,8 +258,7 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -259,33 +270,50 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                   color: Color(0xFFFFF3ED),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.restaurant_menu_outlined,
-                    color: Color(0xFFE8651A), size: 32),
+                child: const Icon(
+                  Icons.restaurant_menu_outlined,
+                  color: Color(0xFFE8651A),
+                  size: 32,
+                ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Menús Saludables',
-                style: TextStyle(
+              Center(
+                child: Text(
+                  'Perfil nutricional personalizado',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black87),
+                    color: Colors.black87,
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Regístrate o inicia sesión para acceder a menús personalizados según tu IMC y objetivo de salud.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                    height: 1.5),
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 20),
-              _beneficio(Icons.monitor_weight_outlined,
-                  'Calcula tu IMC y calorías diarias', Colors.blue),
-              _beneficio(Icons.fitness_center_rounded,
-                  'Menús según tu objetivo de salud', Colors.orange),
-              _beneficio(Icons.trending_down_rounded,
-                  'Bajar peso, subir músculo y más', Colors.green),
+              _beneficio(
+                Icons.monitor_weight_outlined,
+                'Calcula tu IMC y calorías diarias',
+                Colors.blue,
+              ),
+              _beneficio(
+                Icons.fitness_center_rounded,
+                'Menús según tu objetivo de salud',
+                Colors.orange,
+              ),
+              _beneficio(
+                Icons.trending_down_rounded,
+                'Bajar peso, subir músculo y más',
+                Colors.green,
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -294,8 +322,7 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                     Navigator.pop(ctx);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -303,20 +330,23 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
-                  child: const Text('Registrarme ahora',
-                      style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w700)),
+                  child: const Text(
+                    'Registrarme ahora',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Seguir como invitado',
-                    style: TextStyle(
-                        color: Colors.grey.shade500, fontSize: 13)),
+                child: Text(
+                  'Seguir como invitado',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -340,9 +370,10 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(texto,
-                style: const TextStyle(
-                    fontSize: 12, color: Colors.black87)),
+            child: Text(
+              texto,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
           ),
         ],
       ),
@@ -357,12 +388,16 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
               onTap: () => _mostrarDialogRegistro(context),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                      color: const Color(0xFFE8651A), width: 1.5),
+                    color: const Color(0xFFE8651A),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -374,14 +409,20 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.restaurant_menu_outlined,
-                        color: Color(0xFFE8651A), size: 16),
+                    Icon(
+                      Icons.restaurant_menu_outlined,
+                      color: Color(0xFFE8651A),
+                      size: 16,
+                    ),
                     SizedBox(width: 6),
-                    Text('Menús saludables',
-                        style: TextStyle(
-                            color: Color(0xFFE8651A),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700)),
+                    Text(
+                      'Perfil nutricional',
+                      style: TextStyle(
+                        color: Color(0xFFE8651A),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -395,7 +436,8 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
                   onBuscarTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const PreviewBusquedaScreen()),
+                      builder: (_) => const PreviewBusquedaScreen(),
+                    ),
                   ),
                 ),
                 _CategoryTabs(controller: _tabController),
@@ -418,8 +460,7 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          border:
-              Border(top: BorderSide(color: Color(0xFFEEEEEE), width: 0.5)),
+          border: Border(top: BorderSide(color: Color(0xFFEEEEEE), width: 0.5)),
         ),
         child: BottomNavigationBar(
           currentIndex: _bottomIndex,
@@ -490,8 +531,7 @@ class _PreviewHeader extends StatelessWidget {
         image: DecorationImage(
           image: AssetImage('assets/images/background.png'),
           fit: BoxFit.cover,
-          colorFilter:
-              ColorFilter.mode(Color(0x66000000), BlendMode.darken),
+          colorFilter: ColorFilter.mode(Color(0x66000000), BlendMode.darken),
         ),
       ),
       padding: EdgeInsets.fromLTRB(20, top + 14, 20, 22),
@@ -513,14 +553,19 @@ class _PreviewHeader extends StatelessWidget {
                       width: 0.5,
                     ),
                   ),
-                  child: const Icon(Icons.search_rounded,
-                      color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.search_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 6),
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _primary.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
@@ -532,15 +577,21 @@ class _PreviewHeader extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.restaurant_menu_rounded,
-                        color: _primary, size: 16),
+                    Icon(
+                      Icons.restaurant_menu_rounded,
+                      color: _primary,
+                      size: 16,
+                    ),
                     SizedBox(width: 6),
-                    Text('MyMeal',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3)),
+                    Text(
+                      'MyMeal',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -553,9 +604,10 @@ class _PreviewHeader extends StatelessWidget {
           Text(
             'Estas en modo invitado 👋',
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
-                letterSpacing: 0.2),
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+              letterSpacing: 0.2,
+            ),
           ),
           const SizedBox(height: 4),
           RichText(
@@ -589,8 +641,7 @@ class _PreviewHeader extends StatelessWidget {
           GestureDetector(
             onTap: onBuscarTap,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
@@ -601,14 +652,19 @@ class _PreviewHeader extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.search,
-                      color: Colors.white.withValues(alpha: 0.35),
-                      size: 18),
+                  Icon(
+                    Icons.search,
+                    color: Colors.white.withValues(alpha: 0.35),
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
-                  Text('Busca tu plato favorito...',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.35),
-                          fontSize: 13)),
+                  Text(
+                    'Busca tu plato favorito...',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -637,10 +693,11 @@ class _CategoryTabs extends StatelessWidget {
         indicatorColor: const Color(0xFFE8651A),
         indicatorWeight: 2.5,
         dividerColor: const Color(0xFFEEEEEE),
-        labelStyle:
-            const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
         unselectedLabelStyle: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.w500),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
         tabs: const [
           Tab(
             height: 52,
