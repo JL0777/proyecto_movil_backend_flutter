@@ -95,6 +95,7 @@ class _FoodScanScreenState extends State<FoodScanScreen>
       body: Column(
         children: [
           _buildHeader(),
+          _buildBreadcrumb(),
           Expanded(
             child: _imagen == null ? _buildEstadoVacio() : _buildContenido(),
           ),
@@ -149,6 +150,58 @@ class _FoodScanScreenState extends State<FoodScanScreen>
               _analizando ? null : _analizar,
               tooltip: 'Analizar de nuevo',
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumb() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+            child: Text(
+              'Inicio',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Text(
+              'Plan de comidas',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          Text(
+            'Escanear comida',
+            style: TextStyle(
+              fontSize: 12,
+              color: const Color(0xFFE8651A),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -245,7 +298,11 @@ class _FoodScanScreenState extends State<FoodScanScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline_rounded, size: 12, color: Colors.grey.shade400),
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 12,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(width: 5),
               Text(
                 'Las fotos se procesan y no se almacenan',
@@ -299,12 +356,26 @@ class _FoodScanScreenState extends State<FoodScanScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black87)),
-                  Text(sublabel, style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    sublabel,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 20),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey.shade300,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -367,9 +438,17 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                 ),
                 child: Row(
                   children: [
-                    _miniBtn(Icons.camera_alt_outlined, 'Cámara', () => _seleccionarImagen(ImageSource.camera)),
+                    _miniBtn(
+                      Icons.camera_alt_outlined,
+                      'Cámara',
+                      () => _seleccionarImagen(ImageSource.camera),
+                    ),
                     const SizedBox(width: 8),
-                    _miniBtn(Icons.photo_library_outlined, 'Galería', () => _seleccionarImagen(ImageSource.gallery)),
+                    _miniBtn(
+                      Icons.photo_library_outlined,
+                      'Galería',
+                      () => _seleccionarImagen(ImageSource.gallery),
+                    ),
                   ],
                 ),
               ),
@@ -395,7 +474,14 @@ class _FoodScanScreenState extends State<FoodScanScreen>
           children: [
             Icon(icon, color: Colors.white, size: 13),
             const SizedBox(width: 5),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -409,7 +495,13 @@ class _FoodScanScreenState extends State<FoodScanScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -419,17 +511,33 @@ class _FoodScanScreenState extends State<FoodScanScreen>
             decoration: BoxDecoration(
               color: _naranja.withValues(alpha: 0.08),
               shape: BoxShape.circle,
-              border: Border.all(color: _naranja.withValues(alpha: 0.18), width: 2),
+              border: Border.all(
+                color: _naranja.withValues(alpha: 0.18),
+                width: 2,
+              ),
             ),
             child: const Padding(
               padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(color: _naranja, strokeWidth: 2.5),
+              child: CircularProgressIndicator(
+                color: _naranja,
+                strokeWidth: 2.5,
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Analizando tu plato...', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87)),
+          const Text(
+            'Analizando tu plato...',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text('Detectando ingredientes y calculando macros', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+          Text(
+            'Detectando ingredientes y calculando macros',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+          ),
         ],
       ),
     );
@@ -449,18 +557,39 @@ class _FoodScanScreenState extends State<FoodScanScreen>
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.08), shape: BoxShape.circle),
-            child: const Icon(Icons.error_outline_rounded, color: Colors.red, size: 26),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.red,
+              size: 26,
+            ),
           ),
           const SizedBox(height: 12),
-          Text(_error ?? 'Error desconocido', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+          Text(
+            _error ?? 'Error desconocido',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          ),
           const SizedBox(height: 16),
           GestureDetector(
             onTap: _analizar,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(color: _naranja, borderRadius: BorderRadius.circular(12)),
-              child: const Text('Intentar de nuevo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+              decoration: BoxDecoration(
+                color: _naranja,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Intentar de nuevo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ],
@@ -473,8 +602,8 @@ class _FoodScanScreenState extends State<FoodScanScreen>
     final colorSemaforo = semaforo == 'verde'
         ? const Color(0xFF10B981)
         : semaforo == 'amarillo'
-            ? const Color(0xFFF59E0B)
-            : Colors.red.shade400;
+        ? const Color(0xFFF59E0B)
+        : Colors.red.shade400;
 
     return Column(
       children: [
@@ -483,7 +612,13 @@ class _FoodScanScreenState extends State<FoodScanScreen>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 3))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -491,34 +626,78 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                 decoration: BoxDecoration(
                   color: colorSemaforo.withValues(alpha: 0.06),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  border: Border(bottom: BorderSide(color: colorSemaforo.withValues(alpha: 0.15))),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: colorSemaforo.withValues(alpha: 0.15),
+                    ),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Text(r['emoji'] ?? '🍽️', style: const TextStyle(fontSize: 36)),
+                    Text(
+                      r['emoji'] ?? '🍽️',
+                      style: const TextStyle(fontSize: 36),
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r['nombre'] ?? 'Plato detectado', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87, letterSpacing: -0.3)),
+                          Text(
+                            r['nombre'] ?? 'Plato detectado',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
                           const SizedBox(height: 3),
-                          Text(r['porcion'] ?? '', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                          Text(
+                            r['porcion'] ?? '',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(color: colorSemaforo.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorSemaforo.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(width: 7, height: 7, decoration: BoxDecoration(color: colorSemaforo, shape: BoxShape.circle)),
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: colorSemaforo,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                           const SizedBox(width: 5),
                           Text(
-                            semaforo == 'verde' ? 'Saludable' : semaforo == 'amarillo' ? 'Moderado' : 'Ocasional',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: colorSemaforo),
+                            semaforo == 'verde'
+                                ? 'Saludable'
+                                : semaforo == 'amarillo'
+                                ? 'Moderado'
+                                : 'Ocasional',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colorSemaforo,
+                            ),
                           ),
                         ],
                       ),
@@ -533,12 +712,25 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                   children: [
                     Text(
                       '${r['calorias'] ?? 0}',
-                      style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: colorSemaforo, letterSpacing: -2, height: 1),
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: colorSemaforo,
+                        letterSpacing: -2,
+                        height: 1,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: Text('kcal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey.shade400)),
+                      child: Text(
+                        'kcal',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -547,13 +739,29 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                 padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
                 child: Row(
                   children: [
-                    _macroChip('Proteínas', '${r['proteinas'] ?? 0}g', const Color(0xFF6366F1)),
+                    _macroChip(
+                      'Proteínas',
+                      '${r['proteinas'] ?? 0}g',
+                      const Color(0xFF6366F1),
+                    ),
                     const SizedBox(width: 8),
-                    _macroChip('Carbos', '${r['carbohidratos'] ?? 0}g', _naranja),
+                    _macroChip(
+                      'Carbos',
+                      '${r['carbohidratos'] ?? 0}g',
+                      _naranja,
+                    ),
                     const SizedBox(width: 8),
-                    _macroChip('Grasas', '${r['grasas'] ?? 0}g', const Color(0xFF10B981)),
+                    _macroChip(
+                      'Grasas',
+                      '${r['grasas'] ?? 0}g',
+                      const Color(0xFF10B981),
+                    ),
                     const SizedBox(width: 8),
-                    _macroChip('Fibra', '${r['fibra'] ?? 0}g', const Color(0xFF3B82F6)),
+                    _macroChip(
+                      'Fibra',
+                      '${r['fibra'] ?? 0}g',
+                      const Color(0xFF3B82F6),
+                    ),
                   ],
                 ),
               ),
@@ -573,9 +781,22 @@ class _FoodScanScreenState extends State<FoodScanScreen>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline_rounded, size: 16, color: Colors.grey.shade400),
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 16,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: Text(r['descripcion'], style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.5))),
+                Expanded(
+                  child: Text(
+                    r['descripcion'],
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -592,9 +813,22 @@ class _FoodScanScreenState extends State<FoodScanScreen>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.lightbulb_outline_rounded, size: 16, color: _naranja),
+                const Icon(
+                  Icons.lightbulb_outline_rounded,
+                  size: 16,
+                  color: _naranja,
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: Text(r['consejo'], style: const TextStyle(fontSize: 13, color: _naranja, height: 1.5))),
+                Expanded(
+                  child: Text(
+                    r['consejo'],
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: _naranja,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -612,14 +846,31 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.arrow_back_rounded, color: Colors.black54, size: 18),
+                      Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.black54,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
-                      Text('Volver', style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Volver',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -634,14 +885,31 @@ class _FoodScanScreenState extends State<FoodScanScreen>
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 18),
+                      Icon(
+                        Icons.add_circle_outline_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
-                      Text('Agregar al día', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Agregar al día',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -671,7 +939,14 @@ class _FoodScanScreenState extends State<FoodScanScreen>
               children: [
                 Icon(Icons.camera_alt_rounded, color: Colors.black38, size: 16),
                 SizedBox(width: 8),
-                Text('Escanear otro alimento', style: TextStyle(color: Colors.black38, fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  'Escanear otro alimento',
+                  style: TextStyle(
+                    color: Colors.black38,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -684,12 +959,29 @@ class _FoodScanScreenState extends State<FoodScanScreen>
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           children: [
-            Text(valor, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: color)),
+            Text(
+              valor,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.7), fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: color.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

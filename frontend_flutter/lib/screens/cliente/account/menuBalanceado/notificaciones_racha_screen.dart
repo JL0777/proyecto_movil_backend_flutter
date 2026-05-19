@@ -6,7 +6,8 @@ class NotificacionesRachaScreen extends StatefulWidget {
   const NotificacionesRachaScreen({super.key});
 
   @override
-  State<NotificacionesRachaScreen> createState() => _NotificacionesRachaScreenState();
+  State<NotificacionesRachaScreen> createState() =>
+      _NotificacionesRachaScreenState();
 }
 
 class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
@@ -43,10 +44,14 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Necesitas permitir las notificaciones en ajustes'),
+            content: const Text(
+              'Necesitas permitir las notificaciones en ajustes',
+            ),
             backgroundColor: Colors.red.shade400,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -62,7 +67,9 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
           content: const Text('Notificaciones de racha desactivadas'),
           backgroundColor: Colors.grey.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -75,9 +82,9 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
       initialTime: _hora,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(primary: _naranja),
-          ),
+          data: Theme.of(
+            context,
+          ).copyWith(colorScheme: ColorScheme.light(primary: _naranja)),
           child: child!,
         );
       },
@@ -100,7 +107,9 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Notificación programada a las ${_horaTexto(_hora)} cada día'),
+        content: Text(
+          'Notificación programada a las ${_horaTexto(_hora)} cada día',
+        ),
         backgroundColor: _naranja,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -122,9 +131,12 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
       body: Column(
         children: [
           _buildHeader(context),
+          _buildBreadcrumb(),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFE8651A)))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFE8651A)),
+                  )
                 : _buildContenido(),
           ),
         ],
@@ -142,7 +154,12 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
           colorFilter: ColorFilter.mode(Color(0x77000000), BlendMode.darken),
         ),
       ),
-      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 12, 20, 22),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + 12,
+        20,
+        22,
+      ),
       child: Row(
         children: [
           GestureDetector(
@@ -155,18 +172,107 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Notificaciones', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4)),
-              Text('Recordatorio de racha', style: TextStyle(color: Colors.white60, fontSize: 12)),
+              Text(
+                'Notificaciones',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              Text(
+                'Recordatorio de racha',
+                style: TextStyle(color: Colors.white60, fontSize: 12),
+              ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumb() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+              child: Text(
+                'Inicio',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
+            ),
+            GestureDetector(
+              onTap: () => Navigator.popUntil(
+                context,
+                (r) => r.settings.name == '/plan-comidas' || r.isFirst,
+              ),
+              child: Text(
+                'Plan de comidas',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Text(
+                'Logros',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
+            ),
+            const Text(
+              'Notificaciones',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFFE8651A),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -184,14 +290,20 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
               color: _naranja.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Center(child: Text('🔥', style: TextStyle(fontSize: 44))),
+            child: const Center(
+              child: Text('🔥', style: TextStyle(fontSize: 44)),
+            ),
           ),
         ),
         const SizedBox(height: 20),
         const Center(
           child: Text(
             'Recordatorio de racha',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: Colors.black87,
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -199,7 +311,11 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
           child: Text(
             'Recibe una notificación diaria para\nno olvidar completar tu plan y mantener tu racha',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.5),
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+              height: 1.5,
+            ),
           ),
         ),
         const SizedBox(height: 32),
@@ -210,7 +326,13 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -220,22 +342,36 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
                   color: _naranja.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.notifications_rounded, color: _naranja, size: 22),
+                child: Icon(
+                  Icons.notifications_rounded,
+                  color: _naranja,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 14),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Activar recordatorio', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black87)),
-                    Text('Notificación diaria de racha', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(
+                      'Activar recordatorio',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'Notificación diaria de racha',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
               Switch(
                 value: _activada,
                 onChanged: _guardando ? null : _toggleActivar,
-                activeColor: _naranja,
+                activeThumbColor: _naranja,
               ),
             ],
           ),
@@ -250,9 +386,17 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
               border: Border.all(
-                color: _activada ? _naranja.withValues(alpha: 0.3) : Colors.grey.shade100,
+                color: _activada
+                    ? _naranja.withValues(alpha: 0.3)
+                    : Colors.grey.shade100,
                 width: _activada ? 1.5 : 1,
               ),
             ),
@@ -264,15 +408,32 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
                     color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.access_time_rounded, color: Color(0xFF6366F1), size: 22),
+                  child: const Icon(
+                    Icons.access_time_rounded,
+                    color: Color(0xFF6366F1),
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Hora del recordatorio', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black87)),
-                      Text('Toca para cambiar la hora', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                      const Text(
+                        'Hora del recordatorio',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Toca para cambiar la hora',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -309,7 +470,11 @@ class _NotificacionesRachaScreenState extends State<NotificacionesRachaScreen> {
               Expanded(
                 child: Text(
                   'La notificación se actualiza automáticamente con tu racha actual cada vez que completas un día.',
-                  style: TextStyle(fontSize: 12, color: _naranja.withValues(alpha: 0.8), height: 1.5),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _naranja.withValues(alpha: 0.8),
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],

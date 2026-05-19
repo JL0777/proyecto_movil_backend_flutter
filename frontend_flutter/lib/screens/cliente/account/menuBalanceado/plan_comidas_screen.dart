@@ -7,7 +7,6 @@ import '../../../../services/gamificacion_service.dart';
 import 'logros_screen.dart';
 import '../../../../services/notification_service.dart';
 
-
 class PlanComidasScreen extends StatefulWidget {
   final Map<String, dynamic> perfil;
 
@@ -389,6 +388,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       body: Column(
         children: [
           _buildHeader(tdee, imc, objetivo),
+          _buildBreadcrumb(),
           Expanded(
             child: _loading
                 ? _buildLoading()
@@ -489,6 +489,58 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
               const SizedBox(width: 6),
               _chip(_labelObjetivo(objetivo), Icons.flag_outlined),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumb() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+            child: Text(
+              'Inicio',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Text(
+              'Perfil Nutricional',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          Text(
+            'Plan de comidas',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFE8651A),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),

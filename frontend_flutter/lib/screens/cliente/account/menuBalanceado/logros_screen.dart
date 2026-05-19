@@ -39,6 +39,7 @@ class _LogrosScreenState extends State<LogrosScreen> {
       body: Column(
         children: [
           _buildHeader(context),
+          _buildBreadcrumb(),
           Expanded(
             child: _loading
                 ? const Center(
@@ -128,6 +129,58 @@ class _LogrosScreenState extends State<LogrosScreen> {
                 color: Colors.white,
                 size: 20,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumb() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+            child: Text(
+              'Inicio',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Text(
+              'Plan de comidas',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
+          ),
+          Text(
+            'Logros',
+            style: TextStyle(
+              fontSize: 12,
+              color: const Color(0xFFE8651A),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

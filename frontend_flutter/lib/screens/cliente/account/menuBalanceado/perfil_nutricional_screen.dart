@@ -316,6 +316,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
       body: Column(
         children: [
           _buildHeader(),
+          _buildBreadcrumb(),
           Expanded(
             child: _loading
                 ? const Center(
@@ -474,6 +475,38 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
       ),
     );
   }
+
+  Widget _buildBreadcrumb() {
+  return Container(
+    width: double.infinity,
+    color: Colors.white,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    child: Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+          child: Text(
+            'Inicio',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Icon(Icons.chevron_right_rounded, size: 16, color: Colors.grey.shade300),
+        Text(
+          'Perfil Nutricional',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFFE8651A),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   // ════════════════════════════════════════════════
   // FORMULARIO
