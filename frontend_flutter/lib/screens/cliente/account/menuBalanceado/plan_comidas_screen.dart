@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../services/ia_service.dart';
 import 'food_scan_screen.dart';
+import '../../../../services/gamificacion_service.dart';
+import 'logros_screen.dart';
+import '../../../../services/notification_service.dart';
+
 
 class PlanComidasScreen extends StatefulWidget {
   final Map<String, dynamic> perfil;
@@ -20,6 +24,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
   String? _plan;
   bool _loading = false;
   String? _error;
+  bool _mostrandoLogro = false;
 
   // Progreso del día: claves son los títulos de sección
   Map<String, bool> _completados = {};
@@ -145,7 +150,103 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       await prefs.setInt(_prefKeyCalScan, nuevasCal);
       setState(() => _caloriasEscaneadas = nuevasCal);
       _animarProgreso();
+
+      // Registrar scan para logros
+      final nuevosLogros = await GamificacionService.registrarScan();
+      if (nuevosLogros.isNotEmpty && mounted) {
+        _mostrarPopupLogro(nuevosLogros.first);
+      }
     }
+  }
+
+  void _mostrarPopupLogro(Logro logro) {
+    if (_mostrandoLogro) return;
+    _mostrandoLogro = true;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    logro.emoji,
+                    style: const TextStyle(fontSize: 40),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '¡Logro desbloqueado!',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFF59E0B),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                logro.titulo,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                logro.descripcion,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _mostrandoLogro = false;
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  child: const Text(
+                    '¡Genial!',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((_) => _mostrandoLogro = false);
+  }
+
+  void _abrirLogros() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LogrosScreen()),
+    );
   }
 
   Future<void> _toggleCompletado(String titulo, bool valor) async {
@@ -154,6 +255,22 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefKeyCompletados, jsonEncode(_completados));
+
+    // Verificar si se alcanzó la meta calórica
+    if (valor && _plan != null) {
+      final tdee = (widget.perfil['tdee'] as num?)?.toInt() ?? 2000;
+      final secciones = _parsearPlan(_plan!);
+      final progreso = _calcularProgreso(secciones, tdee);
+      if (progreso >= 0.85) {
+        final nuevosLogros = await GamificacionService.registrarDiaEnMeta();
+        if (nuevosLogros.isNotEmpty && mounted) {
+          _mostrarPopupLogro(nuevosLogros.first);
+          await NotificationService().actualizarRacha(
+            (await GamificacionService.obtenerEstado())['racha'] as int,
+          );
+        }
+      }
+    }
   }
 
   void _animarProgreso() {
@@ -305,6 +422,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Fila 1: back + título + refresh ──
           Row(
             children: [
               _headerBtn(Icons.arrow_back, () => Navigator.pop(context)),
@@ -332,29 +450,43 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
               _headerBtn(
                 Icons.refresh_rounded,
                 _loading ? null : () => _generarPlan(resetearCompletados: true),
-                tooltip: 'Generar nuevo plan',
-              ),
-              const SizedBox(width: 8),
-              _headerBtn(
-                Icons.camera_alt_rounded,
-                _abrirScan,
-                tooltip: 'Escanear comida',
+                tooltip: 'Nuevo plan',
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+
+          // ── Fila 2: botones de acción ──
+          Row(
+            children: [
+              _headerBtn(
+                Icons.camera_alt_rounded,
+                _abrirScan,
+                tooltip: 'Escanear',
+              ),
+              const SizedBox(width: 6),
+              _headerBtn(
+                Icons.emoji_events_rounded,
+                _abrirLogros,
+                tooltip: 'Logros',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // ── Fila 3: chips de info ──
           Row(
             children: [
               _chip(
                 '${(tdee as num).toStringAsFixed(0)} kcal',
                 Icons.local_fire_department_outlined,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _chip(
                 'IMC ${(imc as num).toStringAsFixed(1)}',
                 Icons.monitor_weight_outlined,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _chip(_labelObjetivo(objetivo), Icons.flag_outlined),
             ],
           ),
@@ -655,7 +787,8 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
               AnimatedBuilder(
                 animation: _progressAnim,
                 builder: (_, _) {
-                  final display = (caloriasMostradas * _progressAnim.value).round();
+                  final display = (caloriasMostradas * _progressAnim.value)
+                      .round();
                   return RichText(
                     text: TextSpan(
                       children: [
@@ -700,7 +833,11 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
           if (_caloriasEscaneadas > 0)
             Row(
               children: [
-                _desglose('Del plan', _caloriasDelPlan(_parsearPlan(_plan!)), const Color(0xFF6366F1)),
+                _desglose(
+                  'Del plan',
+                  _caloriasDelPlan(_parsearPlan(_plan!)),
+                  const Color(0xFF6366F1),
+                ),
                 const SizedBox(width: 12),
                 _desglose('Escaneado', _caloriasEscaneadas, _naranja),
               ],
@@ -714,9 +851,20 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 5),
-        Text('$label: $kcal kcal', style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+        Text(
+          '$label: $kcal kcal',
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade500,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }

@@ -123,4 +123,70 @@ Responde ÚNICAMENTE en este formato JSON exacto, sin texto adicional, sin markd
   return JSON.parse(texto);
 }
 
-module.exports = { generarPlanComidas, completarMenuConIA };
+async function analizarFotoComida(imagen, mimeType) {
+  try {
+    const completion = await client.chat.completions.create({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      max_tokens: 1000,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType || 'image/jpeg'};base64,${imagen}`,
+              },
+            },
+            {
+              type: 'text',
+              text: `Analiza esta imagen de comida y responde ÚNICAMENTE con un objeto JSON válido.
+No incluyas texto antes ni después, solo el JSON puro.
+Usa exactamente esta estructura:
+{
+  "nombre": "Nombre del plato o alimento identificado",
+  "emoji": "Un emoji que represente el plato",
+  "porcion": "Descripción de la porción estimada (ej: 1 plato mediano, 250g aprox)",
+  "calorias": 000,
+  "proteinas": 00,
+  "carbohidratos": 00,
+  "grasas": 00,
+  "fibra": 0,
+  "descripcion": "Descripción breve y positiva del plato en 1 oración",
+  "consejo": "Un consejo nutricional corto y útil relacionado con este alimento",
+  "semaforo": "verde" | "amarillo" | "rojo"
+}
+Reglas:
+- Los valores numéricos son gramos (proteinas, carbohidratos, grasas, fibra) o kcal (calorias)
+- semaforo: "verde" si es saludable, "amarillo" si es moderado, "rojo" si es poco saludable
+- Si no puedes identificar comida en la imagen, devuelve: {"error": "No se detectó comida en la imagen"}
+- Todos los valores son estimados para la porción visible`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const texto = completion.choices[0].message.content.trim();
+    console.log('Respuesta Groq Vision:', texto);
+
+    const cleaned = texto
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+
+    const resultado = JSON.parse(cleaned);
+
+    if (resultado.error) {
+      throw new Error(resultado.error);
+    }
+
+    return resultado;
+
+  } catch (error) {
+    console.error('ERROR GROQ COMPLETO:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+}
+
+module.exports = { generarPlanComidas, completarMenuConIA, analizarFotoComida };

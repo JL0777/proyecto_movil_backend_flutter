@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/cart_provider.dart';
-import '../../services/notificacion_service.dart';
+import '../../services/notificacion_pedido_service.dart';
 import 'home/traditional_food_screen.dart';
 import 'home/fast_food_screen.dart';
 import 'home/drinks_screen.dart';
