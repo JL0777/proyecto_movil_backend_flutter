@@ -93,7 +93,7 @@ module.exports = (sequelize, DataTypes) => {
     },
 
   }, {
-    tableName: 'Usuarios',
+    tableName: 'usuarios',
     timestamps: true,
 
     // Calcular IMC y TDEE automáticamente antes de guardar
