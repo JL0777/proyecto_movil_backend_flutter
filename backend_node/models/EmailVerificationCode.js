@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   }, {
-    tableName: 'emailVerificationCodes',
+    tableName: 'emailverificationcodes',
     timestamps: true
   });
 
