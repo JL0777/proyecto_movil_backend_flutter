@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true
     }
   }, {
-    tableName: 'Categorias',
+    tableName: 'categorias',
     timestamps: true
   });
 

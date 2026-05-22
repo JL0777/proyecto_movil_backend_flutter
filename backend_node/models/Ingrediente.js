@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: null
         },
     }, {
-        tableName: 'Ingredientes',
+        tableName: 'ingredientes',
         timestamps: true
     });
 

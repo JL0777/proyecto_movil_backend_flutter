@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   }, {
-    tableName: 'PasswordResetCodes',
+    tableName: 'passwordResetCodes',
     timestamps: true
   });
 
