@@ -1,65 +1,46 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype.startsWith('image/') ||
-    file.mimetype === 'application/octet-stream' ||
-    file.mimetype === ''
-  ) {
-    cb(null, true);
-  } else {
-    cb(new Error('Solo se permiten imágenes'), false);
-  }
-};
+exports.upload = multer({ storage: multer.memoryStorage() });
 
-exports.upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
-});
-
-exports.uploadImagen = (req, res) => {
+exports.uploadImagen = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No se subió ninguna imagen' });
   }
 
-  const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-  
-  res.json({
-    success: true,
-    url
-  });
+  try {
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: 'mymeal' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
+
+    res.json({ success: true, url: result.secure_url });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al subir la imagen' });
+  }
 };
 
-exports.eliminarImagen = (req, res) => {
+exports.eliminarImagen = async (req, res) => {
   const { filename } = req.params;
-
   if (!filename) {
     return res.status(400).json({ error: 'Nombre de archivo requerido' });
   }
 
-  const filePath = path.join(__dirname, '..', 'uploads', filename);
-
-  if (!fs.existsSync(filePath)) {
-    return res.json({ success: true, message: 'Archivo no encontrado' });
-  }
-
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al eliminar la imagen' });
-    }
+  try {
+    await cloudinary.uploader.destroy(`mymeal/${filename}`);
     res.json({ success: true });
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar la imagen' });
+  }
 };
