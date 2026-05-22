@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Backend funcionando correctamente' });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 db.sequelize.sync({ alter: true }).then(() => {
   console.log('Base de datos sincronizada correctamente');

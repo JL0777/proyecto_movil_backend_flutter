@@ -7,20 +7,13 @@
     "dialect": "mysql",
     "logging": false
   },
-  "test": {
-    "username": "root",
-    "password": "",
-    "database": "mymeal_test_db",
-    "host": "127.0.0.1",
-    "dialect": "mysql",
-    "logging": false
-  },
   "production": {
-    "username": "root",
-    "password": "",
-    "database": "mymeal_production_db",
-    "host": "127.0.0.1",
+    "username": null,
+    "password": null,
+    "database": null,
+    "host": null,
     "dialect": "mysql",
-    "logging": false
+    "logging": false,
+    "use_env_variable": "MYSQL_URL"
   }
 }
