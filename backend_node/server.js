@@ -64,8 +64,8 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-db.sequelize.sync({ force: false }).then(() => {
-  console.log('Base de datos sincronizada correctamente');
+db.sequelize.authenticate().then(() => {
+  console.log('Base de datos conectada correctamente');
 
   server.listen(PORT, () => {
     console.log(`Servidor corriendo en puerto ${PORT}`);
