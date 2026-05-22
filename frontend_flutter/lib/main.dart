@@ -10,10 +10,18 @@ import 'screens/cliente/home_screen.dart';
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/cocina/cocina_home_screen.dart';
 import 'services/notification_service.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService().inicializar();
+  // Despertar el servidor Render
+  try {
+    await http
+        .get(Uri.parse('https://mymeal-backend-bncr.onrender.com/'))
+        .timeout(Duration(seconds: 60));
+  } catch (_) {}
+
   runApp(const MyApp());
 }
 
@@ -44,16 +52,16 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.theme,
         routes: {
           '/home': (context) => FutureBuilder<Widget>(
-                future: initial,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  return snapshot.data!;
-                },
-              ),
+            future: initial,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return snapshot.data!;
+            },
+          ),
         },
         home: const SplashScreen(),
       ),
