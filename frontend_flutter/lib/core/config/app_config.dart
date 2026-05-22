@@ -1,3 +1,3 @@
 class AppConfig {
-  static const String baseUrl = 'https://unsubmitted-gina-featly.ngrok-free.dev/api';
+  static const String baseUrl = 'https://mymeal-backend-bncr.onrender.com/api';
 }
