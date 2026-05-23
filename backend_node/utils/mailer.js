@@ -1,11 +1,11 @@
-const Brevo = require('@getbrevo/brevo');
+const { TransactionalEmailsApi, SendSmtpEmail, ApiClient } = require('@getbrevo/brevo');
 require('dotenv').config();
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
+const apiInstance = new TransactionalEmailsApi();
 apiInstance.authentications['apiKey'].apiKey = process.env.BREVO_API_KEY;
 
 const enviarCorreo = async (emailDestino, subject, htmlContent) => {
-  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+  const sendSmtpEmail = new SendSmtpEmail();
   sendSmtpEmail.subject = subject;
   sendSmtpEmail.htmlContent = htmlContent;
   sendSmtpEmail.sender = { name: 'MyMeal App', email: 'noreply.mymeal@gmail.com' };
