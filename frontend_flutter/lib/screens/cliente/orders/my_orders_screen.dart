@@ -90,13 +90,16 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text(
-              '¿Cancelar pedido?',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            const Icon(Icons.warning_amber_rounded, color: Colors.red),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '¿Cancelar?',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -877,60 +880,52 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(_iconoEstado(estado), color: colorEstado, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Pedido #$numero',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                      ),
+                Icon(_iconoEstado(estado), color: colorEstado, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Pedido #$numero',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
                     ),
-                  ],
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 11,
-                      color: Colors.grey.shade400,
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 11,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  fecha,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorEstado.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: colorEstado.withValues(alpha: 0.3),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      fecha,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
+                  ),
+                  child: Text(
+                    estado,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: colorEstado,
                     ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorEstado.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: colorEstado.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        estado,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: colorEstado,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -945,6 +940,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Imagen
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: imagenUrl != null && imagenUrl.isNotEmpty
@@ -958,6 +954,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                           : _miniPlaceholder(),
                     ),
                     const SizedBox(width: 12),
+
+                    // Info chips
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -990,40 +988,52 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                         ],
                       ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '\$${total.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFE8651A),
+
+                    const SizedBox(width: 8),
+
+                    // Precio — ancho fijo para no chocar con la info
+                    SizedBox(
+                      width: 90,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '\$${total.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFE8651A),
+                              ),
+                            ),
                           ),
-                        ),
-                        Text(
-                          'total',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade400,
+                          Text(
+                            'total',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Sub: \$${subtotal.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade400,
+                          const SizedBox(height: 4),
+                          Text(
+                            'Sub: \$${subtotal.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        Text(
-                          'IVA: \$${iva.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade400,
+                          Text(
+                            'IVA: \$${iva.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1214,12 +1224,16 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       children: [
         Icon(icono, size: 12, color: color),
         const SizedBox(width: 4),
-        Text(
-          texto,
-          style: TextStyle(
-            fontSize: 12,
-            color: color,
-            fontWeight: FontWeight.w600,
+        Flexible(
+          child: Text(
+            texto,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ],

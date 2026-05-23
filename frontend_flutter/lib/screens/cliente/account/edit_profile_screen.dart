@@ -719,7 +719,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     size: 16, color: Colors.grey.shade400),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Toca "Cambiar" para modificar la contraseña',
+                                  'Toca "Cambiar" para modificar',
                                   style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey.shade400),

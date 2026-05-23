@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../services/ia_service.dart';
+import '../../../../services/ingrediente_service.dart';
+import '../../../../core/providers/cart_provider.dart';
 import 'food_scan_screen.dart';
 import '../../../../services/gamificacion_service.dart';
 import 'logros_screen.dart';
 import '../../../../services/notification_service.dart';
+import '../../home/widgets/cart_modal.dart';
 
 class PlanComidasScreen extends StatefulWidget {
   final Map<String, dynamic> perfil;
@@ -19,15 +23,20 @@ class PlanComidasScreen extends StatefulWidget {
 class _PlanComidasScreenState extends State<PlanComidasScreen>
     with SingleTickerProviderStateMixin {
   final IaService _iaService = IaService();
+  final IngredienteService _ingredienteService = IngredienteService();
 
   String? _plan;
   bool _loading = false;
   String? _error;
   bool _mostrandoLogro = false;
 
-  // Progreso del día: claves son los títulos de sección
+  // ── Ingredientes de la BD (cargados una sola vez) ──
+  List<dynamic> _ingredientesBD = [];
+  bool _loadingIngredientes = false;
+
   Map<String, bool> _completados = {};
   int _caloriasEscaneadas = 0;
+
   late AnimationController _progressController;
   late Animation<double> _progressAnim;
 
@@ -38,6 +47,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
 
   static const Color _naranja = Color(0xFFE8651A);
   static const Color _verde = Color(0xFF10B981);
+  static const Color _morado = Color(0xFF6366F1);
 
   @override
   void initState() {
@@ -51,12 +61,150 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       curve: Curves.easeOutCubic,
     );
     _cargarOGenerarPlan();
+    _cargarIngredientes();
   }
 
   @override
   void dispose() {
     _progressController.dispose();
     super.dispose();
+  }
+
+  // ── Cargar ingredientes de la BD ──────────────────────────
+
+  Future<void> _cargarIngredientes() async {
+    setState(() => _loadingIngredientes = true);
+    try {
+      final lista = await _ingredienteService.getAll();
+      setState(() => _ingredientesBD = lista);
+    } catch (_) {
+    } finally {
+      setState(() => _loadingIngredientes = false);
+    }
+  }
+
+  // ── Cruzar texto con ingredientes de la BD ────────────────
+  //
+  // Estrategia: normalizar ambos textos (minúsculas, sin tildes)
+  // y buscar si el nombre del ingrediente aparece en el contenido
+  // de la sección. Devuelve los que matchean.
+
+  String _normalizar(String s) {
+    return s
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ñ', 'n');
+  }
+
+  List<Map<String, dynamic>> _encontrarIngredientes(String contenido) {
+    final contenidoNorm = _normalizar(contenido);
+    final encontrados = <Map<String, dynamic>>[];
+
+    for (final ing in _ingredientesBD) {
+      if (ing['disponible'] != true) continue;
+      final nombre = ing['nombre']?.toString() ?? '';
+      if (nombre.isEmpty) continue;
+      if (contenidoNorm.contains(_normalizar(nombre))) {
+        encontrados.add(ing as Map<String, dynamic>);
+      }
+    }
+    return encontrados;
+  }
+
+  // ── Agregar sección al carrito ────────────────────────────
+
+  void _agregarSeccionAlCarrito(
+    BuildContext ctx,
+    _Seccion seccion, {
+    bool abrirCarrito = false,
+  }) {
+    final ingredientes = _encontrarIngredientes(seccion.contenido);
+
+    if (ingredientes.isEmpty) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Colors.white, size: 16),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'No se encontraron ingredientes disponibles en este plato',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.grey.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    final cart = ctx.read<CartProvider>();
+    if (abrirCarrito) {
+      cart.limpiar();
+    }
+    for (final ing in ingredientes) {
+      cart.agregarIngrediente(ing, 1);
+    }
+
+    if (abrirCarrito) {
+      showModalBottomSheet(
+        context: ctx,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (_) => const CartModal(),
+      );
+    } else {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${ingredientes.length} ingrediente${ingredientes.length > 1 ? 's' : ''} añadido${ingredientes.length > 1 ? 's' : ''} al carrito',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: _verde,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: 'Ver carrito',
+            textColor: Colors.white,
+            onPressed: () => showModalBottomSheet(
+              context: ctx,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              builder: (_) => const CartModal(),
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   // ── Persistencia ──────────────────────────────────────────
@@ -67,7 +215,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
     final hoy = _fechaHoy();
     final planGuardado = prefs.getString(_prefKeyPlan);
 
-    // Cargar completados del día
     final completadosJson = prefs.getString(_prefKeyCompletados) ?? '{}';
     Map<String, bool> completados = {};
     try {
@@ -75,7 +222,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       completados = decoded.map((k, v) => MapEntry(k, v as bool));
     } catch (_) {}
 
-    // Si el plan es de hoy, cargarlo directamente
     if (fechaGuardada == hoy &&
         planGuardado != null &&
         planGuardado.isNotEmpty) {
@@ -90,7 +236,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       return;
     }
 
-    // Si es un día nuevo, resetear completados y generar nuevo plan
     await _generarPlan(resetearCompletados: true);
   }
 
@@ -150,7 +295,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       setState(() => _caloriasEscaneadas = nuevasCal);
       _animarProgreso();
 
-      // Registrar scan para logros
       final nuevosLogros = await GamificacionService.registrarScan();
       if (nuevosLogros.isNotEmpty && mounted) {
         _mostrarPopupLogro(nuevosLogros.first);
@@ -255,7 +399,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefKeyCompletados, jsonEncode(_completados));
 
-    // Verificar si se alcanzó la meta calórica
     if (valor && _plan != null) {
       final tdee = (widget.perfil['tdee'] as num?)?.toInt() ?? 2000;
       final secciones = _parsearPlan(_plan!);
@@ -422,17 +565,17 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Fila 1: back + título + refresh ──
           Row(
             children: [
               _headerBtn(Icons.arrow_back, () => Navigator.pop(context)),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '¿Qué como hoy?',
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -442,6 +585,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                     ),
                     Text(
                       'Plan personalizado con IA',
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
                   ],
@@ -455,8 +599,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
             ],
           ),
           const SizedBox(height: 14),
-
-          // ── Fila 2: botones de acción ──
           Row(
             children: [
               _headerBtn(
@@ -473,20 +615,18 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
             ],
           ),
           const SizedBox(height: 12),
-
-          // ── Fila 3: chips de info ──
-          Row(
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
             children: [
               _chip(
                 '${(tdee as num).toStringAsFixed(0)} kcal',
                 Icons.local_fire_department_outlined,
               ),
-              const SizedBox(width: 6),
               _chip(
                 'IMC ${(imc as num).toStringAsFixed(1)}',
                 Icons.monitor_weight_outlined,
               ),
-              const SizedBox(width: 6),
               _chip(_labelObjetivo(objetivo), Icons.flag_outlined),
             ],
           ),
@@ -500,49 +640,52 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       width: double.infinity,
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
-            child: Text(
-              'Inicio',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade400,
-                fontWeight: FontWeight.w500,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+              child: Text(
+                'Inicio',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-          Icon(
-            Icons.chevron_right_rounded,
-            size: 16,
-            color: Colors.grey.shade300,
-          ),
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Text(
-              'Perfil Nutricional',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade400,
-                fontWeight: FontWeight.w500,
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Text(
+                'Perfil Nutricional',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-          Icon(
-            Icons.chevron_right_rounded,
-            size: 16,
-            color: Colors.grey.shade300,
-          ),
-          Text(
-            'Plan de comidas',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFFE8651A),
-              fontWeight: FontWeight.w700,
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
             ),
-          ),
-        ],
+            const Text(
+              'Plan de comidas',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFFE8651A),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -719,22 +862,16 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         children: [
-          // ── Barra de progreso del día ──
           _barraProgreso(progreso, calTotal, tdee),
           const SizedBox(height: 16),
-
-          // ── Banner IA ──
           _bannerIA(),
           const SizedBox(height: 14),
-
-          // ── Secciones ──
           if (secciones.isEmpty)
             _cardTextoPlano(_plan!)
           else
             ...secciones.map((s) => _cardSeccion(s)),
-
-          // ── Botón Escanear comida ──
           const SizedBox(height: 8),
+          // ── Botón escanear ──
           GestureDetector(
             onTap: _abrirScan,
             child: Container(
@@ -777,10 +914,9 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
     );
   }
 
-  // ── Barra de progreso ────────────────────────────────────
+  // ── Barra de progreso ─────────────────────────────────────
 
   Widget _barraProgreso(double progreso, int calConsumidas, int tdee) {
-    final caloriasMostradas = calConsumidas;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -820,6 +956,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                   children: [
                     Text(
                       progreso >= 1.0 ? '¡Meta alcanzada!' : 'Calorías del día',
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
@@ -827,7 +964,8 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                       ),
                     ),
                     Text(
-                      'Meta diaria: $tdee kcal',
+                      'Meta: $tdee kcal',
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade400,
@@ -836,35 +974,38 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                   ],
                 ),
               ),
-              AnimatedBuilder(
-                animation: _progressAnim,
-                builder: (_, _) {
-                  final display = (caloriasMostradas * _progressAnim.value)
-                      .round();
-                  return RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '$display',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: _progresColor(progreso),
-                            letterSpacing: -0.5,
+              Flexible(
+                child: AnimatedBuilder(
+                  animation: _progressAnim,
+                  builder: (_, _) {
+                    final display = (calConsumidas * _progressAnim.value)
+                        .round();
+                    return RichText(
+                      textAlign: TextAlign.end,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '$display',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: _progresColor(progreso),
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
-                        TextSpan(
-                          text: ' kcal',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade400,
+                          TextSpan(
+                            text: ' kcal',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -888,7 +1029,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                 _desglose(
                   'Del plan',
                   _caloriasDelPlan(_parsearPlan(_plan!)),
-                  const Color(0xFF6366F1),
+                  _morado,
                 ),
                 const SizedBox(width: 12),
                 _desglose('Escaneado', _caloriasEscaneadas, _naranja),
@@ -900,24 +1041,29 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
   }
 
   Widget _desglose(String label, int kcal, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          '$label: $kcal kcal',
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w500,
+    return Flexible(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-        ),
-      ],
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              '$label: $kcal kcal',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -944,7 +1090,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
           const SizedBox(width: 8),
           const Expanded(
             child: Text(
-              'Marca cada comida al completarla. Toca 🔄 en la esquina para generar un plan nuevo.',
+              'Marca cada comida al completarla. Toca 🔄 para generar un plan nuevo.',
               style: TextStyle(fontSize: 11, color: _naranja, height: 1.4),
             ),
           ),
@@ -957,7 +1103,14 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
 
   Widget _cardSeccion(_Seccion seccion) {
     final esResumen = seccion.titulo == 'RESUMEN';
+    final esHidratacion = seccion.titulo == 'HIDRATACIÓN';
     final completado = _completados[seccion.titulo] == true;
+    final puedeOrdenar = !esResumen && !esHidratacion;
+
+    // Contar ingredientes disponibles para esta sección
+    final List<Map<String, dynamic>> ingredientesDisponibles = puedeOrdenar
+        ? _encontrarIngredientes(seccion.contenido)
+        : [];
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -986,7 +1139,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header de la card
+          // ── Header ──
           Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
             decoration: BoxDecoration(
@@ -1022,6 +1175,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                     children: [
                       Text(
                         seccion.titulo,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
@@ -1032,6 +1186,7 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                       if (completado && !esResumen)
                         Text(
                           '¡Completado!',
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 10,
                             color: seccion.color.withValues(alpha: 0.7),
@@ -1041,8 +1196,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
                     ],
                   ),
                 ),
-
-                // Toggle de completado (excepto en Resumen)
                 if (!esResumen)
                   GestureDetector(
                     onTap: () => _toggleCompletado(seccion.titulo, !completado),
@@ -1084,17 +1237,190 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
             ),
           ),
 
-          // Contenido (con opacidad reducida si está completado)
+          // ── Contenido ──
           AnimatedOpacity(
             opacity: completado && !esResumen ? 0.55 : 1.0,
             duration: const Duration(milliseconds: 300),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: _renderContenido(seccion.contenido, seccion.color),
             ),
           ),
+
+          // ── Botones de pedido (solo en comidas) ──
+          if (puedeOrdenar) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+              child: _botonesOrden(seccion, ingredientesDisponibles),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  // ── Botones añadir / pedir ────────────────────────────────
+
+  Widget _botonesOrden(
+    _Seccion seccion,
+    List<Map<String, dynamic>> ingredientes,
+  ) {
+    final hayIngredientes = ingredientes.isNotEmpty;
+    final estaLoading = _loadingIngredientes;
+
+    if (estaLoading) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.grey.shade400,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Cargando...',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        // ── Añadir al carrito ──
+        Expanded(
+          child: GestureDetector(
+            onTap: hayIngredientes
+                ? () => _agregarSeccionAlCarrito(context, seccion)
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+              decoration: BoxDecoration(
+                color: hayIngredientes
+                    ? seccion.color.withValues(alpha: 0.08)
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: hayIngredientes
+                      ? seccion.color.withValues(alpha: 0.3)
+                      : Colors.grey.shade200,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_shopping_cart_rounded,
+                    size: 14,
+                    color: hayIngredientes
+                        ? seccion.color
+                        : Colors.grey.shade400,
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      'Al carrito',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: hayIngredientes
+                            ? seccion.color
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                  if (hayIngredientes) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: seccion.color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${ingredientes.length}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: seccion.color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // ── Pedir ya ──
+        Expanded(
+          child: GestureDetector(
+            onTap: hayIngredientes
+                ? () => _agregarSeccionAlCarrito(
+                    context,
+                    seccion,
+                    abrirCarrito: true,
+                  )
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+              decoration: BoxDecoration(
+                color: hayIngredientes ? seccion.color : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: hayIngredientes
+                    ? [
+                        BoxShadow(
+                          color: seccion.color.withValues(alpha: 0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.rocket_launch_rounded,
+                    size: 14,
+                    color: hayIngredientes
+                        ? Colors.white
+                        : Colors.grey.shade400,
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      'Pedir ya',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: hayIngredientes
+                            ? Colors.white
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1219,8 +1545,6 @@ class _PlanComidasScreenState extends State<PlanComidasScreen>
       ),
     );
   }
-
-  // ── Helpers ───────────────────────────────────────────────
 
   String _labelObjetivo(String objetivo) {
     const map = {

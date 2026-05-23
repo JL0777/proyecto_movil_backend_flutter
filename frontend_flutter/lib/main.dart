@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'core/session/session_manager.dart';
 import 'core/providers/cart_provider.dart';
@@ -14,8 +15,14 @@ import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+    overlays: [],
+  );
+
   await NotificationService().inicializar();
-  // Despertar el servidor Render
+
   try {
     await http
         .get(Uri.parse('https://mymeal-backend-bncr.onrender.com/'))
@@ -50,6 +57,21 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.theme,
+        builder: (context, child) {
+          SystemChrome.setEnabledSystemUIMode(
+            SystemUiMode.immersiveSticky,
+            overlays: [],
+          );
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: TextScaler.linear(
+                mediaQuery.textScaleFactor.clamp(0.85, 1.15),
+              ),
+            ),
+            child: child!,
+          );
+        },
         routes: {
           '/home': (context) => FutureBuilder<Widget>(
             future: initial,

@@ -449,23 +449,27 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tu salud, tu objetivo',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tu salud, tu objetivo',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'IMC · calorías · hidratación personalizados',
-                        style: TextStyle(color: Colors.white60, fontSize: 12),
-                      ),
-                    ],
+                        SizedBox(height: 2),
+                        Text(
+                          'IMC · calorías · hidratación',
+                          style: TextStyle(color: Colors.white60, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -477,36 +481,40 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
   }
 
   Widget _buildBreadcrumb() {
-  return Container(
-    width: double.infinity,
-    color: Colors.white,
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-    child: Row(
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
-          child: Text(
-            'Inicio',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w500,
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+            child: Text(
+              'Inicio',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
-        Icon(Icons.chevron_right_rounded, size: 16, color: Colors.grey.shade300),
-        Text(
-          'Perfil Nutricional',
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFFE8651A),
-            fontWeight: FontWeight.w700,
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: Colors.grey.shade300,
           ),
-        ),
-      ],
-    ),
-  );
-}
+          Text(
+            'Perfil Nutricional',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFE8651A),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ════════════════════════════════════════════════
   // FORMULARIO
@@ -1021,7 +1029,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: 1.1,
+          childAspectRatio: 0.95,
           children: [
             _datoChip(
               Icons.monitor_weight_outlined,
@@ -1480,7 +1488,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
 
   Widget _datoChip(IconData icono, String label, String valor, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -1496,7 +1504,7 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),

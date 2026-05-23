@@ -32,9 +32,12 @@ class _PreviewHomeScreenState extends State<PreviewHomeScreen>
             children: [
               Icon(Icons.info_outline, color: Colors.white, size: 20),
               SizedBox(width: 10),
-              Text(
-                "¡Bienvenido! Has ingresado como invitado",
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              Expanded(
+                child: Text(
+                  "¡Bienvenido al modo invitado!",
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

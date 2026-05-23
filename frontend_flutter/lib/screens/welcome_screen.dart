@@ -129,7 +129,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           ),
 
-          /// 🔥 BOTÓN MODO INVITADO (AGREGADO)
+          /// BOTÓN MODO INVITADO (AGREGADO)
           Positioned(
             top: 16,
             left: 16,
