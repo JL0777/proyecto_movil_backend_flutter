@@ -9,7 +9,7 @@ const enviarCorreo = async (emailDestino, subject, htmlContent) => {
       'content-type': 'application/json'
     },
     body: JSON.stringify({
-      sender: { name: 'MyMeal App', email: 'noreply.mymeal@gmail.com' },
+      sender: { name: 'MyMeal App', email: 'joseluismercado227@gmail.com' },
       to: [{ email: emailDestino }],
       subject: subject,
       htmlContent: htmlContent
