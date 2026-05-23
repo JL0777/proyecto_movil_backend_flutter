@@ -1,22 +1,14 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ======================
 // CORREO RECUPERACIÓN DE CONTRASEÑA
 // ======================
 const enviarCodigoRecuperacion = async (emailDestino, codigo) => {
-  const mailOptions = {
-    from: `"MyMeal App" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'MyMeal App <onboarding@resend.dev>',
     to: emailDestino,
     subject: 'Recuperación de contraseña - MyMeal',
     html: `
@@ -31,16 +23,15 @@ const enviarCodigoRecuperacion = async (emailDestino, codigo) => {
         <p style="font-size: 13px; color: #888;">Si no solicitaste esto, ignora este mensaje.</p>
       </div>
     `
-  };
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 // ======================
 // CORREO VERIFICACIÓN DE CUENTA NUEVA
 // ======================
 const enviarCodigoVerificacionCuenta = async (emailDestino, codigo) => {
-  const mailOptions = {
-    from: `"MyMeal App" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'MyMeal App <onboarding@resend.dev>',
     to: emailDestino,
     subject: 'Verifica tu cuenta - MyMeal',
     html: `
@@ -55,16 +46,15 @@ const enviarCodigoVerificacionCuenta = async (emailDestino, codigo) => {
         <p style="font-size: 13px; color: #888;">Si no creaste una cuenta en MyMeal, ignora este mensaje.</p>
       </div>
     `
-  };
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 // ======================
 // CORREO VERIFICACIÓN CAMBIO DE CORREO
 // ======================
 const enviarCodigoVerificacionEmail = async (emailDestino, codigo) => {
-  const mailOptions = {
-    from: `"MyMeal App" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'MyMeal App <onboarding@resend.dev>',
     to: emailDestino,
     subject: 'Verifica tu nuevo correo electrónico - MyMeal',
     html: `
@@ -79,8 +69,7 @@ const enviarCodigoVerificacionEmail = async (emailDestino, codigo) => {
         <p style="font-size: 13px; color: #888;">Si no solicitaste este cambio, ignora este mensaje.</p>
       </div>
     `
-  };
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 module.exports = {
