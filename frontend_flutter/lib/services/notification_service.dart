@@ -13,32 +13,29 @@ class NotificationService {
   static const String _keyRachaMinuto = 'notificaciones_racha_minuto';
 
   Future<void> inicializar() async {
-    await AwesomeNotifications().initialize(
-      null,
-      [
-        NotificationChannel(
-          channelKey: 'agua_channel',
-          channelName: 'Recordatorios de agua',
-          channelDescription: 'Notificaciones para recordar tomar agua',
-          importance: NotificationImportance.High,
-          defaultColor: const Color(0xFF2196F3),
-          ledColor: const Color(0xFF2196F3),
-          channelShowBadge: true,
-          locked: false,
-        ),
-        // NUEVO canal de racha
-        NotificationChannel(
-          channelKey: 'racha_channel',
-          channelName: 'Recordatorio de racha',
-          channelDescription: 'Notificación diaria para mantener tu racha',
-          importance: NotificationImportance.High,
-          defaultColor: const Color(0xFFE8651A),
-          ledColor: const Color(0xFFE8651A),
-          channelShowBadge: true,
-          locked: false,
-        ),
-      ],
-    );
+    await AwesomeNotifications().initialize(null, [
+      NotificationChannel(
+        channelKey: 'agua_channel',
+        channelName: 'Recordatorios de agua',
+        channelDescription: 'Notificaciones para recordar tomar agua',
+        importance: NotificationImportance.High,
+        defaultColor: const Color(0xFF2196F3),
+        ledColor: const Color(0xFF2196F3),
+        channelShowBadge: true,
+        locked: false,
+      ),
+      // NUEVO canal de racha
+      NotificationChannel(
+        channelKey: 'racha_channel',
+        channelName: 'Recordatorio de racha',
+        channelDescription: 'Notificación diaria para mantener tu racha',
+        importance: NotificationImportance.High,
+        defaultColor: const Color(0xFFE8651A),
+        ledColor: const Color(0xFFE8651A),
+        channelShowBadge: true,
+        locked: false,
+      ),
+    ]);
   }
 
   // ── Agua (igual que antes) ────────────────────────────────
@@ -50,7 +47,8 @@ class NotificationService {
   Future<bool> pedirPermisos() async {
     final permitido = await AwesomeNotifications().isNotificationAllowed();
     if (!permitido) {
-      return await AwesomeNotifications().requestPermissionToSendNotifications();
+      return await AwesomeNotifications()
+          .requestPermissionToSendNotifications();
     }
     return true;
   }
@@ -71,11 +69,41 @@ class NotificationService {
     await AwesomeNotifications().cancelSchedulesByChannelKey('agua_channel');
     final vasos = (litrosAgua * 1000 / 250).ceil();
     final List<Map<String, dynamic>> horarios = [
-      {'id': 1001, 'hora': 7, 'minuto': 0, 'titulo': '💧 ¡Buenos días!', 'mensaje': 'Empieza el día con un vaso de agua'},
-      {'id': 1002, 'hora': 11, 'minuto': 0, 'titulo': '💧 Hora de hidratarte', 'mensaje': 'Llevas unas horas sin tomar agua, ¡bebe un vaso ahora!'},
-      {'id': 1003, 'hora': 15, 'minuto': 0, 'titulo': '💧 Recordatorio de agua', 'mensaje': 'Es hora de tomar tu agua, ¡no lo olvides!'},
-      {'id': 1004, 'hora': 19, 'minuto': 0, 'titulo': '💧 Hidratación de la tarde', 'mensaje': 'Toma un vaso de agua antes de la cena'},
-      {'id': 1005, 'hora': 21, 'minuto': 0, 'titulo': '💧 Resumen del día', 'mensaje': '¿Ya tomaste tus $vasos vasos de agua hoy?'},
+      {
+        'id': 1001,
+        'hora': 7,
+        'minuto': 0,
+        'titulo': '💧 ¡Buenos días!',
+        'mensaje': 'Empieza el día con un vaso de agua',
+      },
+      {
+        'id': 1002,
+        'hora': 11,
+        'minuto': 0,
+        'titulo': '💧 Hora de hidratarte',
+        'mensaje': 'Llevas unas horas sin tomar agua, ¡bebe un vaso ahora!',
+      },
+      {
+        'id': 1003,
+        'hora': 15,
+        'minuto': 0,
+        'titulo': '💧 Recordatorio de agua',
+        'mensaje': 'Es hora de tomar tu agua, ¡no lo olvides!',
+      },
+      {
+        'id': 1004,
+        'hora': 19,
+        'minuto': 0,
+        'titulo': '💧 Hidratación de la tarde',
+        'mensaje': 'Toma un vaso de agua antes de la cena',
+      },
+      {
+        'id': 1005,
+        'hora': 21,
+        'minuto': 0,
+        'titulo': '💧 Resumen del día',
+        'mensaje': '¿Ya tomaste tus $vasos vasos de agua hoy?',
+      },
     ];
     for (final h in horarios) {
       await AwesomeNotifications().createNotification(
@@ -92,7 +120,7 @@ class NotificationService {
           minute: h['minuto'] as int,
           second: 0,
           repeats: true,
-          allowWhileIdle: true,
+          preciseAlarm: true,
         ),
       );
     }
@@ -133,7 +161,11 @@ class NotificationService {
     await _programarNotificacionRacha(hora.hour, hora.minute, rachaActual);
   }
 
-  Future<void> _programarNotificacionRacha(int hora, int minuto, int racha) async {
+  Future<void> _programarNotificacionRacha(
+    int hora,
+    int minuto,
+    int racha,
+  ) async {
     await AwesomeNotifications().cancelSchedulesByChannelKey('racha_channel');
 
     final titulo = racha == 0
@@ -143,10 +175,10 @@ class NotificationService {
     final mensaje = racha == 0
         ? 'Completa tu plan de comidas y comienza tu racha'
         : racha < 3
-            ? '¡Vas bien! No pierdas tu racha de $racha ${racha == 1 ? 'día' : 'días'}'
-            : racha < 7
-                ? '🔥 ¡$racha días seguidos! Sigue así, no pares ahora'
-                : '⚡ ¡Increíble racha de $racha días! Eres imparable';
+        ? '¡Vas bien! No pierdas tu racha de $racha ${racha == 1 ? 'día' : 'días'}'
+        : racha < 7
+        ? '🔥 ¡$racha días seguidos! Sigue así, no pares ahora'
+        : '⚡ ¡Increíble racha de $racha días! Eres imparable';
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
@@ -162,7 +194,7 @@ class NotificationService {
         minute: minuto,
         second: 0,
         repeats: true,
-        allowWhileIdle: true,
+        preciseAlarm: true, 
       ),
     );
   }

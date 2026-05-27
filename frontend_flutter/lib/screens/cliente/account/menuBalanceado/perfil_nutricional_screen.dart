@@ -34,6 +34,11 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
   bool _togglingNotif = false;
   bool _mostrarHorario = false;
 
+  // ── Restricciones alimentarias ──
+  List<String> _restriccionesSeleccionadas = [];
+  bool _guardandoRestricciones = false;
+  bool _mostrarRestricciones = false;
+
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
@@ -42,6 +47,24 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
   static const Color _naranjaClaro = Color(0xFFFFF0E8);
   static const Color _fondo = Color(0xFFF8F7F5);
   static const Color _azul = Color(0xFF3B82F6);
+
+  static const Color _rojo = Color(0xFFEF4444);
+  static const Color _rojoClaroFondo = Color(0xFFFEF2F2);
+
+  static const List<Map<String, dynamic>> _opcionesRestricciones = [
+    {'valor': 'Gluten', 'emoji': '🌾', 'color': Color(0xFFF59E0B)},
+    {'valor': 'Lácteos', 'emoji': '🥛', 'color': Color(0xFF3B82F6)},
+    {'valor': 'Mariscos', 'emoji': '🦐', 'color': Color(0xFF0EA5E9)},
+    {'valor': 'Nueces', 'emoji': '🥜', 'color': Color(0xFF92400E)},
+    {'valor': 'Huevo', 'emoji': '🥚', 'color': Color(0xFFF59E0B)},
+    {'valor': 'Soya', 'emoji': '🫘', 'color': Color(0xFF65A30D)},
+    {'valor': 'Cerdo', 'emoji': '🐷', 'color': Color(0xFFEC4899)},
+    {'valor': 'Res', 'emoji': '🐄', 'color': Color(0xFF92400E)},
+    {'valor': 'Picante', 'emoji': '🌶️', 'color': Color(0xFFEF4444)},
+    {'valor': 'Azúcar', 'emoji': '🍬', 'color': Color(0xFF8B5CF6)},
+    {'valor': 'Sal', 'emoji': '🧂', 'color': Color(0xFF6B7280)},
+    {'valor': 'Alcohol', 'emoji': '🍺', 'color': Color(0xFFF59E0B)},
+  ];
 
   final List<Map<String, dynamic>> _nivelesActividad = [
     {
@@ -179,6 +202,10 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
             _edadController.text = '${_perfil!['edad']}';
             _sexo = _perfil!['sexo'];
             _nivelActividad = _perfil!['nivelActividad'];
+            final restricciones = _perfil!['restriccionesAlimentarias'];
+            if (restricciones != null && restricciones is List) {
+              _restriccionesSeleccionadas = List<String>.from(restricciones);
+            }
           }
         });
       }
@@ -290,6 +317,28 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
       }
     } finally {
       if (mounted) setState(() => _togglingNotif = false);
+    }
+  }
+
+  Future<void> _guardarRestricciones() async {
+    setState(() => _guardandoRestricciones = true);
+    try {
+      final result = await _userService.updateRestricciones(
+        _restriccionesSeleccionadas,
+      );
+      if (!mounted) return;
+      if (result['success'] == true) {
+        _showMessage(
+          _restriccionesSeleccionadas.isEmpty
+              ? 'Restricciones eliminadas'
+              : 'Restricciones guardadas ✓',
+          ok: true,
+        );
+      } else {
+        _showMessage(result['error'] ?? 'Error al guardar');
+      }
+    } finally {
+      if (mounted) setState(() => _guardandoRestricciones = false);
     }
   }
 
@@ -1018,6 +1067,255 @@ class _PerfilNutricionalScreenState extends State<PerfilNutricionalScreen>
             ],
           ),
         ),
+
+        const SizedBox(height: 16),
+
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Header colapsable
+              GestureDetector(
+                onTap: () => setState(
+                  () => _mostrarRestricciones = !_mostrarRestricciones,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+                  decoration: BoxDecoration(
+                    color: _restriccionesSeleccionadas.isNotEmpty
+                        ? _rojo.withValues(alpha: 0.05)
+                        : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _rojo.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.no_food_outlined,
+                          color: _rojo,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Restricciones alimentarias',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _restriccionesSeleccionadas.isEmpty
+                                  ? 'Sin restricciones configuradas'
+                                  : '${_restriccionesSeleccionadas.length} restricción${_restriccionesSeleccionadas.length > 1 ? 'es' : ''} activa${_restriccionesSeleccionadas.length > 1 ? 's' : ''}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _restriccionesSeleccionadas.isEmpty
+                                    ? Colors.grey.shade400
+                                    : _rojo,
+                                fontWeight: _restriccionesSeleccionadas.isEmpty
+                                    ? FontWeight.w400
+                                    : FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_restriccionesSeleccionadas.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _rojo.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${_restriccionesSeleccionadas.length}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: _rojo,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      AnimatedRotation(
+                        turns: _mostrarRestricciones ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          Icons.expand_more,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Contenido colapsable
+              AnimatedCrossFade(
+                firstChild: const SizedBox(width: double.infinity),
+                secondChild: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Divider(height: 1, color: Colors.grey.shade100),
+                      const SizedBox(height: 12),
+                      _infoCard(
+                        icon: Icons.info_outline_rounded,
+                        color: _rojo,
+                        bgColor: _rojoClaroFondo,
+                        borderColor: _rojo.withValues(alpha: 0.2),
+                        text:
+                            'La IA excluirá estos ingredientes al generar tu plan de comidas diario.',
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _opcionesRestricciones.map((opcion) {
+                          final valor = opcion['valor'] as String;
+                          final emoji = opcion['emoji'] as String;
+                          final color = opcion['color'] as Color;
+                          final seleccionado = _restriccionesSeleccionadas
+                              .contains(valor);
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if (seleccionado) {
+                                  _restriccionesSeleccionadas.remove(valor);
+                                } else {
+                                  _restriccionesSeleccionadas.add(valor);
+                                }
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: seleccionado
+                                    ? color.withValues(alpha: 0.12)
+                                    : Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: seleccionado
+                                      ? color.withValues(alpha: 0.5)
+                                      : Colors.grey.shade200,
+                                  width: seleccionado ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    emoji,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    valor,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: seleccionado
+                                          ? color
+                                          : Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  if (seleccionado) ...[
+                                    const SizedBox(width: 5),
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 13,
+                                      color: color,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _guardandoRestricciones
+                              ? null
+                              : _guardarRestricciones,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _rojo,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: _rojo.withValues(
+                              alpha: 0.5,
+                            ),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          icon: _guardandoRestricciones
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.save_outlined, size: 16),
+                          label: Text(
+                            _guardandoRestricciones
+                                ? 'Guardando...'
+                                : 'Guardar restricciones',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                crossFadeState: _mostrarRestricciones
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 250),
+              ),
+            ],
+          ),
+        ), 
 
         const SizedBox(height: 16),
 

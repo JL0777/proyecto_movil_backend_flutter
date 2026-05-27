@@ -12,6 +12,7 @@ router.put('/password', verifyToken, userController.updatePassword);
 router.put('/foto-perfil', verifyToken, userController.updateFotoPerfil);
 router.put('/perfil-nutricional', verifyToken, userController.updatePerfilNutricional);
 router.get('/perfil-nutricional', verifyToken, userController.getPerfilNutricional);
+router.put('/restricciones', verifyToken, userController.updateRestricciones); 
 
 
 // Admin

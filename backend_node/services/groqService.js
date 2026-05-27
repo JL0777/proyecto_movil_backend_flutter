@@ -4,7 +4,7 @@ const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-async function generarPlanComidas({ perfil, ingredientes }) {
+async function generarPlanComidas({ perfil, ingredientes, restricciones }) {
   const { tdee, objetivoRecomendado, imc } = perfil;
 
   const listaIngredientes = ingredientes
@@ -15,6 +15,12 @@ async function generarPlanComidas({ perfil, ingredientes }) {
       return `- ${ing.nombre} [${ing.tipo}] ${nutricional}`;
     })
     .join('\n');
+
+  const restriccionesTexto = restricciones && restricciones.length > 0
+    ? `\nRESTRICCIONES ALIMENTARIAS DEL CLIENTE (OBLIGATORIO RESPETAR):
+${restricciones.map(r => `- NO usar: ${r}`).join('\n')}
+Si un ingrediente coincide con alguna restricción, OMÍTELO completamente del plan.\n`
+    : '';
 
   const objetivoTexto = {
     bajar_peso: 'bajar de peso',
@@ -30,7 +36,7 @@ PERFIL DEL CLIENTE:
 - IMC: ${imc}
 - Calorías diarias recomendadas: ${tdee} kcal
 - Objetivo: ${objetivoTexto}
-
+${restriccionesTexto}
 INGREDIENTES DISPONIBLES EN EL RESTAURANTE:
 ${listaIngredientes}
 

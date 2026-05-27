@@ -367,7 +367,7 @@ exports.getPerfilNutricional = async (req, res) => {
       attributes: [
         'id', 'nombre', 'peso', 'altura', 'edad',
         'sexo', 'nivelActividad', 'imc', 'tdee',
-        'objetivoRecomendado'
+        'objetivoRecomendado', 'restriccionesAlimentarias'
       ]
     });
 
@@ -405,15 +405,16 @@ exports.getPerfilNutricional = async (req, res) => {
       success: true,
       tieneDatos: true,
       user: {
-        nombre:               user.nombre,
-        peso:                 user.peso,
-        altura:               user.altura,
-        edad:                 user.edad,
-        sexo:                 user.sexo,
-        nivelActividad:       user.nivelActividad,
-        imc:                  user.imc,
-        tdee:                 user.tdee,
-        objetivoRecomendado:  user.objetivoRecomendado,
+        nombre: user.nombre,
+        peso: user.peso,
+        altura: user.altura,
+        edad: user.edad,
+        sexo: user.sexo,
+        nivelActividad: user.nivelActividad,
+        imc: user.imc,
+        tdee: user.tdee,
+        objetivoRecomendado: user.objetivoRecomendado,
+        restriccionesAlimentarias: user.restriccionesAlimentarias ?? [],
         categoriaImc,
         descripcionImc,
       }
@@ -465,18 +466,48 @@ exports.updatePerfilNutricional = async (req, res) => {
       success: true,
       message: 'Perfil nutricional actualizado correctamente',
       data: {
-        peso:                user.peso,
-        altura:              user.altura,
-        edad:                user.edad,
-        sexo:                user.sexo,
-        nivelActividad:      user.nivelActividad,
-        imc:                 user.imc,
-        tdee:                user.tdee,
+        peso: user.peso,
+        altura: user.altura,
+        edad: user.edad,
+        sexo: user.sexo,
+        nivelActividad: user.nivelActividad,
+        imc: user.imc,
+        tdee: user.tdee,
         objetivoRecomendado: user.objetivoRecomendado,
       }
     });
   } catch (error) {
     console.error('ERROR UPDATE PERFIL NUTRICIONAL:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+// ======================
+// GUARDAR RESTRICCIONES ALIMENTARIAS (cliente)
+// ======================
+exports.updateRestricciones = async (req, res) => {
+  try {
+    const { restricciones } = req.body;
+
+    if (!Array.isArray(restricciones)) {
+      return res.status(400).json({ error: 'Las restricciones deben ser un arreglo' });
+    }
+
+    const user = await Usuario.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    user.restriccionesAlimentarias = restricciones;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Restricciones guardadas correctamente',
+      restricciones: user.restriccionesAlimentarias,
+    });
+  } catch (error) {
+    console.error('ERROR UPDATE RESTRICCIONES:', error);
     res.status(500).json({ error: 'Error del servidor' });
   }
 };

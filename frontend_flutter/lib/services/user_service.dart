@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../core/config/app_config.dart';
 import '../core/session/session_manager.dart';
 
-
 class UserService {
   static const String baseUrl = "${AppConfig.baseUrl}/users";
 
@@ -215,6 +214,32 @@ class UserService {
         "sexo": sexo,
         "nivelActividad": nivelActividad,
       }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {"success": true, ...data};
+    }
+
+    return {"success": false, "error": data["error"]};
+  }
+
+  // ======================
+  // GUARDAR RESTRICCIONES ALIMENTARIAS
+  // ======================
+  Future<Map<String, dynamic>> updateRestricciones(
+    List<String> restricciones,
+  ) async {
+    final token = await _getToken();
+
+    final response = await http.put(
+      Uri.parse("$baseUrl/restricciones"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({"restricciones": restricciones}),
     );
 
     final data = jsonDecode(response.body);

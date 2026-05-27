@@ -7,46 +7,47 @@ const Ingrediente = db.Ingrediente;
 const { generarPlanComidas, completarMenuConIA, analizarFotoComida } = require('../services/groqService');
 
 router.post('/plan-comidas', verifyToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
+  try {
+    const userId = req.user.id;
 
-        const user = await Usuario.findByPk(userId, {
-            attributes: [
-                'imc', 'tdee', 'objetivoRecomendado',
-                'peso', 'altura',
-            ],
-        });
+    const user = await Usuario.findByPk(userId, {
+      attributes: [
+        'imc', 'tdee', 'objetivoRecomendado',
+        'peso', 'altura', 'restriccionesAlimentarias', 
+      ],
+    });
 
-        if (!user || !user.tdee) {
-            return res.status(400).json({
-                error: 'Debes completar tu perfil nutricional primero',
-            });
-        }
-
-        const ingredientes = await Ingrediente.findAll({
-            where: { disponible: true },
-            attributes: [
-                'nombre', 'tipo', 'cantidad',
-                'calorias', 'proteinas', 'carbohidratos', 'grasas',
-            ],
-        });
-
-        if (ingredientes.length === 0) {
-            return res.status(400).json({
-                error: 'No hay ingredientes disponibles',
-            });
-        }
-
-        const plan = await generarPlanComidas({
-            perfil: user,
-            ingredientes,
-        });
-
-        res.json({ success: true, plan });
-    } catch (error) {
-        console.error('Error generando plan:', error.message);
-        res.status(500).json({ error: 'Error al generar el plan de comidas' });
+    if (!user || !user.tdee) {
+      return res.status(400).json({
+        error: 'Debes completar tu perfil nutricional primero',
+      });
     }
+
+    const ingredientes = await Ingrediente.findAll({
+      where: { disponible: true },
+      attributes: [
+        'nombre', 'tipo', 'cantidad',
+        'calorias', 'proteinas', 'carbohidratos', 'grasas',
+      ],
+    });
+
+    if (ingredientes.length === 0) {
+      return res.status(400).json({
+        error: 'No hay ingredientes disponibles',
+      });
+    }
+
+    const plan = await generarPlanComidas({
+      perfil: user,
+      ingredientes,
+      restricciones: user.restriccionesAlimentarias ?? [], 
+    });
+
+    res.json({ success: true, plan });
+  } catch (error) {
+    console.error('Error generando plan:', error.message);
+    res.status(500).json({ error: 'Error al generar el plan de comidas' });
+  }
 });
 
 router.post('/completar-menu', verifyToken, async (req, res) => {

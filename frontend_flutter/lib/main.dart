@@ -11,6 +11,7 @@ import 'screens/cliente/home_screen.dart';
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/cocina/cocina_home_screen.dart';
 import 'services/notification_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 void main() async {
@@ -22,6 +23,11 @@ void main() async {
   );
 
   await NotificationService().inicializar();
+
+  // Solicitar permisos en iOS al arrancar
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    await NotificationService().pedirPermisos();
+  }
 
   try {
     await http

@@ -66,5 +66,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-</dict>
+
+	<!-- Cámara para escanear alimentos -->
+    <key>NSCameraUsageDescription</key>
+    <string>MyMeal necesita acceso a tu cámara para escanear tus alimentos</string>
+
+    <!-- Galería de fotos -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>MyMeal necesita acceso a tus fotos para analizar tus alimentos</string>
+
+    <!-- Notificaciones (awesome_notifications lo requiere) -->
+    <key>NSUserNotificationUsageDescription</key>
+    <string>MyMeal te enviará recordatorios de hidratación y de tu racha diaria</string>
+
+    </dict>
 </plist>

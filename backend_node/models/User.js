@@ -92,6 +92,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
 
+    // Restricciones alimentarias del usuario
+    restriccionesAlimentarias: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+    },
+
   }, {
     tableName: 'usuarios',
     timestamps: true,
@@ -119,27 +126,27 @@ module.exports = (sequelize, DataTypes) => {
 
         // Calcular TDEE si tiene todos los datos
         if (usuario.peso && usuario.altura && usuario.edad &&
-            usuario.sexo && usuario.nivelActividad) {
+          usuario.sexo && usuario.nivelActividad) {
 
           // Fórmula Mifflin-St Jeor
           let tmb;
           if (usuario.sexo === 'masculino') {
             tmb = (10 * usuario.peso) +
-                  (6.25 * usuario.altura) -
-                  (5 * usuario.edad) + 5;
+              (6.25 * usuario.altura) -
+              (5 * usuario.edad) + 5;
           } else {
             tmb = (10 * usuario.peso) +
-                  (6.25 * usuario.altura) -
-                  (5 * usuario.edad) - 161;
+              (6.25 * usuario.altura) -
+              (5 * usuario.edad) - 161;
           }
 
           // Factor de actividad
           const factores = {
-            sedentario:  1.2,
-            ligero:      1.375,
-            moderado:    1.55,
-            activo:      1.725,
-            muy_activo:  1.9,
+            sedentario: 1.2,
+            ligero: 1.375,
+            moderado: 1.55,
+            activo: 1.725,
+            muy_activo: 1.9,
           };
 
           usuario.tdee = parseFloat(
@@ -150,7 +157,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  User.associate = function(models) {
+  User.associate = function (models) {
     User.hasMany(models.Direccion, {
       foreignKey: 'usuarioId',
       onDelete: 'CASCADE'
